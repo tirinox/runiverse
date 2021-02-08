@@ -1,5 +1,8 @@
 <template>
-    <canvas class="canvas-full" ref="canvas"></canvas>
+    <div class="canvas-holder">
+        <canvas class="canvas-full" ref="canvas"></canvas>
+        <div class="fps-counter" v-show="showFps">{{ Number(fps).toLocaleString() }} FPS</div>
+    </div>
 </template>
 
 <script>
@@ -12,13 +15,59 @@ export default {
         msg: String
     },
 
-    mounted() {
-        const canvas = this.$refs.canvas
+    data() {
+        return {
+            fps: 1.0,
+            showFps: true,
+        }
+    },
 
-        const renderer = new THREE.WebGLRenderer({canvas});
+    methods: {
+        resizeRendererToDisplaySize() {
+            const renderer = this.renderer
+            const canvas = renderer.domElement;
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            const needResize = canvas.width !== width || canvas.height !== height;
+            if (needResize) {
+                renderer.setSize(width, height, false);
+            }
+            return needResize;
+        },
+
+        render(time) {
+            if (!this.lastCalledTime) {
+                this.lastCalledTime = time;
+                this.fps = 0;
+            } else {
+                const delta = (time - this.lastCalledTime);
+                this.lastCalledTime = time;
+                this.fps = 1000 / delta;
+            }
+
+            time *= 0.001;  // convert to seconds
+
+            const renderer = this.renderer
+            const uniforms = this.uniforms;
+            this.resizeRendererToDisplaySize(renderer);
+
+            const canvas = renderer.domElement;
+            uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
+            uniforms.iTime.value = time;
+
+            renderer.render(this.scene, this.camera);
+
+            requestAnimationFrame(this.render);
+        }
+    },
+
+    mounted() {
+        let canvas = this.canvas = this.$refs.canvas
+
+        let renderer = this.renderer = new THREE.WebGLRenderer({canvas});
         renderer.autoClearColor = false;
 
-        const camera = new THREE.OrthographicCamera(
+        this.camera = new THREE.OrthographicCamera(
             -1, // left
             1, // right
             1, // top
@@ -26,13 +75,13 @@ export default {
             -1, // near,
             1, // far
         );
-        const scene = new THREE.Scene();
-        const plane = new THREE.PlaneBufferGeometry(2, 2);
+        let scene = this.scene = new THREE.Scene();
+        let plane = this.plane = new THREE.PlaneBufferGeometry(2, 2);
 
-        const loader = new THREE.FileLoader();
+        let loader = this.loader = new THREE.FileLoader();
         let fragmentShader = ``
 
-        loader.load('shaders/clouds.frag', (data) => {
+        loader.load('shaders/cart_gal.frag', (data) => {
             fragmentShader = data
 
             const material = new THREE.ShaderMaterial({
@@ -42,43 +91,34 @@ export default {
             scene.add(new THREE.Mesh(plane, material));
         })
 
-        const uniforms = {
+        const uniforms = this.uniforms = {
             iTime: {value: 0},
             iResolution: {value: new THREE.Vector3()},
         };
 
-        function resizeRendererToDisplaySize(renderer) {
-            const canvas = renderer.domElement;
-            const width = canvas.clientWidth;
-            const height = canvas.clientHeight;
-            const needResize = canvas.width !== width || canvas.height !== height;
-            if (needResize) {
-                renderer.setSize(width, height, false);
-            }
-            return needResize;
-        }
-
-        function render(time) {
-            time *= 0.001;  // convert to seconds
-
-            resizeRendererToDisplaySize(renderer);
-
-            const canvas = renderer.domElement;
-            uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
-            uniforms.iTime.value = time;
-
-            renderer.render(scene, camera);
-
-            requestAnimationFrame(render);
-        }
-
-        requestAnimationFrame(render);
+        requestAnimationFrame(this.render);
     }
 }
 </script>
 
 <style>
 .canvas-full {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.fps-counter {
+    font-size: 10pt;
+    color: white;
+    position: absolute;
+    margin: 10px;
+    font-family: 'Exo 2', sans-serif;
+    left: 0;
+    top: 0;
+}
+
+.canvas-holder {
     width: 100%;
     height: 100%;
     display: block;
