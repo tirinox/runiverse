@@ -1,6 +1,6 @@
 <template>
     <div class="canvas-holder">
-        <canvas class="canvas-full" ref="canvas"></canvas>
+        <canvas class="canvas-full" ref="canvas" @mousemove="onMouseMove"></canvas>
         <div class="fps-counter" v-show="showFps">{{ Number(fps).toLocaleString() }} FPS</div>
     </div>
 </template>
@@ -35,6 +35,13 @@ export default {
             return needResize;
         },
 
+        onMouseMove(e) {
+            const mouseScale = 0.1
+            const rect = this.canvas.getBoundingClientRect()
+            this.mouseX = mouseScale * (e.clientX - rect.left)
+            this.mouseY = mouseScale * (rect.height - (e.clientY - rect.top) - 1)
+        },
+
         render(time) {
             if (!this.lastCalledTime) {
                 this.lastCalledTime = time;
@@ -54,6 +61,10 @@ export default {
             const canvas = renderer.domElement;
             uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
             uniforms.iTime.value = time;
+
+            if(this.mouseX && this.mouseY) {
+                uniforms.iMouse.value.set(this.mouseX, this.mouseY)
+            }
 
             renderer.render(this.scene, this.camera);
 
@@ -94,6 +105,7 @@ export default {
         const uniforms = this.uniforms = {
             iTime: {value: 0},
             iResolution: {value: new THREE.Vector3()},
+            iMouse: {value: new THREE.Vector2()},
         };
 
         requestAnimationFrame(this.render);

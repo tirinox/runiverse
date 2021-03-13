@@ -11,31 +11,28 @@ export const MIDGARD_V1 = 'v1'
 export const MIDGARD_V2 = 'v2'
 
 
-
 export class MidgardURLGenerator {
     networkId: NetworkId
     version: string
-    midgardUrl: string
+    midgardUrl: string = ''
 
     constructor(networkId: NetworkId) {
         this.version = MIDGARD_V2
         this.networkId = networkId
-        if(networkId === TESTNET_MULTICHAIN) {
+        if (networkId === TESTNET_MULTICHAIN) {
             this.midgardUrl = `https://testnet.midgard.thorchain.info/${this.version}/`
-        } else if(networkId === CHAOSNET_BEP2CHAIN) {
+        } else if (networkId === CHAOSNET_BEP2CHAIN) {
             this.version = MIDGARD_V1
             this.midgardUrl = `https://chaosnet-midgard.bepswap.com/${this.version}/`
-        } else if(networkId === CHAOSNET_MULTICHAIN) {
+        } else if (networkId === CHAOSNET_MULTICHAIN) {
             alert("MCCN not implemented")
         } else {
             alert(`Network "${networkId}" is not supported!`)
         }
     }
 
-    txUrl(offset, limit) {
-        offset = offset || 0
-        limit = limit || 50
-        if(this.version === MIDGARD_V1) {
+    txUrl(offset: number = 0, limit: number = MAX_TX_BATCH_SIZE) {
+        if (this.version === MIDGARD_V1) {
             return `${this.midgardUrl}txs?offset=${offset}&limit=${limit}`
         } else {
             return `${this.midgardUrl}actions?offset=${offset}&limit=${limit}`
@@ -51,8 +48,7 @@ export class MidgardURLGenerator {
         return `${this.midgardUrl}pools`
     }
 
-    poolDetailsV1(assets, view) {
-        view = view || 'simple'
+    poolDetailsV1(assets: Array<string>, view: string = 'simple') {
         // returns just a list of pools
         const assetsJoined = assets.join(',')
         return `${this.midgardUrl}pools/detail?asset=${assetsJoined}&view=${view}`
@@ -66,7 +62,7 @@ export class Midgard {
         this.urlGen = urlGen
     }
 
-    async getTxBatch(offset: number, limit: number) {
+    async getTxBatch(offset: number = 0, limit: number = MAX_TX_BATCH_SIZE) {
         offset = offset || 0
         limit = limit || 50
 

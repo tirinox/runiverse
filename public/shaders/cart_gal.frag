@@ -1,4 +1,3 @@
-
 uniform vec2 iResolution;
 uniform vec2 iMouse;
 uniform float iTime;
@@ -26,64 +25,64 @@ uniform float iTime;
 #define saturation 0.850
 
 
-vec4 starField( vec2 fragCoord )
+vec4 starField(vec2 fragCoord)
 {
     //get coords and direction
     vec2 uv=fragCoord.xy/iResolution.xy-.5;
     uv.y*=iResolution.y/iResolution.x;
-    vec3 dir=vec3(uv*zoom,1.);
+    vec3 dir=vec3(uv*zoom, 1.);
     float time=iTime*speed+.25;
 
     //mouse rotation
     float a1=.5+iMouse.x/iResolution.x*2.;
     float a2=.8+iMouse.y/iResolution.y*2.;
-    mat2 rot1=mat2(cos(a1),sin(a1),-sin(a1),cos(a1));
-    mat2 rot2=mat2(cos(a2),sin(a2),-sin(a2),cos(a2));
+    mat2 rot1=mat2(cos(a1), sin(a1), -sin(a1), cos(a1));
+    mat2 rot2=mat2(cos(a2), sin(a2), -sin(a2), cos(a2));
     dir.xz*=rot1;
     dir.xy*=rot2;
-    vec3 from=vec3(1.,.5,0.5);
-    from+=vec3(time*2.,time,-2.);
+    vec3 from=vec3(1., .5, 0.5);
+    from+=vec3(time*2., time, -2.);
     from.xz*=rot1;
     from.xy*=rot2;
 
     //volumetric rendering
-    float s=0.1,fade=1.;
+    float s=0.1, fade=1.;
     vec3 v=vec3(0.);
     for (int r=0; r<volsteps; r++) {
         vec3 p=from+s*dir*.5;
-        p = abs(vec3(tile)-mod(p,vec3(tile*2.))); // tiling fold
-        float pa,a=pa=0.;
+        p = abs(vec3(tile)-mod(p, vec3(tile*2.)));// tiling fold
+        float pa, a=pa=0.;
         for (int i=0; i<iterations; i++) {
-            p=abs(p)/dot(p,p)-formuparam; // the magic formula
-            a+=abs(length(p)-pa); // absolute sum of average change
+            p=abs(p)/dot(p, p)-formuparam;// the magic formula
+            a+=abs(length(p)-pa);// absolute sum of average change
             pa=length(p);
         }
-        float dm=max(0.,darkmatter-a*a*.001); //dark matter
-        a*=a*a; // add contrast
-        if (r>6) fade*=1.-dm; // dark matter, don't render near
+        float dm=max(0., darkmatter-a*a*.001);//dark matter
+        a*=a*a;// add contrast
+        if (r>6) fade*=1.-dm;// dark matter, don't render near
         //v+=vec3(dm,dm*.5,0.);
         v+=fade;
-        v+=vec3(s,s*s,s*s*s*s)*a*brightness*fade; // coloring based on distance
-        fade*=distfading; // distance fading
+        v+=vec3(s, s*s, s*s*s*s)*a*brightness*fade;// coloring based on distance
+        fade*=distfading;// distance fading
         s+=stepsize;
     }
-    v=mix(vec3(length(v)),v,saturation); //color adjust
-    return vec4(v*.01,1.);
+    v=mix(vec3(length(v)), v, saturation);//color adjust
+    return vec4(v*.01, 1.);
 
 }
 
-//// ------ galaxy
+    //// ------ galaxy
 
-// Created by sebastien durand - 08/2016
-//-------------------------------------------------------------------------------------
-// Based on "Dusty nebula 4" by Duke (https://www.shadertoy.com/view/MsVXWW)
-// Sliders from IcePrimitives by Bers (https://www.shadertoy.com/view/MscXzn)
-// License: Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
-//-------------------------------------------------------------------------------------
+    // Created by sebastien durand - 08/2016
+    //-------------------------------------------------------------------------------------
+    // Based on "Dusty nebula 4" by Duke (https://www.shadertoy.com/view/MsVXWW)
+    // Sliders from IcePrimitives by Bers (https://www.shadertoy.com/view/MscXzn)
+    // License: Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
+    //-------------------------------------------------------------------------------------
 
 
-#define R(p, a) p=cos(a)*p+sin(a)*vec2(p.y, -p.x)
-#define pi 3.14159265
+    #define R(p, a) p=cos(a)*p+sin(a)*vec2(p.y, -p.x)
+    #define pi 3.14159265
 
 
 const vec4
@@ -138,7 +137,9 @@ vec2 dfGalaxy(in vec3 p, in float thickness, in float blurAmout, in float blurSt
 }
 
 vec2 map(in vec3 p) {
-    R(p.xz, iMouse.x*.008*pi+iTime*.3);
+    float a = iMouse.x * .008 * pi + iTime*.3;
+    p.xz=cos(a)*p.xz+sin(a)*vec2(p.xz.y, -p.xz.x);
+//    R(p.xz, iMouse.x*.008*pi+iTime*.3);
     return dfGalaxy(p, clamp(10.*sliderVal.x, .9, 10.), sliderVal.y, sliderVal.z);
 }
 
@@ -282,7 +283,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
     //Apply slider overlay
     vec4 stars = starField(fragCoord);
-    fragColor = vec4(max(sum.xyz, stars.xyz), 1.);
+    fragColor = vec4(sum.xyz + stars.xyz, 1.);
 
 }
 
