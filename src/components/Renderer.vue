@@ -102,18 +102,20 @@ export default {
 </script>
 
 <style>
+
 .canvas-full {
     width: 100%;
     height: 100%;
-    display: block;
+    position: absolute;
+    left: 0;
+    top: 0
 }
 
 .fps-counter {
-    font-size: 10pt;
-    color: white;
+    font-size: 14pt;
+    color: whitesmoke;
     position: absolute;
     margin: 10px;
-    font-family: 'Exo 2', sans-serif;
     left: 0;
     top: 0;
 }
@@ -121,6 +123,6 @@ export default {
 .canvas-holder {
     width: 100%;
     height: 100%;
-    display: block;
 }
+
 </style>
