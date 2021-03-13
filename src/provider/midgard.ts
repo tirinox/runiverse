@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, {AxiosResponse} from "axios";
 
 export type NetworkId = string
 export const TESTNET_MULTICHAIN: NetworkId = 'testnet-multi'
@@ -55,6 +55,39 @@ export class MidgardURLGenerator {
     }
 }
 
+export interface PoolDetailV1 {
+    asset: string;
+    assetDepth: string;
+    assetEarned: string;
+    assetStakedTotal: string;
+    poolAPY: string;
+    poolEarned: string;
+    poolSlipAverage: string;
+    poolTxAverage: string;
+    poolUnits: string;
+    poolVolume24hr: string;
+    price: string;
+    runeDepth: string;
+    runeEarned: string;
+    runeStakedTotal: string;
+    status: string;
+    swappingTxCount: string;
+}
+
+
+export interface PoolDetailV2 {
+    asset: string;
+    assetDepth: string;
+    assetPrice: string;
+    assetPriceUSD: string;
+    poolAPY: string;
+    runeDepth: string;
+    status: string;
+    units: string;
+    volume24h: string;
+}
+
+
 export class Midgard {
     urlGen: MidgardURLGenerator
 
@@ -62,11 +95,34 @@ export class Midgard {
         this.urlGen = urlGen
     }
 
-    async getTxBatch(offset: number = 0, limit: number = MAX_TX_BATCH_SIZE) {
+    async getTxBatch(offset: number = 0, limit: number = MAX_TX_BATCH_SIZE): Promise<AxiosResponse<any>> {
         offset = offset || 0
         limit = limit || 50
 
         const url = this.urlGen.txUrl(offset, limit)
         return await axios.get(url)
+    }
+
+    async getPoolListV1(): Promise<Array<string>> {
+        const url = this.urlGen.poolsUrlV1()
+        const result = await axios.get(url)
+        return result.data
+    }
+
+    async getPoolsV2() {
+        const url = this.urlGen.poolsUrlV2()
+        const result = await axios.get(url)
+        return result.data
+    }
+
+    async getPoolState() {
+        if(this.urlGen.version == MIDGARD_V1) {
+            const pools = await this.getPoolListV1()
+            const url = this.urlGen.poolDetailsV1(pools)
+            const details = await axios.get(url)
+            return details.data
+        } else {
+            return await this.getPoolsV2()
+        }
     }
 }
