@@ -1,16 +1,17 @@
 <template>
-    <Renderer msg="Welcome to Your Vue.js + TypeScript App"/>
+    <RendererSimple />
 </template>
 
 <script lang="ts">
+
 import {defineComponent} from 'vue';
-import Renderer from "@/components/Renderer.vue";
 import {CHAOSNET_BEP2CHAIN, Midgard, MidgardURLGenerator, TESTNET_MULTICHAIN} from "@/provider/midgard";
+import RendererSimple from "@/components/RendererSimple.vue";
 
 export default defineComponent({
     name: 'App',
     components: {
-        Renderer,
+        RendererSimple,
     },
     mounted() {
         const urlGen = new MidgardURLGenerator(CHAOSNET_BEP2CHAIN)
