@@ -1,6 +1,6 @@
 <template>
     <div class="canvas-holder">
-        <canvas class="canvas-full" ref="canvas" @mousemove="onMouseMove"></canvas>
+        <canvas class="canvas-full" ref="canvas"></canvas>
         <div class="fps-counter" v-show="showFps">{{ Number(fps).toLocaleString() }} FPS</div>
     </div>
 </template>
@@ -8,7 +8,9 @@
 <script>
 
 import * as THREE from "three"
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
+import SimpleScene from "@/render/simple/simpleScene";
+import {RealtimeProvider} from "@/provider/realtime";
 
 export default {
     name: 'RendererSimple',
@@ -40,13 +42,6 @@ export default {
             return needResize;
         },
 
-        onMouseMove(e) {
-            const mouseScale = 0.1
-            const rect = this.canvas.getBoundingClientRect()
-            this.mouseX = mouseScale * (e.clientX - rect.left)
-            this.mouseY = mouseScale * (rect.height - (e.clientY - rect.top) - 1)
-        },
-
         render(time) {
             if (!this.lastCalledTime) {
                 this.lastCalledTime = time;
@@ -61,6 +56,18 @@ export default {
             this.renderer.render(this.scene, this.camera);
 
             requestAnimationFrame(this.render);
+        },
+
+        createCamera() {
+            this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+
+            const controls = new OrbitControls(this.camera, this.renderer.domElement);
+            // controls.listenToKeyEvents(this.canvas);
+            controls.maxPolarAngle = Math.PI * 0.5;
+            controls.minDistance = 100;
+            controls.maxDistance = 5000;
+            controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+            controls.dampingFactor = 0.01;
         }
     },
 
@@ -73,42 +80,21 @@ export default {
         });
         renderer.autoClearColor = false;
 
-        this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-        let scene = this.scene = new THREE.Scene();
+        this.scene = new THREE.Scene();
 
-        const geometry = new THREE.CylinderGeometry(0, 10, 30, 4, 1);
-        const material = new THREE.MeshPhongMaterial({color: 0xffffff, flatShading: true});
+        this.myScene = new SimpleScene(this.scene)
+        this.myScene.initScene()
+        this.createCamera()
 
-        for (let i = 0; i < 500; i++) {
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.position.x = Math.random() * 1600 - 800;
-            mesh.position.y = 0;
-            mesh.position.z = Math.random() * 1600 - 800;
-            mesh.updateMatrix();
-            mesh.matrixAutoUpdate = false;
-            scene.add(mesh);
-        }
+        this.dataProvider = new RealtimeProvider(this.myScene)
+        this.dataProvider.run()
 
-        // lights
-        const dirLight1 = new THREE.DirectionalLight(0xffffff);
-        dirLight1.position.set(1, 1, 1);
-        scene.add(dirLight1);
-
-        const dirLight2 = new THREE.DirectionalLight(0x002288);
-        dirLight2.position.set(-1, -1, -1);
-        scene.add(dirLight2);
-
-        const ambientLight = new THREE.AmbientLight(0x222222);
-        scene.add(ambientLight);
-
-        const controls = new OrbitControls(this.camera, renderer.domElement );
-        controls.maxPolarAngle = Math.PI * 0.5;
-        controls.minDistance = 100;
-        controls.maxDistance = 5000;
 
         this.resizeRendererToDisplaySize();
         requestAnimationFrame(this.render);
     }
+
+
 }
 </script>
 
