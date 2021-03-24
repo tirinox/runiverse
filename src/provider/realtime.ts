@@ -1,19 +1,19 @@
-import {EventType, ThorEvent, ThorScene} from "@/render/types";
-import {Midgard, PoolDetail} from "@/provider/midgard";
+import {EventType, ThorEvent, ThorEventListener} from "@/provider/types";
+import {Midgard} from "@/provider/midgard";
 import {PoolChangeAnalyzer} from "@/provider/pool_change_analize";
 
 
 class RealtimeProvider {
     public readonly interval = 5 * 1000
 
-    public delegate?: ThorScene
+    public delegate: ThorEventListener
     public midgard: Midgard
 
     private poolAnalyzer: PoolChangeAnalyzer
 
     counter: number = 0
 
-    constructor(delegate: ThorScene, midgard: Midgard) {
+    constructor(delegate: ThorEventListener, midgard: Midgard) {
         this.delegate = delegate
         this.midgard = midgard
         this.poolAnalyzer = new PoolChangeAnalyzer()
@@ -21,7 +21,10 @@ class RealtimeProvider {
 
     private async requestPools() {
         const pools = await this.midgard.getPoolState()
-        this.poolAnalyzer.processPools(pools)
+        const changes = this.poolAnalyzer.processPools(pools)
+        for(const c of changes) {
+            this.delegate.receiveEvent(new ThorEvent(EventType.UpdatePool, c))
+        }
     }
 
     private async tick() {
@@ -37,9 +40,7 @@ class RealtimeProvider {
     public async run() {
         console.info('RealtimeProvider starts...')
 
-        if (this.delegate) {
-            this.delegate.receiveEvent(new ThorEvent(EventType.ResetAll));
-        }
+        this.delegate.receiveEvent(new ThorEvent(EventType.ResetAll))
 
         this.tick()
         setInterval(this.tick.bind(this), this.interval)

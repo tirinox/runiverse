@@ -1,21 +1,7 @@
 import {PoolDetail} from "@/provider/midgard";
 import {setDifference, setIntersection} from "@/helpers/iter";
+import {PoolChange, PoolChangeType} from "@/provider/types";
 
-export enum PoolChangeType {
-    Added,
-    Removed,
-    StatusChanged,
-    DepthChanged
-}
-
-export class PoolChange {
-    constructor(
-        public type: PoolChangeType,
-        public pool: PoolDetail,
-        public date: number
-    ) {
-    }
-}
 
 export class PoolChangeAnalyzer {
     private prevPoolsMapping?: Record<string, PoolDetail>
@@ -47,12 +33,12 @@ export class PoolChangeAnalyzer {
 
         for (const key of removedKeys) {
             const previousPool = this.prevPoolsMapping[key]
-            poolChanges.push(new PoolChange(PoolChangeType.Removed, previousPool, now))
+            poolChanges.push(new PoolChange(PoolChangeType.Removed, now, undefined, previousPool))
         }
 
         for (const key of addedKeys) {
             const currentPool = currentPoolsMapping[key]
-            poolChanges.push(new PoolChange(PoolChangeType.Added, currentPool, now))
+            poolChanges.push(new PoolChange(PoolChangeType.Added, now, currentPool, undefined))
         }
 
         for (const key of commonKeys) {
@@ -62,7 +48,7 @@ export class PoolChangeAnalyzer {
             if (!currentPool.isEqual(previousPool)) {
                 const typeOfChange = currentPool.isEnabled != previousPool.isEnabled ?
                     PoolChangeType.StatusChanged : PoolChangeType.DepthChanged
-                poolChanges.push(new PoolChange(typeOfChange, currentPool.sub(previousPool), now))
+                poolChanges.push(new PoolChange(typeOfChange, now, currentPool, previousPool))
             }
         }
 
