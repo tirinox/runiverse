@@ -1,0 +1,21 @@
+Data to display:
+
+1) Wallet of swapper/liq-provider (address, link, balances)
+2) Transactions
+    - from wallet
+    - type
+    - asset
+    - to pool
+    - size rune / size asset
+3) Pools
+    - rune depth
+    - asset depth
+    - apy?
+    - color of asset
+4) Nodes (optional for v1)
+    - accounts,
+    - bonds,
+    - slashpoints,
+    - age,
+    - location?)
+

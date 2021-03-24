@@ -1,4 +1,5 @@
 import axios, {AxiosResponse} from "axios";
+import BigNumber from "bignumber.js";
 
 export type NetworkId = string
 export const TESTNET_MULTICHAIN: NetworkId = 'testnet-multi'
@@ -55,36 +56,49 @@ export class MidgardURLGenerator {
     }
 }
 
-export interface PoolDetailV1 {
-    asset: string;
-    assetDepth: string;
-    assetEarned: string;
-    assetStakedTotal: string;
-    poolAPY: string;
-    poolEarned: string;
-    poolSlipAverage: string;
-    poolTxAverage: string;
-    poolUnits: string;
-    poolVolume24hr: string;
-    price: string;
-    runeDepth: string;
-    runeEarned: string;
-    runeStakedTotal: string;
-    status: string;
-    swappingTxCount: string;
-}
+export class PoolDetail {
+    constructor(public asset: string,
+                public assetDepth: BigNumber,
+                public runeDepth: BigNumber,
+                public isEnabled: boolean,
+                public units: BigNumber) {
+    }
 
+    static from_midgard_v2(j: any): PoolDetail {
+        return new PoolDetail(
+            j.asset,
+            new BigNumber(j.assetDepth),
+            new BigNumber(j.runeDepth),
+            j.status == 'enabled',
+            new BigNumber(j.units)
+        )
+    }
 
-export interface PoolDetailV2 {
-    asset: string;
-    assetDepth: string;
-    assetPrice: string;
-    assetPriceUSD: string;
-    poolAPY: string;
-    runeDepth: string;
-    status: string;
-    units: string;
-    volume24h: string;
+    static from_midgard_v1(j: any): PoolDetail {
+        return new PoolDetail(
+            j.asset,
+            new BigNumber(j.assetDepth),
+            new BigNumber(j.runeDepth),
+            j.status == 'enabled',
+            new BigNumber(j.poolUnits)
+        )
+    }
+
+    get runesPerAsset(): BigNumber {
+        return this.runeDepth.div(this.assetDepth)
+    }
+
+    get assetsPerRune(): BigNumber {
+        return this.assetDepth.div(this.runeDepth)
+    }
+
+    public isEqual(other: PoolDetail): boolean {
+        return this.asset === other.asset &&
+            this.runeDepth === other.runeDepth &&
+            this.assetDepth == other.assetDepth &&
+            this.units == other.units &&
+            this.isEnabled == other.isEnabled
+    }
 }
 
 
@@ -109,20 +123,31 @@ export class Midgard {
         return result.data
     }
 
-    async getPoolsV2() {
+    async getPoolsV2(): Promise<PoolDetail[]> {
         const url = this.urlGen.poolsUrlV2()
         const result = await axios.get(url)
-        return result.data
+        const poolJson: object[] = result.data
+        return poolJson.map((item) => PoolDetail.from_midgard_v2(item))
     }
 
-    async getPoolState() {
-        if(this.urlGen.version == MIDGARD_V1) {
+    async getPoolState(): Promise<PoolDetail[]> {
+        if (this.urlGen.version == MIDGARD_V1) {
             const pools = await this.getPoolListV1()
             const url = this.urlGen.poolDetailsV1(pools)
-            const details = await axios.get(url)
-            return details.data
+            const result = await axios.get(url)
+            const poolJson: object[] = result.data
+            return poolJson.map((item) => PoolDetail.from_midgard_v1(item))
         } else {
             return await this.getPoolsV2()
         }
     }
 }
+
+// Usage example:
+//   const urlGen = new MidgardURLGenerator(CHAOSNET_BEP2CHAIN)
+//   const mg = new Midgard(urlGen)
+//   mg.getPoolState().then(console.log)
+//
+//   const urlGen2 = new MidgardURLGenerator(TESTNET_MULTICHAIN)
+//   const mg2 = new Midgard(urlGen2)
+//   mg2.getPoolState().then(console.log)

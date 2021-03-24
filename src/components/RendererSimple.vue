@@ -11,6 +11,7 @@ import * as THREE from "three"
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import SimpleScene from "@/render/simple/simpleScene";
 import {RealtimeProvider} from "@/provider/realtime";
+import {CHAOSNET_BEP2CHAIN, Midgard, MidgardURLGenerator} from "@/provider/midgard";
 
 export default {
     name: 'RendererSimple',
@@ -86,9 +87,10 @@ export default {
         this.myScene.initScene()
         this.createCamera()
 
-        this.dataProvider = new RealtimeProvider(this.myScene)
+        const urlGen = new MidgardURLGenerator(CHAOSNET_BEP2CHAIN)
+        const midgard = new Midgard(urlGen)
+        this.dataProvider = new RealtimeProvider(this.myScene, midgard)
         this.dataProvider.run()
-
 
         this.resizeRendererToDisplaySize();
         requestAnimationFrame(this.render);
