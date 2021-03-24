@@ -94,13 +94,91 @@ export class PoolDetail {
 
     public isEqual(other: PoolDetail): boolean {
         return this.asset === other.asset &&
-            this.runeDepth === other.runeDepth &&
-            this.assetDepth == other.assetDepth &&
-            this.units == other.units &&
-            this.isEnabled == other.isEnabled
+            this.runeDepth.isEqualTo(other.runeDepth) &&
+            this.assetDepth.isEqualTo(other.assetDepth) &&
+            this.units.isEqualTo(other.units) &&
+            this.isEnabled === other.isEnabled
+    }
+
+    public sub(other: PoolDetail) {
+        return new PoolDetail(
+            this.asset,
+            this.assetDepth.minus(other.assetDepth),
+            this.runeDepth.minus(other.runeDepth),
+            this.isEnabled,
+            this.units.minus(other.units)
+        )
+    }
+
+    public toString() {
+        const status = this.isEnabled ? 'enabled' : 'bootstraping'
+        return `Pool(${this.runeDepth.toString()} R vs ${this.assetDepth.toString()} ${this.asset}, units = ${this.units.toString()}, ${status})`
     }
 }
 
+export enum TxType {
+    AddLiquidity,
+    Withdraw,
+    Swap,
+    Donate,
+    Refund,
+}
+
+export enum Coins {
+    Bnb = 'BNB.BNB',
+    BnbBusd = 'BNB.BUSD-BD1',
+    BnbBusdTest1 = 'BNB.BUSD-BAF',
+    BnbBusdTest2 = 'BNB.BUSD-74E',
+
+    BnbBtc = 'BNB.BTCB-1DE',
+    BnbBtcTest = 'BNB.BTCB-101',
+    Btc = 'BTC.BTC',
+
+    BnbEth = 'BNB.ETH-1C9',
+    BnbEthTest = 'BNB.ETH-D5B',
+
+    RuneBnb = 'BNB.RUNE-B1A',
+    RuneBnbTest = 'BNB.RUNE-67C',
+    RuneNative = 'THOR.RUNE',
+    Rune = RuneNative,
+
+    BnbUsdt = 'BNB.USDT-6D8',
+    BnbUsdtTest = 'BNB.USDT-DC8',
+    EthUsdt = 'ETH.USDT-0X62E273709DA575835C7F6AEF4A31140CA5B1D190'
+}
+
+export function isRune(coin: Coins): boolean {
+    return [
+        Coins.RuneNative,
+        Coins.RuneBnb,
+        Coins.RuneBnbTest
+    ].includes(coin)
+}
+
+export function isStableCoin(coin: Coins): boolean {
+    return [
+        Coins.BnbUsdt,
+        Coins.BnbUsdtTest,
+        Coins.EthUsdt,
+        Coins.BnbBusd,
+        Coins.BnbBusdTest1,
+        Coins.BnbBusdTest2
+    ].includes(coin)
+}
+
+
+export class Transaction {
+    constructor(
+        public type: TxType,
+        public timestamp: BigInt,
+        public asset1: string,
+        public amount1: BigNumber,
+        public asset2: string,
+        public amount2: BigNumber,
+        public pools: Array<string>,
+    ) {
+    }
+}
 
 export class Midgard {
     urlGen: MidgardURLGenerator
@@ -133,7 +211,7 @@ export class Midgard {
     async getPoolState(): Promise<PoolDetail[]> {
         if (this.urlGen.version == MIDGARD_V1) {
             const pools = await this.getPoolListV1()
-            const url = this.urlGen.poolDetailsV1(pools)
+            const url = this.urlGen.poolDetailsV1(pools.sort())
             const result = await axios.get(url)
             const poolJson: object[] = result.data
             return poolJson.map((item) => PoolDetail.from_midgard_v1(item))

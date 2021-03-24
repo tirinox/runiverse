@@ -4,13 +4,14 @@ import {PoolChangeAnalyzer} from "@/provider/pool_change_analize";
 
 
 class RealtimeProvider {
-    public readonly interval = 15 * 1000
+    public readonly interval = 5 * 1000
 
     public delegate?: ThorScene
     public midgard: Midgard
 
-    private oldPools?: Record<string, PoolDetail>
-    private poolAnalyzer: PoolChangeAnalyzer;
+    private poolAnalyzer: PoolChangeAnalyzer
+
+    counter: number = 0
 
     constructor(delegate: ThorScene, midgard: Midgard) {
         this.delegate = delegate
@@ -25,10 +26,12 @@ class RealtimeProvider {
 
     private async tick() {
         await this.requestPools()
+        this.counter++
+        console.log('tick #', this.counter)
 
-        if (this.delegate) {
-            this.delegate.receiveEvent(new ThorEvent(EventType.Nope));
-        }
+        // if (this.delegate) {
+        //     this.delegate.receiveEvent(new ThorEvent(EventType.Nope));
+        // }
     }
 
     public async run() {

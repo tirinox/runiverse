@@ -39,7 +39,7 @@ export default class SimpleScene implements ThorScene {
 
     receiveEvent(e: ThorEvent): void {
         if(e.eventType == EventType.ResetAll) {
-            console.log('booms!')
+            console.log('booms! reset all')
         }
     }
 }
