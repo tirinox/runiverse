@@ -96,6 +96,8 @@ export default {
 
         this.resizeRendererToDisplaySize();
         requestAnimationFrame(this.render);
+
+        // midgard.getLastTxs(0, 10).then(console.log)
     },
 
     beforeUnmount() {
