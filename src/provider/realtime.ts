@@ -12,6 +12,7 @@ class RealtimeProvider {
     private poolAnalyzer: PoolChangeAnalyzer
 
     counter: number = 0
+    private timer?: number;
 
     constructor(delegate: ThorEventListener, midgard: Midgard) {
         this.delegate = delegate
@@ -43,7 +44,12 @@ class RealtimeProvider {
         this.delegate.receiveEvent(new ThorEvent(EventType.ResetAll))
 
         this.tick()
-        setInterval(this.tick.bind(this), this.interval)
+        this.timer = setInterval(this.tick.bind(this), this.interval)
+    }
+
+    public stop() {
+        console.warn('stop data provider!')
+        clearInterval(this.timer!)
     }
 }
 

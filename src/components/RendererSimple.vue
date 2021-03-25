@@ -39,7 +39,9 @@ export default {
             const needResize = canvas.width !== width || canvas.height !== height;
             if (needResize) {
                 renderer.setSize(width, height, false);
+                this.myScene.onResize(width, height)
             }
+
             return needResize;
         },
 
@@ -61,14 +63,15 @@ export default {
 
         createCamera() {
             this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+            this.camera.position.z = 2000
 
             const controls = new OrbitControls(this.camera, this.renderer.domElement);
-            // controls.listenToKeyEvents(this.canvas);
-            controls.maxPolarAngle = Math.PI * 0.5;
+            controls.listenToKeyEvents(this.canvas);
+
             controls.minDistance = 100;
             controls.maxDistance = 5000;
             controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-            controls.dampingFactor = 0.01;
+            controls.dampingFactor = 0.5;
         }
     },
 
@@ -94,6 +97,10 @@ export default {
 
         this.resizeRendererToDisplaySize();
         requestAnimationFrame(this.render);
+    },
+
+    beforeUnmount() {
+        this.dataProvider.stop()
     }
 
 

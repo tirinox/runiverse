@@ -1,16 +1,20 @@
 import * as THREE from "three";
-import {Scene} from "three";
+import {Font, Scene} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener} from "@/provider/types";
 import {PoolDetail} from "@/provider/midgard";
 import {WireframeGeometry2} from "three/examples/jsm/lines/WireframeGeometry2";
-import {LineMaterial} from "three/examples/jsm/lines/LineMaterial";
 import {Wireframe} from "three/examples/jsm/lines/Wireframe";
 
 export default class SimpleScene implements ThorEventListener {
     private scene: Scene;
+
+
     private poolMeshes: Record<string, THREE.Object3D> = {}
-    private geo20?: WireframeGeometry2;
-    private matLine?: LineMaterial;
+
+    private font?: THREE.Font;
+    private materialEnabled?: THREE.MeshBasicMaterial;
+    private materialDisabled?: THREE.MeshBasicMaterial;
+    private geo20?: THREE.IcosahedronGeometry;
 
     constructor(scene: Scene) {
         this.scene = scene
@@ -24,51 +28,90 @@ export default class SimpleScene implements ThorEventListener {
         this.poolMeshes = {}
     }
 
-    private createPoolMesh() {
-
-    }
-
-    initScene() {
-        let scene = this.scene
-
-        let geo20 = new THREE.IcosahedronGeometry(30, 1);
-        this.geo20 = new WireframeGeometry2(geo20);
-
-        this.matLine = new LineMaterial({
-            color: 0x4080ff,
-            linewidth: 5,
-            dashed: false
-        });
-        this.matLine.resolution.set( window.innerWidth, window.innerHeight );
+    private removePoolMesh(pool: PoolDetail) {
+        const mesh: THREE.Object3D = this.poolMeshes[pool.asset]
+        if (mesh) {
+            mesh.parent?.remove(mesh)
+            delete this.poolMeshes[pool.asset]
+            console.info(`delete pool mesh ${pool.asset}`)
+        }
     }
 
     isTherePoolMesh(poolName: string): boolean {
         return poolName in this.poolMeshes
     }
 
-    private addNewPoolMesh(pool: PoolDetail) {
+    private async addNewPoolMesh(pool: PoolDetail) {
         if (this.isTherePoolMesh(pool.asset)) {
             return
         }
-        let wireframe = new Wireframe( this.geo20, this.matLine );
-        wireframe.computeLineDistances();
-        wireframe.scale.set( 1, 1, 1 );
+
+        const material = pool.isEnabled ? this.materialEnabled : this.materialDisabled
+
+        let wireframe = new THREE.Mesh(this.geo20, material)
+
+        wireframe.scale.set(1, 1, 1);
 
         wireframe.position.x = Math.random() * 2 - 1;
         wireframe.position.y = Math.random() * 2 - 1;
         wireframe.position.z = Math.random() * 2 - 1;
         wireframe.position.normalize();
-        wireframe.position.multiplyScalar( 1000 );
+        wireframe.position.multiplyScalar(500);
 
-        this.scene.add( wireframe );
+        this.scene.add(wireframe);
+        this.poolMeshes[pool.asset] = wireframe
+
+        const textMesh = await this.addLabel(pool.asset)
+        textMesh.position.y = 50
+        textMesh.position.x = -40
+        wireframe.add(textMesh)
+
+        // console.info(`add new mesh for ${pool.asset}`)1
     }
 
-    private removePoolMesh(pool: PoolDetail) {
-        const mesh: THREE.Object3D = this.poolMeshes[pool.asset]
-        if(mesh) {
-            mesh.parent?.remove(mesh)
-            delete this.poolMeshes[pool.asset]
+    loadFont(url: string): Promise<Font> {
+        return new Promise(resolve => {
+            new THREE.FontLoader().load(url, resolve);
+        });
+    }
+
+    async addLabel(name: string): Promise<THREE.Mesh> {
+        if (!this.font) {
+            const loader = new THREE.FontLoader()
+            this.font = await loader.loadAsync('fonts/helvetiker_bold.typeface.json')
         }
+
+        const textGeo = new THREE.TextGeometry(name, {
+            font: this.font!,
+            size: 16,
+            height: 1,
+            curveSegments: 1
+        });
+
+        const textMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+        return new THREE.Mesh(textGeo, textMaterial)
+    }
+
+
+    initScene() {
+        let scene = this.scene
+
+        this.geo20 = new THREE.IcosahedronGeometry(50, 1);
+
+
+        this.materialEnabled = new THREE.MeshBasicMaterial({
+            color: 0x4080ff,
+            reflectivity: 0.1,
+        });
+
+        this.materialDisabled = new THREE.MeshBasicMaterial({
+            color: 0xff6060,
+            reflectivity: 0.1,
+        });
+    }
+
+    onResize(w: number, h: number) {
+
     }
 
     receiveEvent(e: ThorEvent): void {
@@ -76,7 +119,6 @@ export default class SimpleScene implements ThorEventListener {
             console.log('booms! reset all')
             this.removeAllPoolMeshes()
         } else if (e.eventType == EventType.UpdatePool) {
-            console.log(e)
             const change = e.poolChange!
 
             if (change.type == PoolChangeType.Removed) {

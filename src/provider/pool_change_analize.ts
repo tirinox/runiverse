@@ -4,7 +4,7 @@ import {PoolChange, PoolChangeType} from "@/provider/types";
 
 
 export class PoolChangeAnalyzer {
-    private prevPoolsMapping?: Record<string, PoolDetail>
+    private prevPoolsMapping: Record<string, PoolDetail> = {}
 
     public processPools(pools: Array<PoolDetail>): PoolChange[] {
         if (!pools) {
@@ -14,11 +14,6 @@ export class PoolChangeAnalyzer {
         const currentPoolsMapping: Record<string, PoolDetail> = Object.fromEntries(
             pools.map((item: PoolDetail) => [item.asset, item])
         )
-
-        if (!this.prevPoolsMapping) {
-            this.prevPoolsMapping = currentPoolsMapping
-            return []
-        }
 
         const previousKeys = new Set(Object.keys(this.prevPoolsMapping!))
         const currentKeys = new Set(Object.keys(currentPoolsMapping))
