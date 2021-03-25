@@ -1,5 +1,5 @@
 import {DefaultApi as MidgardAPIV1} from "@/provider/midgard/v1/index"
-import {DefaultApi as MidgardAPIV2} from "@/provider/midgard/v2/index"
+import {Action, DefaultApi as MidgardAPIV2} from "@/provider/midgard/v2/index"
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {TxBatch} from "@/provider/midgard/tx";
 
@@ -11,12 +11,7 @@ export enum NetworkId {
     Mainnet = ChaosnetMultiChain,
 }
 
-
-export enum MidgardVersion {
-    V1 = 'v1',
-    V2 = 'v2'
-}
-
+export const MAX_ACTIONS_PER_CALL = 50
 
 export class Midgard {
     public readonly networkId: NetworkId;
@@ -47,7 +42,7 @@ export class Midgard {
         }
     }
 
-    async getLastTxs(start: number, limit: number) {
+    async getUserActions(start: number, limit: number) {
         if(this.apiV1) {
             const data = (await this.apiV1.getTxDetails(start, limit)).data
             return TxBatch.fromMidgardV1(data.txs!, data.count!)

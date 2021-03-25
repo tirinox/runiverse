@@ -13,7 +13,6 @@ import {
     Transaction,
     Coin
 } from "@/provider/midgard/v2";
-import {warn} from "three";
 
 
 export class ThorTransaction implements TxDetailsV2 {
@@ -73,7 +72,6 @@ export class ThorTransaction implements TxDetailsV2 {
     public static fromMidgardV2(j: TxDetailsV2) {
         return new ThorTransaction(j._in, j.date, j.height, j.metadata, j.out, j.pools, j.status, j.type)
     }
-
 }
 
 export class TxBatch {
