@@ -11,7 +11,7 @@ import * as THREE from "three"
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import SimpleScene from "@/render/simple/simpleScene";
 import {RealtimeProvider} from "@/provider/realtime";
-import {CHAOSNET_BEP2CHAIN, Midgard, MidgardURLGenerator} from "@/provider/midgard";
+import {Midgard, NetworkId} from "@/provider/midgard/midgard";
 
 export default {
     name: 'RendererSimple',
@@ -90,8 +90,7 @@ export default {
         this.myScene.initScene()
         this.createCamera()
 
-        const urlGen = new MidgardURLGenerator(CHAOSNET_BEP2CHAIN)
-        const midgard = new Midgard(urlGen)
+        const midgard = new Midgard(NetworkId.ChaosnetSingleBep2)
         this.dataProvider = new RealtimeProvider(this.myScene, midgard)
         this.dataProvider.run()
 
@@ -102,9 +101,8 @@ export default {
     beforeUnmount() {
         this.dataProvider.stop()
     }
-
-
 }
+
 </script>
 
 <style>

@@ -1,4 +1,4 @@
-import {PoolDetail} from "@/provider/midgard";
+import {PoolDetail} from "@/provider/midgard/poolDetail";
 
 export const enum EventType {
     Nope,

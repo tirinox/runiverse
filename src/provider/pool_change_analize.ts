@@ -1,6 +1,6 @@
-import {PoolDetail} from "@/provider/midgard";
 import {setDifference, setIntersection} from "@/helpers/iter";
 import {PoolChange, PoolChangeType} from "@/provider/types";
+import {PoolDetail} from "@/provider/midgard/poolDetail";
 
 
 export class PoolChangeAnalyzer {

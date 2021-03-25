@@ -1,9 +1,7 @@
 import * as THREE from "three";
 import {Font, Scene} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener} from "@/provider/types";
-import {PoolDetail} from "@/provider/midgard";
-import {WireframeGeometry2} from "three/examples/jsm/lines/WireframeGeometry2";
-import {Wireframe} from "three/examples/jsm/lines/Wireframe";
+import {PoolDetail} from "@/provider/midgard/poolDetail";
 
 export default class SimpleScene implements ThorEventListener {
     private scene: Scene;
@@ -41,22 +39,33 @@ export default class SimpleScene implements ThorEventListener {
         return poolName in this.poolMeshes
     }
 
+    scaleFromPool(pool: PoolDetail): number {
+        return Math.pow(pool.runeDepth.toNumber(), 0.11) / 20
+    }
+
     private async addNewPoolMesh(pool: PoolDetail) {
         if (this.isTherePoolMesh(pool.asset)) {
             return
         }
 
-        const material = pool.isEnabled ? this.materialEnabled : this.materialDisabled
+        const enabled = pool.isEnabled
+
+        let color = new THREE.Color()
+        color.setHSL(Math.random(), enabled ? 1.0 : 0.0, enabled ? 0.5 : 0.3)
+        const material = new THREE.MeshBasicMaterial({
+            color: color,
+            reflectivity: 0.1,
+        });
 
         let wireframe = new THREE.Mesh(this.geo20, material)
 
-        wireframe.scale.set(1, 1, 1);
+        wireframe.scale.setScalar(this.scaleFromPool(pool))
 
         wireframe.position.x = Math.random() * 2 - 1;
         wireframe.position.y = Math.random() * 2 - 1;
         wireframe.position.z = Math.random() * 2 - 1;
         wireframe.position.normalize();
-        wireframe.position.multiplyScalar(500);
+        wireframe.position.multiplyScalar(enabled ? 600 : 1200);
 
         this.scene.add(wireframe);
         this.poolMeshes[pool.asset] = wireframe
@@ -65,8 +74,15 @@ export default class SimpleScene implements ThorEventListener {
         textMesh.position.y = 50
         textMesh.position.x = -40
         wireframe.add(textMesh)
-
         // console.info(`add new mesh for ${pool.asset}`)1
+    }
+
+    private heartBeat(pool: PoolDetail) {
+        const factor = 1.05
+        const mesh = this.poolMeshes[pool.asset]
+        const oldScale = mesh.scale.x
+        mesh.scale.setScalar(oldScale * factor)
+        setTimeout(() => mesh.scale.setScalar(oldScale), 500)
     }
 
     loadFont(url: string): Promise<Font> {
@@ -94,10 +110,7 @@ export default class SimpleScene implements ThorEventListener {
 
 
     initScene() {
-        let scene = this.scene
-
         this.geo20 = new THREE.IcosahedronGeometry(50, 1);
-
 
         this.materialEnabled = new THREE.MeshBasicMaterial({
             color: 0x4080ff,
@@ -111,7 +124,6 @@ export default class SimpleScene implements ThorEventListener {
     }
 
     onResize(w: number, h: number) {
-
     }
 
     receiveEvent(e: ThorEvent): void {
@@ -126,6 +138,9 @@ export default class SimpleScene implements ThorEventListener {
             } else {
                 if (!this.isTherePoolMesh(change.pool!.asset)) {
                     this.addNewPoolMesh(change.pool!)
+                }
+                if(change.type == PoolChangeType.DepthChanged) {
+                    this.heartBeat(change.pool!)
                 }
             }
         }

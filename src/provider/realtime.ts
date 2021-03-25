@@ -1,5 +1,5 @@
 import {EventType, ThorEvent, ThorEventListener} from "@/provider/types";
-import {Midgard} from "@/provider/midgard";
+import {Midgard} from "@/provider/midgard/midgard";
 import {PoolChangeAnalyzer} from "@/provider/pool_change_analize";
 
 
