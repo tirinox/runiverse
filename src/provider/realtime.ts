@@ -1,9 +1,9 @@
-import {EventType, ThorEvent, ThorEventListener} from "@/provider/types";
+import {EventType, ThorEventListener} from "@/provider/types";
 import {MAX_ACTIONS_PER_CALL, Midgard} from "@/provider/midgard/midgard";
 import {PoolChangeAnalyzer} from "@/provider/process/poolChangeAnalize";
+import {Config} from "@/config";
+import {TxAnalyzer} from "@/provider/process/txAnalyze";
 
-
-const MAX_ACTIONS_PAGES = 2
 
 class RealtimeProvider {
     public readonly interval = 5 * 1000
@@ -12,31 +12,44 @@ class RealtimeProvider {
     public midgard: Midgard
 
     private poolAnalyzer: PoolChangeAnalyzer
+    private txAnalyzer: TxAnalyzer
 
     counter: number = 0
     private timer?: number;
 
-    constructor(delegate: ThorEventListener, midgard: Midgard) {
+    constructor(delegate: ThorEventListener, midgard: Midgard, interval: number = 5 * 1000) {
         this.delegate = delegate
         this.midgard = midgard
         this.poolAnalyzer = new PoolChangeAnalyzer()
+        this.txAnalyzer = new TxAnalyzer()
+        this.interval = interval
     }
 
     private async requestPools() {
         const pools = await this.midgard.getPoolState()
         const changes = this.poolAnalyzer.processPools(pools)
-        for(const c of changes) {
-            this.delegate.receiveEvent(new ThorEvent(EventType.UpdatePool, c))
+        for(const poolChange of changes) {
+            this.delegate.receiveEvent({
+                eventType: EventType.UpdatePool,
+                poolChange
+            })
         }
     }
 
     private async requestActions() {
-        for(let page = 0; page < MAX_ACTIONS_PAGES; ++page) {
+        for(let page = 0; page < Config.MaxPagesOfActions; ++page) {
             const offset = page * MAX_ACTIONS_PER_CALL
             const batch = await this.midgard.getUserActions(offset, MAX_ACTIONS_PER_CALL)
-            // todo: handle or break
-            console.info(batch)
-            if(batch.txs.length > 1) {
+            const [changes, goOnFlag] = this.txAnalyzer.processTransactions(batch.txs)
+
+            for(const ev of changes) {
+                console.log('tx event: ', ev)
+                this.delegate.receiveEvent({
+                    eventType: EventType.CreateTransaction
+                })
+            }
+
+            if(!goOnFlag) {
                 break
             }
         }
@@ -46,8 +59,10 @@ class RealtimeProvider {
         this.counter++
         console.log('tick #', this.counter)
 
-        await this.requestPools()
-        await this.requestActions()
+        await Promise.all([
+            this.requestPools(),
+            this.requestActions()
+        ])
 
         this.timer = setTimeout(this.tick.bind(this), this.interval)
     }
@@ -55,7 +70,9 @@ class RealtimeProvider {
     public async run() {
         console.info('RealtimeProvider starts...')
 
-        this.delegate.receiveEvent(new ThorEvent(EventType.ResetAll))
+        this.delegate.receiveEvent({
+            eventType: EventType.ResetAll
+        })
 
         this.tick()
     }

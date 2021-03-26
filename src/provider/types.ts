@@ -1,4 +1,6 @@
 import {PoolDetail} from "@/provider/midgard/poolDetail";
+import {ThorTransaction} from "@/provider/midgard/tx";
+
 
 export const enum EventType {
     Nope,
@@ -9,6 +11,7 @@ export const enum EventType {
     ResetAll
 }
 
+
 export enum PoolChangeType {
     Added,
     Removed,
@@ -16,26 +19,34 @@ export enum PoolChangeType {
     DepthChanged
 }
 
-export class PoolChange {
-    constructor(
-        public type: PoolChangeType,
-        public date: number,
-        public pool?: PoolDetail,
-        public previousPool?: PoolDetail,
-    ) {
-    }
+
+export interface PoolChange {
+    type: PoolChangeType,
+    date: number,
+    pool?: PoolDetail,
+    previousPool?: PoolDetail,
 }
 
-export class ThorEvent {
+
+export enum TxEventType {
+    Add,
+    StatusUpdated,
+    Destroy
+}
+
+
+export interface TxEvent {
+    type: TxEventType
+    tx: ThorTransaction
+}
+
+
+export interface ThorEvent {
     eventType: EventType
     poolChange?: PoolChange
-
-    constructor(eventType: EventType = EventType.Nope,
-                poolChange?: PoolChange) {
-        this.eventType = eventType
-        this.poolChange = poolChange
-    }
+    txEvent?: TxEvent
 }
+
 
 export interface ThorEventListener {
     receiveEvent(e: ThorEvent): void

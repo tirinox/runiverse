@@ -25,6 +25,17 @@ export class ThorTransaction implements TxDetailsV2 {
         public pools: Array<string>,
         public status: ActionStatusEnum,
         public type: ActionTypeEnum) {
+        this.dateTimestamp = Number(BigInt(date) / 1_000_000_000n)
+    }
+
+    public readonly dateTimestamp: number
+
+    get hash(): string {
+        return this._in[0].txID
+    }
+
+    get age(): number {
+        return Date.now() - this.dateTimestamp
     }
 
     public static TxV1toV2(tx: Tx): Transaction {
@@ -40,7 +51,9 @@ export class ThorTransaction implements TxDetailsV2 {
 
     public static fromMidgardV1(j: TxDetailsV1) {
         let actionType: ActionTypeEnum
-        let in_tx: Array<Transaction> = j._in ? [ThorTransaction.TxV1toV2(j._in!)] : []
+        // note: j['in'] not j._in! due to a bug
+        let in_tx: Array<Transaction> = j['in'] ? [ThorTransaction.TxV1toV2(j['in']!)] : []
+
         let out_tx: Array<Transaction> = j.out!.map((tx: Tx) => ThorTransaction.TxV1toV2(tx))
         let pools: Array<string> = (j.pool && j.pool !== '.') ? [j.pool] : []
         let meta: Metadata = {}  // todo: fill this!

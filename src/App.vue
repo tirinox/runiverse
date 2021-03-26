@@ -13,9 +13,9 @@ export default defineComponent({
         RendererSimple,
     },
     mounted() {
-
     }
 });
+
 </script>
 
 <style>

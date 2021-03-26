@@ -31,7 +31,7 @@ export default class SimpleScene implements ThorEventListener {
         if (mesh) {
             mesh.parent?.remove(mesh)
             delete this.poolMeshes[pool.asset]
-            console.info(`delete pool mesh ${pool.asset}`)
+            console.debug(`delete pool mesh ${pool.asset}`)
         }
     }
 
@@ -74,7 +74,8 @@ export default class SimpleScene implements ThorEventListener {
         textMesh.position.y = 50
         textMesh.position.x = -40
         wireframe.add(textMesh)
-        // console.info(`add new mesh for ${pool.asset}`)1
+
+        console.debug(`add new mesh for ${pool.asset}`)
     }
 
     private heartBeat(pool: PoolDetail) {

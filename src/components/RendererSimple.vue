@@ -11,7 +11,8 @@ import * as THREE from "three"
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import SimpleScene from "@/render/simple/simpleScene";
 import {RealtimeProvider} from "@/provider/realtime";
-import {Midgard, NetworkId} from "@/provider/midgard/midgard";
+import {Midgard} from "@/provider/midgard/midgard";
+import {Config} from "@/config";
 
 export default {
     name: 'RendererSimple',
@@ -90,8 +91,8 @@ export default {
         this.myScene.initScene()
         this.createCamera()
 
-        const midgard = new Midgard(NetworkId.ChaosnetSingleBep2)
-        this.dataProvider = new RealtimeProvider(this.myScene, midgard)
+        const midgard = new Midgard(Config.Network)
+        this.dataProvider = new RealtimeProvider(this.myScene, midgard, Config.RealtimeScannerTickIntervalSec)
         this.dataProvider.run()
 
         this.resizeRendererToDisplaySize();

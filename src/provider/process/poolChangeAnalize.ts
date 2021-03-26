@@ -28,12 +28,15 @@ export class PoolChangeAnalyzer {
 
         for (const key of removedKeys) {
             const previousPool = this.prevPoolsMapping[key]
-            poolChanges.push(new PoolChange(PoolChangeType.Removed, now, undefined, previousPool))
+            poolChanges.push({
+                date: now, pool: undefined, previousPool, type: PoolChangeType.Removed
+            })
         }
 
         for (const key of addedKeys) {
-            const currentPool = currentPoolsMapping[key]
-            poolChanges.push(new PoolChange(PoolChangeType.Added, now, currentPool, undefined))
+            poolChanges.push({
+                date: now, pool: currentPoolsMapping[key], previousPool: undefined, type: PoolChangeType.Added
+            })
         }
 
         for (const key of commonKeys) {
@@ -43,7 +46,9 @@ export class PoolChangeAnalyzer {
             if (!currentPool.isEqual(previousPool)) {
                 const typeOfChange = currentPool.isEnabled != previousPool.isEnabled ?
                     PoolChangeType.StatusChanged : PoolChangeType.DepthChanged
-                poolChanges.push(new PoolChange(typeOfChange, now, currentPool, previousPool))
+                poolChanges.push({
+                    date: now, pool: currentPool, previousPool, type: typeOfChange
+                })
             }
         }
 
