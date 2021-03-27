@@ -51,8 +51,6 @@ class RealtimeProvider {
                     continue
                 }
 
-                console.info('tx event: ', ev)
-
                 this.delegate.receiveEvent({
                     eventType: EventType.Transaction,
                     txEvent: ev

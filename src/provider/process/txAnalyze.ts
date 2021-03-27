@@ -41,7 +41,7 @@ export class TxAnalyzer {
                         tx: inTx
                     })
                 } else {
-                    console.error(`too old ${inTx}`)
+                    console.debug(`too old ${inTx}`)
                 }
 
                 shouldContinue = true
