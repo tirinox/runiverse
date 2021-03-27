@@ -3,6 +3,7 @@ import {MAX_ACTIONS_PER_CALL, Midgard} from "@/provider/midgard/midgard";
 import {PoolChangeAnalyzer} from "@/provider/process/poolChangeAnalize";
 import {Config} from "@/config";
 import {TxAnalyzer} from "@/provider/process/txAnalyze";
+import {ActionStatusEnum} from "@/provider/midgard/v2";
 
 
 class RealtimeProvider {
@@ -17,7 +18,9 @@ class RealtimeProvider {
     counter: number = 0
     private timer?: number;
 
-    constructor(delegate: ThorEventListener, midgard: Midgard, interval: number = 5 * 1000) {
+    private firstTimeActions = true
+
+    constructor(delegate: ThorEventListener, midgard: Midgard, interval: number = 5) {
         this.delegate = delegate
         this.midgard = midgard
         this.poolAnalyzer = new PoolChangeAnalyzer()
@@ -43,9 +46,16 @@ class RealtimeProvider {
             const [changes, goOnFlag] = this.txAnalyzer.processTransactions(batch.txs)
 
             for(const ev of changes) {
-                console.log('tx event: ', ev)
+                if(this.firstTimeActions && ev.tx.status == ActionStatusEnum.Success) {
+                    // ignore success TX events first time, count only pending
+                    continue
+                }
+
+                console.info('tx event: ', ev)
+
                 this.delegate.receiveEvent({
-                    eventType: EventType.CreateTransaction
+                    eventType: EventType.Transaction,
+                    txEvent: ev
                 })
             }
 
@@ -53,18 +63,24 @@ class RealtimeProvider {
                 break
             }
         }
+
+        this.firstTimeActions = false
     }
 
     private async tick() {
         this.counter++
         console.log('tick #', this.counter)
 
-        await Promise.all([
-            this.requestPools(),
-            this.requestActions()
-        ])
+        try {
+            await Promise.all([
+                this.requestPools(),
+                this.requestActions()
+            ])
+        } catch (e) {
+            console.error(`Tick error: ${e}!`)
+        }
 
-        this.timer = setTimeout(this.tick.bind(this), this.interval)
+        this.timer = setTimeout(this.tick.bind(this), this.interval * 1000)
     }
 
     public async run() {

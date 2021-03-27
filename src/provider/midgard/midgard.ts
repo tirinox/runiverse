@@ -43,6 +43,7 @@ export class Midgard {
     }
 
     async getUserActions(start: number, limit: number) {
+        console.info(`getUserActions (${start} to ${start + limit})`)
         if(this.apiV1) {
             const data = (await this.apiV1.getTxDetails(start, limit)).data
             return TxBatch.fromMidgardV1(data.txs!, data.count!)
@@ -53,6 +54,7 @@ export class Midgard {
     }
 
     async getPoolState(): Promise<PoolDetail[]> {
+        console.info(`getPoolState`)
         if (this.apiV1) {
             const pools: Array<string> = (await this.apiV1.getPools()).data.sort()
             const details = (await this.apiV1.getPoolsDetails(pools.join(','), 'simple')).data

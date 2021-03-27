@@ -1665,8 +1665,9 @@ export interface TxDetails {
     * @enum {string}
     */
 export enum TxDetailsStatusEnum {
-    Success = 'success',
-    Refund = 'refund'
+    Success = 'Success',
+    Refund = 'refund',
+    Pending = 'Pending'
 }
 /**
     * @export

@@ -3,20 +3,20 @@ import {ThorTransaction} from "@/provider/midgard/tx";
 
 
 export const enum EventType {
-    Nope,
-    SetNodes,
-    CreateTransaction,
-    SetPools,
-    UpdatePool,
-    ResetAll
+    Nope = 'nope',
+    SetNodes = 'setNodes',
+    Transaction = 'transaction',
+    SetPools = 'setPools',
+    UpdatePool = 'updatePools',
+    ResetAll = 'resetPools'
 }
 
 
 export enum PoolChangeType {
-    Added,
-    Removed,
-    StatusChanged,
-    DepthChanged
+    Added = 'added',
+    Removed = 'removed',
+    StatusChanged = 'statusChanged',
+    DepthChanged = 'depthChanged'
 }
 
 
@@ -29,9 +29,9 @@ export interface PoolChange {
 
 
 export enum TxEventType {
-    Add,
-    StatusUpdated,
-    Destroy
+    Add = 'addTx',
+    StatusUpdated = 'statusUpdated',
+    Destroy = 'destroyTx'
 }
 
 

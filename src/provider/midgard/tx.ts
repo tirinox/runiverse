@@ -35,7 +35,7 @@ export class ThorTransaction implements TxDetailsV2 {
     }
 
     get age(): number {
-        return Date.now() - this.dateTimestamp
+        return (Date.now() - this.dateTimestamp * 1_000) / 1_000
     }
 
     public static TxV1toV2(tx: Tx): Transaction {

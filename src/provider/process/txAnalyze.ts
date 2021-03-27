@@ -27,7 +27,7 @@ export class TxAnalyzer {
         let changes: TxEvent[] = []
         let shouldContinue = false
         for (const inTx of inTxs) {
-            if(!inTx._in.length || !inTx._in[0].txID) {
+            if (!inTx._in.length || !inTx._in[0].txID) {
                 console.warn(`Tx has no In or In.txID: ${inTx}`)
                 continue
             }
@@ -35,10 +35,14 @@ export class TxAnalyzer {
             if (!(inTx.hash in this.txCache)) {
                 this.txCache[inTx.hash] = inTx
 
-                changes.push({
-                    type: TxEventType.Add,
-                    tx: inTx
-                })
+                if (inTx.age <= Config.MaxAgeOfPendingTxSec) {
+                    changes.push({
+                        type: TxEventType.Add,
+                        tx: inTx
+                    })
+                } else {
+                    console.error(`too old ${inTx}`)
+                }
 
                 shouldContinue = true
 
