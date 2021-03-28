@@ -25,17 +25,17 @@ export class ThorTransaction implements TxDetailsV2 {
         public pools: Array<string>,
         public status: ActionStatusEnum,
         public type: ActionTypeEnum) {
-        this.dateTimestamp = Number(BigInt(date) / 1_000_000_000n)
+        this.dateTimestampMs = Number(BigInt(date) / 1_000_000n)
     }
 
-    public readonly dateTimestamp: number
+    public readonly dateTimestampMs: number
 
     get hash(): string {
         return this._in[0].txID
     }
 
-    get age(): number {
-        return (Date.now() - this.dateTimestamp * 1_000) / 1_000
+    get ageSeconds(): number {
+        return (Date.now() - this.dateTimestampMs) / 1_000
     }
 
     public static TxV1toV2(tx: Tx): Transaction {

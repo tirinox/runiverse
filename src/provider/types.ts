@@ -22,7 +22,6 @@ export enum PoolChangeType {
 
 export interface PoolChange {
     type: PoolChangeType,
-    date: number,
     pool?: PoolDetail,
     previousPool?: PoolDetail,
 }
@@ -45,6 +44,7 @@ export interface ThorEvent {
     eventType: EventType
     poolChange?: PoolChange
     txEvent?: TxEvent
+    date: number
 }
 
 

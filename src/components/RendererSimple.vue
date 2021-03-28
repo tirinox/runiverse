@@ -1,7 +1,7 @@
 <template>
     <div class="canvas-holder">
         <canvas class="canvas-full" ref="canvas"></canvas>
-        <div class="fps-counter" v-show="showFps">{{ Number(fps).toLocaleString() }} FPS</div>
+        <div class="fps-counter" v-show="showFps">{{ Number(fps).toFixed(2) }} FPS</div>
     </div>
 </template>
 
@@ -53,7 +53,8 @@ export default {
             } else {
                 const delta = (time - this.lastCalledTime);
                 this.lastCalledTime = time;
-                this.fps = 1000 / delta;
+                this.fps = 1000.0 / delta;
+                this.myScene.updateAnimations(delta / 1000.0)
             }
 
             this.resizeRendererToDisplaySize(this.renderer);

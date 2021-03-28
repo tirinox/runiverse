@@ -1,15 +1,20 @@
 import * as THREE from "three";
-import {Font, log, Scene} from "three";
+import {Font, log, Scene, Vector3} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {ThorTransaction} from "@/provider/midgard/tx";
-import {randomPointOnSphere} from "@/helpers/3d";
+import {randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
+
+export interface TxMesh {
+    obj: THREE.Object3D
+    target: THREE.Object3D
+}
 
 export default class SimpleScene implements ThorEventListener {
     private scene: Scene;
 
     private poolMeshes: Record<string, THREE.Object3D> = {}
-    private txMeshes: Record<string, THREE.Object3D> = {}
+    private txMeshes: Record<string, TxMesh> = {}
 
     private font?: THREE.Font;
     private geo20?: THREE.IcosahedronGeometry;
@@ -36,7 +41,7 @@ export default class SimpleScene implements ThorEventListener {
         }
     }
 
-    isTherePoolMesh(poolName: string): boolean {
+    private isTherePoolMesh(poolName: string): boolean {
         return poolName in this.poolMeshes
     }
 
@@ -85,6 +90,11 @@ export default class SimpleScene implements ThorEventListener {
     // -------- tx meshes -------
 
     createTransactionMesh(tx: ThorTransaction) {
+        const hash = tx.hash
+        if (this.isThereTxMesh(hash)) {
+            return
+        }
+
         const material = new THREE.MeshBasicMaterial({
             color: 0xFFFFFF,
             reflectivity: 0.5,
@@ -92,21 +102,55 @@ export default class SimpleScene implements ThorEventListener {
 
         let txMesh = new THREE.Mesh(this.geoBox, material)
 
+        // store in cache
+        this.txMeshes[hash] = {
+            obj: txMesh,
+            target: this.poolMeshes[tx.pools[0]]
+        }
+
         const position = randomPointOnSphere(3000)
         txMesh.position.add(position)
         this.scene.add(txMesh)
     }
 
-    destoryTransactionMesh(tx: ThorTransaction) {
-
+    destroyTransactionMesh(tx: ThorTransaction) {
+        const hash = tx.hash
+        const mesh = this.txMeshes[hash]
+        if (mesh) {
+            mesh.obj.parent?.remove(mesh.obj)
+            delete this.txMeshes[hash]
+        }
     }
 
     updateTransactionMeshStatus(tx: ThorTransaction) {
 
     }
 
+    updateTxMeshPositions(dt: number) {
+        const speed = 0.001
+
+        for (const key of Object.keys(this.txMeshes)) {
+            const txMesh = this.txMeshes[key]
+
+            let targetPosition: Vector3
+            if(txMesh.target) {
+                targetPosition = txMesh.target.position
+            } else {
+                targetPosition = ZeroVector3
+            }
+
+            let deltaPosition = targetPosition.sub(txMesh.obj.position)
+            deltaPosition.multiplyScalar(speed)
+            txMesh.obj.position.add(deltaPosition)
+        }
+    }
+
     isThereTxMesh(txID: string): boolean {
         return txID in this.txMeshes
+    }
+
+    updateAnimations(dt: number) {
+        this.updateTxMeshPositions(dt)
     }
 
     // ------ event routing -------
@@ -133,7 +177,7 @@ export default class SimpleScene implements ThorEventListener {
             if (ev.type == TxEventType.Add) {
                 this.createTransactionMesh(ev.tx)
             } else if (ev.type == TxEventType.Destroy) {
-                this.destoryTransactionMesh(ev.tx)
+                this.destroyTransactionMesh(ev.tx)
             } else if (ev.type == TxEventType.StatusUpdated) {
                 this.updateTransactionMeshStatus(ev.tx)
             }

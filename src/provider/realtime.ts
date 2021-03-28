@@ -7,7 +7,7 @@ import {ActionStatusEnum} from "@/provider/midgard/v2";
 
 
 class RealtimeProvider {
-    public readonly interval = 5 * 1000
+    public readonly intervalSec: number = 5
 
     public delegate: ThorEventListener
     public midgard: Midgard
@@ -20,19 +20,22 @@ class RealtimeProvider {
 
     private firstTimeActions = true
 
-    constructor(delegate: ThorEventListener, midgard: Midgard, interval: number = 5) {
+    constructor(delegate: ThorEventListener, midgard: Midgard, intervalSec: number = 5) {
         this.delegate = delegate
         this.midgard = midgard
         this.poolAnalyzer = new PoolChangeAnalyzer()
         this.txAnalyzer = new TxAnalyzer()
-        this.interval = interval
+        this.intervalSec = intervalSec
     }
 
     private async requestPools() {
+        const now = Date.now()
+
         const pools = await this.midgard.getPoolState()
         const changes = this.poolAnalyzer.processPools(pools)
         for(const poolChange of changes) {
             this.delegate.receiveEvent({
+                date: now,
                 eventType: EventType.UpdatePool,
                 poolChange
             })
@@ -52,6 +55,7 @@ class RealtimeProvider {
                 }
 
                 this.delegate.receiveEvent({
+                    date: ev.tx.dateTimestampMs,
                     eventType: EventType.Transaction,
                     txEvent: ev
                 })
@@ -78,13 +82,14 @@ class RealtimeProvider {
             console.error(`Tick error: ${e}!`)
         }
 
-        this.timer = setTimeout(this.tick.bind(this), this.interval * 1000)
+        this.timer = setTimeout(this.tick.bind(this), this.intervalSec * 1000)
     }
 
     public async run() {
         console.info('RealtimeProvider starts...')
 
         this.delegate.receiveEvent({
+            date: Date.now(),
             eventType: EventType.ResetAll
         })
 

@@ -20,7 +20,7 @@ export class TxAnalyzer {
     }
 
     public filterOldTx(beforeTs: number) {
-        return Object.values(this.txCache).filter((tx) => tx.dateTimestamp < beforeTs)
+        return Object.values(this.txCache).filter((tx) => tx.dateTimestampMs < beforeTs)
     }
 
     public processTransactions(inTxs: Array<ThorTransaction>): [TxEvent[], boolean] {
@@ -35,7 +35,7 @@ export class TxAnalyzer {
             if (!(inTx.hash in this.txCache)) {
                 this.txCache[inTx.hash] = inTx
 
-                if (inTx.age <= Config.MaxAgeOfPendingTxSec) {
+                if (inTx.ageSeconds <= Config.MaxAgeOfPendingTxSec) {
                     changes.push({
                         type: TxEventType.Add,
                         tx: inTx
@@ -63,7 +63,7 @@ export class TxAnalyzer {
 
         // remove too old pending transactions
         for (const tx of this.allPendingTx) {
-            if (tx.age > Config.MaxAgeOfPendingTxSec) {
+            if (tx.ageSeconds > Config.MaxAgeOfPendingTxSec) {
                 changes.push({
                     type: TxEventType.Destroy,
                     tx

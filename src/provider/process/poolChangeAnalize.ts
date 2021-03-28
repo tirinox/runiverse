@@ -24,18 +24,16 @@ export class PoolChangeAnalyzer {
 
         let poolChanges: PoolChange[] = []
 
-        const now = Date.now()
-
         for (const key of removedKeys) {
             const previousPool = this.prevPoolsMapping[key]
             poolChanges.push({
-                date: now, pool: undefined, previousPool, type: PoolChangeType.Removed
+                pool: undefined, previousPool, type: PoolChangeType.Removed
             })
         }
 
         for (const key of addedKeys) {
             poolChanges.push({
-                date: now, pool: currentPoolsMapping[key], previousPool: undefined, type: PoolChangeType.Added
+                pool: currentPoolsMapping[key], previousPool: undefined, type: PoolChangeType.Added
             })
         }
 
@@ -47,7 +45,7 @@ export class PoolChangeAnalyzer {
                 const typeOfChange = currentPool.isEnabled != previousPool.isEnabled ?
                     PoolChangeType.StatusChanged : PoolChangeType.DepthChanged
                 poolChanges.push({
-                    date: now, pool: currentPool, previousPool, type: typeOfChange
+                    pool: currentPool, previousPool, type: typeOfChange
                 })
             }
         }
