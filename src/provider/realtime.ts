@@ -18,6 +18,8 @@ class RealtimeProvider {
     counter: number = 0
     private timer?: number;
 
+    private ignoreFirstTime: boolean = false
+
     private firstTimeActions = true
 
     constructor(delegate: ThorEventListener, midgard: Midgard, intervalSec: number = 5) {
@@ -49,13 +51,13 @@ class RealtimeProvider {
             const [changes, goOnFlag] = this.txAnalyzer.processTransactions(batch.txs)
 
             for(const ev of changes) {
-                if(this.firstTimeActions && ev.tx.status == ActionStatusEnum.Success) {
+                if(this.ignoreFirstTime && this.firstTimeActions && ev.tx.status == ActionStatusEnum.Success) {
                     // ignore success TX events first time, count only pending
                     continue
                 }
 
                 this.delegate.receiveEvent({
-                    date: ev.tx.dateTimestampMs,
+                    date: ev.tx.dateTimestampMs,  // todo: or maybe now?
                     eventType: EventType.Transaction,
                     txEvent: ev
                 })

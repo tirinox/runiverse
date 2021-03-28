@@ -3,17 +3,25 @@ import {Font, log, Scene, Vector3} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {ThorTransaction} from "@/provider/midgard/tx";
-import {randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
+import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 
 export interface TxMesh {
     obj: THREE.Object3D
-    target: THREE.Object3D
+    target?: THREE.Object3D
+    tx: ThorTransaction
+}
+
+export interface PoolMesh {
+    obj: THREE.Object3D
+    pool: PoolDetail
+    orbit: Orbit
+    speed: number
 }
 
 export default class SimpleScene implements ThorEventListener {
     private scene: Scene;
 
-    private poolMeshes: Record<string, THREE.Object3D> = {}
+    private poolMeshes: Record<string, PoolMesh> = {}
     private txMeshes: Record<string, TxMesh> = {}
 
     private font?: THREE.Font;
@@ -26,16 +34,16 @@ export default class SimpleScene implements ThorEventListener {
 
     private removeAllPoolMeshes() {
         for (const key of Object.keys(this.poolMeshes)) {
-            const mesh: THREE.Object3D = this.poolMeshes[key]
-            mesh.parent?.remove(mesh)
+            const pm = this.poolMeshes[key]
+            pm.obj.parent?.remove(pm.obj)
         }
         this.poolMeshes = {}
     }
 
     private removePoolMesh(pool: PoolDetail) {
-        const mesh: THREE.Object3D = this.poolMeshes[pool.asset]
-        if (mesh) {
-            mesh.parent?.remove(mesh)
+        const pm = this.poolMeshes[pool.asset]
+        if (pm) {
+            pm.obj.parent?.remove(pm.obj)
             delete this.poolMeshes[pool.asset]
             console.debug(`delete pool mesh ${pool.asset}`)
         }
@@ -63,28 +71,52 @@ export default class SimpleScene implements ThorEventListener {
             reflectivity: 0.1,
         });
 
-        let wireframe = new THREE.Mesh(this.geo20, material)
+        let poolMesh = new THREE.Mesh(this.geo20, material)
 
-        wireframe.scale.setScalar(this.scaleFromPool(pool))
-        wireframe.position.add(randomPointOnSphere(enabled ? 600 : 1200))
+        poolMesh.scale.setScalar(this.scaleFromPool(pool))
 
-        this.scene.add(wireframe);
-        this.poolMeshes[pool.asset] = wireframe
+        const radius = enabled ? randomGauss(600, 50) : randomGauss(1200, 50);
+
+        this.scene.add(poolMesh);
+        const n = randomPointOnSphere(1.0)
+        // const n = Orbit.up.clone()
+        const orbit = new Orbit(poolMesh, ZeroVector3.clone(), radius, n)
+        orbit.randomizePhase()
+
+        this.poolMeshes[pool.asset] = {
+            obj: poolMesh,
+            pool,
+            orbit,
+            speed: randomGauss(50.0, 40.0)
+        }
 
         const textMesh = await this.addLabel(pool.asset)
         textMesh.position.y = 50
         textMesh.position.x = -40
-        wireframe.add(textMesh)
+        poolMesh.add(textMesh)
 
         console.debug(`add new mesh for ${pool.asset}`)
     }
 
     private heartBeat(pool: PoolDetail) {
         const factor = 1.05
-        const mesh = this.poolMeshes[pool.asset]
-        const oldScale = mesh.scale.x
-        mesh.scale.setScalar(oldScale * factor)
-        setTimeout(() => mesh.scale.setScalar(oldScale), 500)
+        const pm = this.poolMeshes[pool.asset]
+        const oldScale = pm.obj.scale.x
+        pm.obj.scale.setScalar(oldScale * factor)
+        setTimeout(() => pm.obj.scale.setScalar(oldScale), 500)
+    }
+
+    updatePoolOrbits(dt: number) {
+        const speedFactor = 0.001
+        for (const key of Object.keys(this.poolMeshes)) {
+            const pm = this.poolMeshes[key]
+            pm.orbit.step(dt, speedFactor * pm.speed)
+        }
+    }
+
+    getPoolObjectOfTxMesh(txMesh: TxMesh, index: number = 0): THREE.Object3D | undefined {
+        const p = this.poolMeshes[txMesh.tx.pools[index]]
+        return p ? p.obj : undefined
     }
 
     // -------- tx meshes -------
@@ -105,12 +137,15 @@ export default class SimpleScene implements ThorEventListener {
         // store in cache
         this.txMeshes[hash] = {
             obj: txMesh,
-            target: this.poolMeshes[tx.pools[0]]
+            tx,
+            target: undefined
         }
 
         const position = randomPointOnSphere(3000)
-        txMesh.position.add(position)
+        txMesh.position.copy(position)
         this.scene.add(txMesh)
+
+        console.info(`new tx mesh ${tx.type} ${tx.pools[0]} ${tx.status}`)
     }
 
     destroyTransactionMesh(tx: ThorTransaction) {
@@ -127,21 +162,36 @@ export default class SimpleScene implements ThorEventListener {
     }
 
     updateTxMeshPositions(dt: number) {
-        const speed = 0.001
+        const speed = 0.005
+        const minDistanceToObject = 3.0
+        const minUnitsPerSec = 2.0
 
         for (const key of Object.keys(this.txMeshes)) {
             const txMesh = this.txMeshes[key]
 
             let targetPosition: Vector3
             if(txMesh.target) {
-                targetPosition = txMesh.target.position
+                targetPosition = txMesh.target.position.clone()
             } else {
-                targetPosition = ZeroVector3
+                txMesh.target = this.getPoolObjectOfTxMesh(txMesh)
+                targetPosition = ZeroVector3.clone()
             }
 
             let deltaPosition = targetPosition.sub(txMesh.obj.position)
-            deltaPosition.multiplyScalar(speed)
-            txMesh.obj.position.add(deltaPosition)
+            let shift = deltaPosition.clone()
+            shift.multiplyScalar(speed)
+            if(shift.length() < minUnitsPerSec) {
+                shift.normalize()
+                shift.multiplyScalar(minUnitsPerSec)
+            }
+            txMesh.obj.position.add(shift)
+
+            // close to the target
+            if(deltaPosition.length() < minDistanceToObject) {
+                txMesh.obj.parent?.remove(txMesh.obj)
+                delete this.txMeshes[key]
+                console.info(`deleting tx mesh: ${txMesh.tx.hash}`)
+            }
         }
     }
 
@@ -151,6 +201,7 @@ export default class SimpleScene implements ThorEventListener {
 
     updateAnimations(dt: number) {
         this.updateTxMeshPositions(dt)
+        this.updatePoolOrbits(dt)
     }
 
     // ------ event routing -------
@@ -212,6 +263,14 @@ export default class SimpleScene implements ThorEventListener {
     initScene() {
         this.geo20 = new THREE.IcosahedronGeometry(50, 1);
         this.geoBox = new THREE.BoxGeometry(5, 5, 5)
+
+        const sphere = new THREE.SphereGeometry(140, 10, 10)
+        const core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x101010}))
+        this.scene.add(core)
+
+        for(let i = 0; i < 10; i++) {
+            console.log(randomGauss(500, 100))
+        }
     }
 
     onResize(w: number, h: number) {
