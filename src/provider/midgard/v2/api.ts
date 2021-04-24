@@ -45,6 +45,7 @@ export interface Action {
      * @memberof Action
      */
     _in: Array<Transaction>;
+    ['in']?: Array<Transaction>;
     /**
      * 
      * @type {Metadata}
@@ -94,7 +95,8 @@ export enum ActionTypeEnum {
     AddLiquidity = 'addLiquidity',
     Withdraw = 'withdraw',
     Donate = 'donate',
-    Refund = 'refund'
+    Refund = 'refund',
+    Switch = 'switch'  // trx1 added
 }
 
 /**

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 
 class EventType:
@@ -32,3 +33,23 @@ class PoolChange:
     date: int = 0
     pool: PoolDetail = None
     previous_pool: PoolDetail = None
+
+
+class TxEventType:
+    ADD_TX = 'addTx'
+    STATUS_UPDATED = 'statusUpdated'
+    DESTROY = 'destroyTx'
+
+
+@dataclass
+class TxEvent:
+    type: str
+    tx: Optional[dict] = None  # just JSON from Midgard!
+
+
+@dataclass
+class ThorEvent:
+    date: int
+    eventType: str
+    pool_change: Optional[PoolChange]
+    tx_event: Optional[TxEvent]

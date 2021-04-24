@@ -23,37 +23,37 @@ export class TxAnalyzer {
         return Object.values(this.txCache).filter((tx) => tx.dateTimestampMs < beforeTs)
     }
 
-    public processTransactions(inTxs: Array<ThorTransaction>): [TxEvent[], boolean] {
+    public processTransactions(newTx: Array<ThorTransaction>): [TxEvent[], boolean] {
         let changes: TxEvent[] = []
         let shouldContinue = false
-        for (const inTx of inTxs) {
-            if (!inTx._in.length || !inTx._in[0].txID) {
-                console.warn(`Tx has no In or In.txID: ${inTx}`)
+        for (const tx of newTx) {
+            if (!tx || !tx._in || !tx._in.length || !tx._in[0].txID) {
+                console.warn(`Tx has no In or In.txID:`, tx)
                 continue
             }
 
-            if (!(inTx.hash in this.txCache)) {
-                this.txCache[inTx.hash] = inTx
+            if (!(tx.hash in this.txCache)) {
+                this.txCache[tx.hash] = tx
 
-                if (inTx.ageSeconds <= Config.MaxAgeOfPendingTxSec) {
+                if (tx.ageSeconds <= Config.MaxAgeOfPendingTxSec) {
                     changes.push({
                         type: TxEventType.Add,
-                        tx: inTx
+                        tx
                     })
                 } else {
-                    console.debug(`too old ${inTx}`)
+                    console.debug(`too old`, tx)
                 }
 
                 shouldContinue = true
 
             } else {
-                const oldTx = this.txCache[inTx.hash]
-                if (inTx.status !== oldTx.status) {
-                    this.txCache[inTx.hash] = inTx
+                const oldTx = this.txCache[tx.hash]
+                if (tx.status !== oldTx.status) {
+                    this.txCache[tx.hash] = tx
 
                     changes.push({
                         type: TxEventType.StatusUpdated,
-                        tx: inTx
+                        tx
                     })
 
                     shouldContinue = true

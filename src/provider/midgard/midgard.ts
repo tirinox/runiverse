@@ -24,7 +24,7 @@ export class Midgard {
         } else if (networkId === NetworkId.ChaosnetSingleBep2) {
             return `https://chaosnet-midgard.bepswap.com`
         } else if (networkId === NetworkId.ChaosnetMultiChain) {
-            alert("MCCN not implemented")  // todo! update on MCCN realse
+            return 'https://midgard.thorchain.info'
         } else {
             alert(`Network "${networkId}" is not supported!`)
         }

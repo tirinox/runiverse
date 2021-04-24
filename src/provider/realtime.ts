@@ -82,6 +82,7 @@ class RealtimeProvider {
             ])
         } catch (e) {
             console.error(`Tick error: ${e}!`)
+            throw e
         }
 
         this.timer = setTimeout(this.tick.bind(this), this.intervalSec * 1000)

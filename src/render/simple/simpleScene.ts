@@ -243,6 +243,11 @@ export default class SimpleScene implements ThorEventListener {
             this.font = await loader.loadAsync('fonts/helvetiker_bold.typeface.json')
         }
 
+        const maxLength = 14
+        if(name.length > maxLength) {
+            name = name.substring(0, maxLength) + '...'
+        }
+
         const textGeo = new THREE.TextGeometry(name, {
             font: this.font!,
             size: 16,
@@ -267,10 +272,6 @@ export default class SimpleScene implements ThorEventListener {
         const sphere = new THREE.SphereGeometry(140, 10, 10)
         const core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x101010}))
         this.scene.add(core)
-
-        for(let i = 0; i < 10; i++) {
-            console.log(randomGauss(500, 100))
-        }
     }
 
     onResize(w: number, h: number) {

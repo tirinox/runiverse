@@ -13,7 +13,7 @@ export class PoolDetail {
             j.asset,
             new BigNumber(j.assetDepth),
             new BigNumber(j.runeDepth),
-            j.status == 'enabled',
+            j.status == 'enabled' || j.status == 'available',
             new BigNumber(j.units)
         )
     }

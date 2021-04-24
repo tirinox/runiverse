@@ -83,7 +83,8 @@ export class ThorTransaction implements TxDetailsV2 {
     }
 
     public static fromMidgardV2(j: TxDetailsV2) {
-        return new ThorTransaction(j._in, j.date, j.height, j.metadata, j.out, j.pools, j.status, j.type)
+        let inArray = typeof j._in !== 'undefined' ? j._in : j['in']
+        return new ThorTransaction(inArray!, j.date, j.height, j.metadata, j.out, j.pools, j.status, j.type)
     }
 }
 
