@@ -1,9 +1,10 @@
 import * as THREE from "three";
-import {Font, log, Scene, Vector3} from "three";
+import {Font, Scene, Vector3} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
+import {visualLog} from "@/helpers/log";
 
 export interface TxMesh {
     obj: THREE.Object3D
@@ -145,7 +146,7 @@ export default class SimpleScene implements ThorEventListener {
         txMesh.position.copy(position)
         this.scene.add(txMesh)
 
-        console.info(`new tx mesh ${tx.type} ${tx.pools[0]} ${tx.status}`)
+        visualLog(`new tx mesh ${tx.type} ${tx.pools[0]} ${tx.status}`)
     }
 
     destroyTransactionMesh(tx: ThorTransaction) {
@@ -190,7 +191,7 @@ export default class SimpleScene implements ThorEventListener {
             if(deltaPosition.length() < minDistanceToObject) {
                 txMesh.obj.parent?.remove(txMesh.obj)
                 delete this.txMeshes[key]
-                console.info(`deleting tx mesh: ${txMesh.tx.hash}`)
+                visualLog(`deleting tx mesh: ${txMesh.tx.hash}`)
             }
         }
     }

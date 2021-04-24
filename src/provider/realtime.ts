@@ -4,6 +4,7 @@ import {PoolChangeAnalyzer} from "@/provider/process/poolChangeAnalize";
 import {Config} from "@/config";
 import {TxAnalyzer} from "@/provider/process/txAnalyze";
 import {ActionStatusEnum} from "@/provider/midgard/v2";
+import {visualLog} from "@/helpers/log";
 
 
 class RealtimeProvider {
@@ -18,7 +19,7 @@ class RealtimeProvider {
     counter: number = 0
     private timer?: number;
 
-    private ignoreFirstTime: boolean = false
+    private ignoreFirstTime: boolean = true
 
     private firstTimeActions = true
 
@@ -73,7 +74,6 @@ class RealtimeProvider {
 
     private async tick() {
         this.counter++
-        console.log('tick #', this.counter)
 
         try {
             await Promise.all([
@@ -101,7 +101,7 @@ class RealtimeProvider {
 
     public stop() {
         console.warn('stop data provider!')
-        // clearInterval(this.timer!)
+
         if(this.timer) {
             clearTimeout(this.timer!)
             this.timer = undefined

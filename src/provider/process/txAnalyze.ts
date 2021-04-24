@@ -27,8 +27,8 @@ export class TxAnalyzer {
         let changes: TxEvent[] = []
         let shouldContinue = false
         for (const tx of newTx) {
-            if (!tx || !tx._in || !tx._in.length || !tx._in[0].txID) {
-                console.warn(`Tx has no In or In.txID:`, tx)
+            if (!tx || !tx._in || !tx._in.length) {
+                console.warn(`Tx has no In`, tx)
                 continue
             }
 

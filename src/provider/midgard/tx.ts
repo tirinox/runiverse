@@ -14,6 +14,9 @@ import {
     Coin
 } from "@/provider/midgard/v2";
 
+import sha256 from "fast-sha256";
+import {hex} from "@/helpers/data_utils";
+
 
 export class ThorTransaction implements TxDetailsV2 {
     constructor(
@@ -24,14 +27,15 @@ export class ThorTransaction implements TxDetailsV2 {
         public out: Array<Transaction>,
         public pools: Array<string>,
         public status: ActionStatusEnum,
-        public type: ActionTypeEnum) {
+        public type: ActionTypeEnum,
+        private _lazyHash: string) {
         this.dateTimestampMs = Number(BigInt(date) / 1_000_000n)
     }
 
     public readonly dateTimestampMs: number
 
     get hash(): string {
-        return this._in[0].txID
+        return this._lazyHash
     }
 
     get ageSeconds(): number {
@@ -65,7 +69,7 @@ export class ThorTransaction implements TxDetailsV2 {
         } else if (j.type == TxDetailsTypeEnum.Swap) {
             actionType = ActionTypeEnum.Swap
         } else if (j.type == TxDetailsTypeEnum.DoubleSwap) {
-            if(out_tx.length && out_tx[0].coins.length) {
+            if (out_tx.length && out_tx[0].coins.length) {
                 pools.push(out_tx[0].coins[0].asset)
             }
             actionType = ActionTypeEnum.Swap
@@ -79,12 +83,24 @@ export class ThorTransaction implements TxDetailsV2 {
             throw new Error('not implemented')
         }
 
-        return new ThorTransaction(in_tx, date, j.height!, meta, out_tx, pools, status, actionType)
+        let lazyHash = this.calcHash(in_tx)!
+        return new ThorTransaction(in_tx, date, j.height!, meta, out_tx, pools, status, actionType, lazyHash)
+    }
+
+    private static calcHash(in_tx: Array<Transaction>) {
+        if (in_tx && in_tx.length && in_tx[0].txID) {
+            return in_tx[0].txID
+        } else {
+            const encoder = new TextEncoder()
+            const encodedData = sha256(encoder.encode(JSON.stringify(this)))
+            return hex(encodedData)
+        }
     }
 
     public static fromMidgardV2(j: TxDetailsV2) {
         let inArray = typeof j._in !== 'undefined' ? j._in : j['in']
-        return new ThorTransaction(inArray!, j.date, j.height, j.metadata, j.out, j.pools, j.status, j.type)
+        const lazyHash = this.calcHash(inArray!)
+        return new ThorTransaction(inArray!, j.date, j.height, j.metadata, j.out, j.pools, j.status, j.type, lazyHash)
     }
 }
 

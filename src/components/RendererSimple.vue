@@ -1,7 +1,11 @@
 <template>
     <div class="canvas-holder">
         <canvas class="canvas-full" ref="canvas"></canvas>
-        <div class="fps-counter" v-show="showFps">{{ Number(fps).toFixed(2) }} FPS</div>
+        <div class="fps-counter" v-show="showFps">
+            {{ Number(fps).toFixed(2) }} FPS
+            <br>
+            {{ msg }}
+        </div>
     </div>
 </template>
 
@@ -118,6 +122,7 @@ export default {
 }
 
 .fps-counter {
+    text-align: left;
     font-size: 14pt;
     color: whitesmoke;
     position: absolute;
