@@ -4,7 +4,7 @@ import {PoolChangeAnalyzer} from "@/provider/process/poolChangeAnalize";
 import {Config} from "@/config";
 import {TxAnalyzer} from "@/provider/process/txAnalyze";
 import {ActionStatusEnum} from "@/provider/midgard/v2";
-import {visualLog} from "@/helpers/log";
+import {sleep} from "@/helpers/async_utils";
 
 
 class RealtimeProvider {
@@ -19,16 +19,18 @@ class RealtimeProvider {
     counter: number = 0
     private timer?: number;
 
-    private ignoreFirstTime: boolean = true
+    public ignoreFirstTime: boolean = false
 
     private firstTimeActions = true
 
-    constructor(delegate: ThorEventListener, midgard: Midgard, intervalSec: number = 5) {
+    constructor(delegate: ThorEventListener, midgard: Midgard, intervalSec: number = 5,
+                ignoreFirstTime: boolean = false) {
         this.delegate = delegate
         this.midgard = midgard
         this.poolAnalyzer = new PoolChangeAnalyzer()
         this.txAnalyzer = new TxAnalyzer()
         this.intervalSec = intervalSec
+        this.ignoreFirstTime = ignoreFirstTime
     }
 
     private async requestPools() {
@@ -72,17 +74,24 @@ class RealtimeProvider {
         this.firstTimeActions = false
     }
 
+    private async tickJob() {
+        await Promise.all([
+            this.requestPools(),
+            this.requestActions()
+        ])
+    }
+
     private async tick() {
         this.counter++
 
-        try {
-            await Promise.all([
-                this.requestPools(),
-                this.requestActions()
-            ])
-        } catch (e) {
-            console.error(`Tick error: ${e}!`)
-            throw e
+        for(let attempt = 0; attempt < 3; ++attempt) {
+            try {
+                await this.tickJob()
+                break
+            } catch (e) {
+                console.error(`Tick error at ${attempt + 1} attempt: ${e}!`)
+                await sleep(1.0)
+            }
         }
 
         this.timer = setTimeout(this.tick.bind(this), this.intervalSec * 1000)
@@ -96,7 +105,7 @@ class RealtimeProvider {
             eventType: EventType.ResetAll
         })
 
-        this.tick()
+        await this.tick()
     }
 
     public stop() {

@@ -1,4 +1,5 @@
 import {Quaternion, Vector3} from "three";
+import {hexToBigInt} from "@/helpers/data_utils";
 
 export const ZeroVector3 = new Vector3()
 
@@ -72,4 +73,28 @@ export function randomGauss(center: number, scale: number) {
         r += Math.random();
     }
     return (r / v - 0.5) * scale + center
+}
+
+export interface PolarCoordinates {
+    r: number
+    phi: number
+    theta: number
+}
+
+export function hashToPolarCoordinates(hash: string): PolarCoordinates {
+    const middle = Math.floor(hash.length / 2)
+    const leftPart = hash.substring(0, middle)
+    const rightPart = hash.substring(middle, hash.length)
+
+    const phiInt = hexToBigInt(leftPart).valueOf() % BigInt(36000)
+    const thetaInt = hexToBigInt(rightPart).valueOf() % BigInt(36000)
+
+    const phi = (Number(phiInt) * 0.01) * Math.PI / 180.0
+    const theta = (Number(thetaInt) * 0.01 - 180.0) * Math.PI / 180.0
+
+    return {
+        r: 1.0,
+        phi,
+        theta
+    }
 }

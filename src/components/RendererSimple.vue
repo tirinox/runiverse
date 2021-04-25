@@ -97,7 +97,10 @@ export default {
         this.createCamera()
 
         const midgard = new Midgard(Config.Network)
-        this.dataProvider = new RealtimeProvider(this.myScene, midgard, Config.RealtimeScannerTickIntervalSec)
+        this.dataProvider = new RealtimeProvider(
+            this.myScene, midgard,
+            Config.RealtimeScannerTickIntervalSec,
+            Config.IgnoreOldTransactions)
         this.dataProvider.run()
 
         this.resizeRendererToDisplaySize();

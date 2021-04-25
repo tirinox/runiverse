@@ -5,11 +5,14 @@ import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 import {visualLog} from "@/helpers/log";
+// @ts-ignore
+import {Text} from 'troika-three-text'
 
 export interface TxMesh {
     obj: THREE.Object3D
     target?: THREE.Object3D
     tx: ThorTransaction
+    poolToFollow: string
 }
 
 export interface PoolMesh {
@@ -25,13 +28,13 @@ export default class SimpleScene implements ThorEventListener {
     private poolMeshes: Record<string, PoolMesh> = {}
     private txMeshes: Record<string, TxMesh> = {}
 
-    private font?: THREE.Font;
     private geo20?: THREE.IcosahedronGeometry;
     private geoBox?: THREE.BoxGeometry;
 
-    constructor(scene: Scene) {
-        this.scene = scene
-    }
+    private whiteMaterial?: THREE.Material;
+
+    private txSourcePlaceRadius: number = 3000
+
 
     private removeAllPoolMeshes() {
         for (const key of Object.keys(this.poolMeshes)) {
@@ -91,8 +94,8 @@ export default class SimpleScene implements ThorEventListener {
             speed: randomGauss(50.0, 40.0)
         }
 
-        const textMesh = await this.addLabel(pool.asset)
-        textMesh.position.y = 50
+        const textMesh = await this.createLabel(pool.asset)
+        textMesh.position.y = 80
         textMesh.position.x = -40
         poolMesh.add(textMesh)
 
@@ -124,25 +127,22 @@ export default class SimpleScene implements ThorEventListener {
 
     createTransactionMesh(tx: ThorTransaction) {
         const hash = tx.hash
+
         if (this.isThereTxMesh(hash)) {
             return
         }
 
-        const material = new THREE.MeshBasicMaterial({
-            color: 0xFFFFFF,
-            reflectivity: 0.5,
-        });
-
-        let txMesh = new THREE.Mesh(this.geoBox, material)
+        let txMesh = new THREE.Mesh(this.geoBox, this.whiteMaterial)
 
         // store in cache
         this.txMeshes[hash] = {
             obj: txMesh,
             tx,
-            target: undefined
+            target: undefined,
+            poolToFollow: ''
         }
 
-        const position = randomPointOnSphere(3000)
+        const position = randomPointOnSphere(this.txSourcePlaceRadius)
         txMesh.position.copy(position)
         this.scene.add(txMesh)
 
@@ -171,7 +171,7 @@ export default class SimpleScene implements ThorEventListener {
             const txMesh = this.txMeshes[key]
 
             let targetPosition: Vector3
-            if(txMesh.target) {
+            if (txMesh.target) {
                 targetPosition = txMesh.target.position.clone()
             } else {
                 txMesh.target = this.getPoolObjectOfTxMesh(txMesh)
@@ -181,14 +181,14 @@ export default class SimpleScene implements ThorEventListener {
             let deltaPosition = targetPosition.sub(txMesh.obj.position)
             let shift = deltaPosition.clone()
             shift.multiplyScalar(speed)
-            if(shift.length() < minUnitsPerSec) {
+            if (shift.length() < minUnitsPerSec) {
                 shift.normalize()
                 shift.multiplyScalar(minUnitsPerSec)
             }
             txMesh.obj.position.add(shift)
 
             // close to the target
-            if(deltaPosition.length() < minDistanceToObject) {
+            if (deltaPosition.length() < minDistanceToObject) {
                 txMesh.obj.parent?.remove(txMesh.obj)
                 delete this.txMeshes[key]
                 visualLog(`deleting tx mesh: ${txMesh.tx.hash}`)
@@ -203,6 +203,49 @@ export default class SimpleScene implements ThorEventListener {
     updateAnimations(dt: number) {
         this.updateTxMeshPositions(dt)
         this.updatePoolOrbits(dt)
+    }
+
+
+    // --------- init & load & service -----
+
+    async createLabel(name: string): Promise<THREE.Mesh> {
+        const maxLength = 14
+        if (name.length > maxLength) {
+            name = name.substring(0, maxLength) + '...'
+        }
+
+        const myText = new Text()
+        myText.text = name
+        myText.fontSize = 24
+        myText.color = 0xFFFFFF
+        myText.sync()
+        return myText
+    }
+
+    loadFont(url: string): Promise<Font> {
+        return new Promise(resolve => {
+            new THREE.FontLoader().load(url, resolve);
+        });
+    }
+
+    initScene() {
+        this.geo20 = new THREE.IcosahedronGeometry(50, 1);
+        this.geoBox = new THREE.BoxGeometry(5, 5, 5)
+
+        const sphere = new THREE.SphereGeometry(140, 10, 10)
+        const core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x101010}))
+        this.scene.add(core)
+    }
+
+    onResize(w: number, h: number) {
+    }
+
+    constructor(scene: Scene) {
+        this.scene = scene
+        this.whiteMaterial = new THREE.MeshBasicMaterial({
+            color: 0xFFFFFF,
+            reflectivity: 0.5,
+        });
     }
 
     // ------ event routing -------
@@ -226,6 +269,7 @@ export default class SimpleScene implements ThorEventListener {
             }
         } else if (e.eventType == EventType.Transaction) {
             const ev = e.txEvent!
+
             if (ev.type == TxEventType.Add) {
                 this.createTransactionMesh(ev.tx)
             } else if (ev.type == TxEventType.Destroy) {
@@ -234,47 +278,5 @@ export default class SimpleScene implements ThorEventListener {
                 this.updateTransactionMeshStatus(ev.tx)
             }
         }
-    }
-
-    // --------- init & load & service -----
-
-    async addLabel(name: string): Promise<THREE.Mesh> {
-        if (!this.font) {
-            const loader = new THREE.FontLoader()
-            this.font = await loader.loadAsync('fonts/helvetiker_bold.typeface.json')
-        }
-
-        const maxLength = 14
-        if(name.length > maxLength) {
-            name = name.substring(0, maxLength) + '...'
-        }
-
-        const textGeo = new THREE.TextGeometry(name, {
-            font: this.font!,
-            size: 16,
-            height: 1,
-            curveSegments: 1
-        });
-
-        const textMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
-        return new THREE.Mesh(textGeo, textMaterial)
-    }
-
-    loadFont(url: string): Promise<Font> {
-        return new Promise(resolve => {
-            new THREE.FontLoader().load(url, resolve);
-        });
-    }
-
-    initScene() {
-        this.geo20 = new THREE.IcosahedronGeometry(50, 1);
-        this.geoBox = new THREE.BoxGeometry(5, 5, 5)
-
-        const sphere = new THREE.SphereGeometry(140, 10, 10)
-        const core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x101010}))
-        this.scene.add(core)
-    }
-
-    onResize(w: number, h: number) {
     }
 }
