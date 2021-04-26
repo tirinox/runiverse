@@ -1,31 +1,18 @@
 import * as THREE from "three";
-import {Font, Scene, Vector3} from "three";
+import {Scene, Vector3} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {ThorTransaction} from "@/provider/midgard/tx";
-import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
+import {randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 import {visualLog} from "@/helpers/log";
-// @ts-ignore
-import {Text} from 'troika-three-text'
 
-export interface TxMesh {
-    obj: THREE.Object3D
-    target?: THREE.Object3D
-    tx: ThorTransaction
-    poolToFollow: string
-}
-
-export interface PoolMesh {
-    obj: THREE.Object3D
-    pool: PoolDetail
-    orbit: Orbit
-    speed: number
-}
+import {TxMesh} from "@/render/simple/txObject";
+import {PoolObject} from "@/render/simple/poolObject";
 
 export default class SimpleScene implements ThorEventListener {
     private scene: Scene;
 
-    private poolMeshes: Record<string, PoolMesh> = {}
+    private poolMeshes: Record<string, PoolObject> = {}
     private txMeshes: Record<string, TxMesh> = {}
 
     private geo20?: THREE.IcosahedronGeometry;
@@ -35,11 +22,10 @@ export default class SimpleScene implements ThorEventListener {
 
     private txSourcePlaceRadius: number = 3000
 
-
     private removeAllPoolMeshes() {
         for (const key of Object.keys(this.poolMeshes)) {
             const pm = this.poolMeshes[key]
-            pm.obj.parent?.remove(pm.obj)
+            pm.dispose()
         }
         this.poolMeshes = {}
     }
@@ -47,7 +33,7 @@ export default class SimpleScene implements ThorEventListener {
     private removePoolMesh(pool: PoolDetail) {
         const pm = this.poolMeshes[pool.asset]
         if (pm) {
-            pm.obj.parent?.remove(pm.obj)
+            pm.dispose()
             delete this.poolMeshes[pool.asset]
             console.debug(`delete pool mesh ${pool.asset}`)
         }
@@ -66,61 +52,25 @@ export default class SimpleScene implements ThorEventListener {
             return
         }
 
-        const enabled = pool.isEnabled
+        const poolObj = new PoolObject(pool)
 
-        let color = new THREE.Color()
-        color.setHSL(Math.random(), enabled ? 1.0 : 0.0, enabled ? 0.5 : 0.3)
-        const material = new THREE.MeshBasicMaterial({
-            color: color,
-            reflectivity: 0.1,
-        });
+        this.poolMeshes[pool.asset] = poolObj
 
-        let poolMesh = new THREE.Mesh(this.geo20, material)
-
-        poolMesh.scale.setScalar(this.scaleFromPool(pool))
-
-        const radius = enabled ? randomGauss(600, 50) : randomGauss(1200, 50);
-
-        this.scene.add(poolMesh);
-        const n = randomPointOnSphere(1.0)
-        // const n = Orbit.up.clone()
-        const orbit = new Orbit(poolMesh, ZeroVector3.clone(), radius, n)
-        orbit.randomizePhase()
-
-        this.poolMeshes[pool.asset] = {
-            obj: poolMesh,
-            pool,
-            orbit,
-            speed: randomGauss(50.0, 40.0)
-        }
-
-        const textMesh = await this.createLabel(pool.asset)
-        textMesh.position.y = 80
-        textMesh.position.x = -40
-        poolMesh.add(textMesh)
+        this.scene.add(poolObj.mesh!);
 
         console.debug(`add new mesh for ${pool.asset}`)
     }
 
-    private heartBeat(pool: PoolDetail) {
-        const factor = 1.05
-        const pm = this.poolMeshes[pool.asset]
-        const oldScale = pm.obj.scale.x
-        pm.obj.scale.setScalar(oldScale * factor)
-        setTimeout(() => pm.obj.scale.setScalar(oldScale), 500)
-    }
-
     updatePoolOrbits(dt: number) {
-        const speedFactor = 0.001
         for (const key of Object.keys(this.poolMeshes)) {
             const pm = this.poolMeshes[key]
-            pm.orbit.step(dt, speedFactor * pm.speed)
+            pm.update(dt)
         }
     }
 
     getPoolObjectOfTxMesh(txMesh: TxMesh, index: number = 0): THREE.Object3D | undefined {
         const p = this.poolMeshes[txMesh.tx.pools[index]]
-        return p ? p.obj : undefined
+        return p ? p.mesh : undefined
     }
 
     // -------- tx meshes -------
@@ -205,31 +155,16 @@ export default class SimpleScene implements ThorEventListener {
         this.updatePoolOrbits(dt)
     }
 
+    private heartBeat(pool: PoolDetail) {
+        const pm = this.poolMeshes[pool.asset]
+        if (pm) {
+            pm.heartBeat()
+        }
+    }
 
     // --------- init & load & service -----
 
-    async createLabel(name: string): Promise<THREE.Mesh> {
-        const maxLength = 14
-        if (name.length > maxLength) {
-            name = name.substring(0, maxLength) + '...'
-        }
-
-        const myText = new Text()
-        myText.text = name
-        myText.fontSize = 24
-        myText.color = 0xFFFFFF
-        myText.sync()
-        return myText
-    }
-
-    loadFont(url: string): Promise<Font> {
-        return new Promise(resolve => {
-            new THREE.FontLoader().load(url, resolve);
-        });
-    }
-
     initScene() {
-        this.geo20 = new THREE.IcosahedronGeometry(50, 1);
         this.geoBox = new THREE.BoxGeometry(5, 5, 5)
 
         const sphere = new THREE.SphereGeometry(140, 10, 10)
@@ -247,6 +182,7 @@ export default class SimpleScene implements ThorEventListener {
             reflectivity: 0.5,
         });
     }
+
 
     // ------ event routing -------
 
