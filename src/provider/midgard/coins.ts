@@ -14,6 +14,7 @@ export enum Coins {
     RuneBnb = 'BNB.RUNE-B1A',
     RuneBnbTest = 'BNB.RUNE-67C',
     RuneNative = 'THOR.RUNE',
+    RuneEth = 'ETH.RUNE-0x3155ba85d5f96b2d030a4966af206230e46849cb',
     Rune = RuneNative,
 
     BnbUsdt = 'BNB.USDT-6D8',
@@ -25,7 +26,8 @@ export function isRune(coin: Coins): boolean {
     return [
         Coins.RuneNative,
         Coins.RuneBnb,
-        Coins.RuneBnbTest
+        Coins.RuneBnbTest,
+        Coins.RuneEth,
     ].includes(coin)
 }
 
@@ -38,4 +40,8 @@ export function isStableCoin(coin: Coins): boolean {
         Coins.BnbBusdTest1,
         Coins.BnbBusdTest2
     ].includes(coin)
+}
+
+export function parseThorBigNumber(x: string): number {
+    return Number(BigInt(x) / 100_000_000n)
 }

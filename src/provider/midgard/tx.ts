@@ -1,21 +1,15 @@
 import {
+    Coin as CoinV1,
     Tx,
     TxDetails as TxDetailsV1,
     TxDetailsStatusEnum,
-    TxDetailsTypeEnum,
-    Coin as CoinV1
+    TxDetailsTypeEnum
 } from "@/provider/midgard/v1";
-import {
-    Action as TxDetailsV2,
-    ActionStatusEnum,
-    ActionTypeEnum,
-    Metadata,
-    Transaction,
-    Coin
-} from "@/provider/midgard/v2";
+import {Action as TxDetailsV2, ActionStatusEnum, ActionTypeEnum, Metadata, Transaction} from "@/provider/midgard/v2";
 
 import sha256 from "fast-sha256";
 import {hex} from "@/helpers/data_utils";
+import {Coins, isRune, parseThorBigNumber} from "@/provider/midgard/coins";
 
 
 export class ThorTransaction implements TxDetailsV2 {
@@ -36,6 +30,34 @@ export class ThorTransaction implements TxDetailsV2 {
 
     get hash(): string {
         return this._lazyHash
+    }
+
+    public getRuneVolume(txs: Array<Transaction>, runesPerAsset: number) {
+        let sum = 0.0
+        for (const tx of txs) {
+            for (const coin of tx.coins) {
+                const amt = parseThorBigNumber(coin.amount)
+                if (isRune(<Coins>coin.asset)) {
+                    sum += amt
+                } else {
+                    sum += amt * runesPerAsset
+                }
+            }
+        }
+        return sum
+    }
+
+    runeVolume(runesPerAsset: number): number {
+        if (this.type == ActionTypeEnum.Refund
+            || this.type == ActionTypeEnum.Withdraw
+            || this.type == ActionTypeEnum.Switch
+            || this.type == ActionTypeEnum.Swap) {
+            return this.getRuneVolume(this.out, runesPerAsset)
+        } else if (this.type == ActionTypeEnum.Donate
+            || this.type == ActionTypeEnum.AddLiquidity) {
+            return this.getRuneVolume(this._in, runesPerAsset)
+        }
+        return 0.0
     }
 
     get ageSeconds(): number {

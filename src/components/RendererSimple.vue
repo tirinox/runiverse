@@ -2,9 +2,8 @@
     <div class="canvas-holder">
         <canvas class="canvas-full" ref="canvas"></canvas>
         <div class="fps-counter" v-show="showFps">
-            {{ Number(fps).toFixed(2) }} FPS
-            <br>
-            {{ msg }}
+            <span>{{ Number(fps).toFixed(2) }} FPS</span>
+            <VisualLog></VisualLog>
         </div>
     </div>
 </template>
@@ -17,11 +16,12 @@ import SimpleScene from "@/render/simple/simpleScene";
 import {RealtimeProvider} from "@/provider/realtime";
 import {Midgard} from "@/provider/midgard/midgard";
 import {Config} from "@/config";
+import VisualLog from "@/components/VisualLog";
 
 export default {
     name: 'RendererSimple',
+    components: {VisualLog},
     props: {
-        msg: String
     },
 
     data() {
@@ -69,7 +69,7 @@ export default {
 
         createCamera() {
             this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-            this.camera.position.z = 2000
+            this.camera.position.z = 4000
 
             const controls = new OrbitControls(this.camera, this.renderer.domElement);
             controls.listenToKeyEvents(this.canvas);
