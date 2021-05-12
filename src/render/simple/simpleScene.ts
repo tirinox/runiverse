@@ -71,7 +71,7 @@ export default class SimpleScene implements ThorEventListener {
     getPoolObjectOfTxMesh(t: TxObject, index: number = 0): THREE.Object3D | undefined {
         const poolName = t.tx!.pools[index]
         const p = this.poolObjects[poolName]
-        return p ? p.mesh : undefined
+        return p ? p.mesh : this.core
     }
 
     // -------- tx meshes -------
@@ -147,7 +147,7 @@ export default class SimpleScene implements ThorEventListener {
 
     createCore() {
         const sphere = new THREE.SphereGeometry(140, 10, 10)
-        this.core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x101010}))
+        this.core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x202520}))
         this.scene.add(this.core)
     }
 

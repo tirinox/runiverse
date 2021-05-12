@@ -45,6 +45,7 @@ export class PoolObject {
 
         this.orbit = new Orbit(poolMesh, ZeroVector3.clone(), radius, n)
         this.orbit.randomizePhase()
+        this.orbit!.step(0.0016)
 
         this.speed = randomGauss(50.0, 40.0)
 

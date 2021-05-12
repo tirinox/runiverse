@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {randomPointOnSphere} from "@/helpers/3d";
+import {Vector3} from "three";
 
 
 export const enum TxObjectState {
@@ -20,7 +21,7 @@ export class TxObject {
     public tx?: ThorTransaction
     public state: TxObjectState = TxObjectState.Waiting
 
-    public speed: number = 0.05
+    public speed: number = 0.005
     private static txSourcePlaceRadius: number = 3000
     private static MinDistanceToTarget = 3.0
     private static MinSpeed = 0.1
@@ -43,9 +44,14 @@ export class TxObject {
         this.tx = tx
 
         this.mesh = new THREE.Mesh(TxObject.geoBox, TxObject.whiteMaterial)
+
         const position = randomPointOnSphere(TxObject.txSourcePlaceRadius)
-        this.mesh.scale.setScalar(this.scaleFromTx(tx, runesPerAsset))
         this.mesh.position.copy(position)
+
+        const scale = this.scaleFromTx(tx, runesPerAsset)
+        this.mesh.scale.setScalar(scale)
+
+        this.speed = 0.05 / scale
     }
 
     public dispose() {
@@ -78,7 +84,8 @@ export class TxObject {
         if (!this.target || !this.mesh) {
             return false
         } else {
-            let deltaPosition = this.target.position.sub(this.mesh.position)
+            // clone is archi importantn
+            let deltaPosition = this.target.position.clone().sub(this.mesh.position)
             return deltaPosition.length() < minDistanceToObject
         }
     }
