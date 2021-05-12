@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import {Scene} from "three";
+import {Mesh, Scene} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {ThorTransaction} from "@/provider/midgard/tx";
@@ -13,6 +13,7 @@ export default class SimpleScene implements ThorEventListener {
 
     private poolObjects: Record<string, PoolObject> = {}
     private txObjects: Record<string, TxObject> = {}
+    private core?: Mesh;
 
     private removeAllPoolMeshes() {
         for (const key of Object.keys(this.poolObjects)) {
@@ -68,7 +69,8 @@ export default class SimpleScene implements ThorEventListener {
     }
 
     getPoolObjectOfTxMesh(t: TxObject, index: number = 0): THREE.Object3D | undefined {
-        const p = this.poolObjects[t.tx!.pools[index]]
+        const poolName = t.tx!.pools[index]
+        const p = this.poolObjects[poolName]
         return p ? p.mesh : undefined
     }
 
@@ -105,15 +107,13 @@ export default class SimpleScene implements ThorEventListener {
     }
 
     updateTxMeshPositions(dt: number) {
-        const speed = 0.005
-        const minDistanceToObject = 3.0
-        const minUnitsPerSec = 2.0
-
         for (const key of Object.keys(this.txObjects)) {
             const txObj = this.txObjects[key]
-            txObj.update(dt)
 
             txObj.target = this.getPoolObjectOfTxMesh(txObj)
+            // txObj.target = this.core
+
+            txObj.update(dt)
 
             if(txObj.isCloseToTarget) {
                 txObj.dispose()
@@ -147,8 +147,8 @@ export default class SimpleScene implements ThorEventListener {
 
     createCore() {
         const sphere = new THREE.SphereGeometry(140, 10, 10)
-        const core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x101010}))
-        this.scene.add(core)
+        this.core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x101010}))
+        this.scene.add(this.core)
     }
 
     onResize(w: number, h: number) {

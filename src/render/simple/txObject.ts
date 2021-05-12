@@ -20,11 +20,13 @@ export class TxObject {
     public tx?: ThorTransaction
     public state: TxObjectState = TxObjectState.Waiting
 
-    public speed: number = 0.005
+    public speed: number = 0.05
+    private static txSourcePlaceRadius: number = 3000
+    private static MinDistanceToTarget = 3.0
+    private static MinSpeed = 0.1
 
     private static geoBox: THREE.BoxGeometry = new THREE.BoxGeometry(5, 5, 5)
 
-    private static txSourcePlaceRadius: number = 3000
 
     private static whiteMaterial: THREE.Material = new THREE.MeshBasicMaterial({
         color: 0xFFFFFF,
@@ -32,7 +34,9 @@ export class TxObject {
     });
 
     scaleFromTx(tx: ThorTransaction, runesPerAsset: number): number {
-        return Math.pow(tx.runeVolume(runesPerAsset), 0.11) / 50
+        const runeVolume = tx.runeVolume(runesPerAsset)
+        const sc = Math.pow(runeVolume, 0.15)
+        return Math.max(1.0, sc)
     }
 
     constructor(tx: ThorTransaction, runesPerAsset: number) {
@@ -52,24 +56,24 @@ export class TxObject {
     }
 
     public update(dt: number) {
-        const minUnitsPerSec = 2.0
+        const minUnitsPerSec = TxObject.MinSpeed
 
         if (!this.target || !this.mesh) {
             return
         }
 
-        let deltaPosition = this.target.position.sub(this.mesh.position)
-        let shift = deltaPosition.clone()
-        shift.multiplyScalar(this.speed)
-        if (shift.length() < minUnitsPerSec) {
-            shift.normalize()
-            shift.multiplyScalar(minUnitsPerSec)
+        let dx = this.target.position.clone()
+        dx.sub(this.mesh.position)
+        dx.multiplyScalar(this.speed)
+        if (dx.length() < minUnitsPerSec) {
+            dx.normalize()
+            dx.multiplyScalar(minUnitsPerSec)
         }
-        this.mesh.position.add(shift)
+        this.mesh.position.add(dx)
     }
 
     get isCloseToTarget(): boolean {
-        const minDistanceToObject = 3.0
+        const minDistanceToObject = TxObject.MinDistanceToTarget
 
         if (!this.target || !this.mesh) {
             return false
