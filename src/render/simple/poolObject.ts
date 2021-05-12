@@ -73,9 +73,11 @@ export class PoolObject {
 
     public dispose() {
         this.label.dispose()
+        this.label = undefined
 
         if (this.mesh) {
             this.mesh.parent?.remove(this.mesh)
+            this.mesh = undefined
         }
     }
 
