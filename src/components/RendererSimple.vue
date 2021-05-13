@@ -21,8 +21,7 @@ import VisualLog from "@/components/VisualLog";
 export default {
     name: 'RendererSimple',
     components: {VisualLog},
-    props: {
-    },
+    props: {},
 
     data() {
         return {
@@ -69,12 +68,12 @@ export default {
 
         createCamera() {
             this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-            this.camera.position.z = 4000
 
             const controls = new OrbitControls(this.camera, this.renderer.domElement);
             controls.listenToKeyEvents(this.canvas);
 
             controls.minDistance = 100;
+            this.camera.position.z = 2500
             controls.maxDistance = 5000;
             controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
             controls.dampingFactor = 0.5;
@@ -93,7 +92,6 @@ export default {
         this.scene = new THREE.Scene();
 
         this.myScene = new SimpleScene(this.scene)
-        this.myScene.initScene()
         this.createCamera()
 
         const midgard = new Midgard(Config.Network)

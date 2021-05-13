@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {randomPointOnSphere} from "@/helpers/3d";
-import {Vector3} from "three";
 
 
 export const enum TxObjectState {
@@ -92,10 +91,3 @@ export class TxObject {
 }
 
 
-class TxObjectManager {
-    private txMeshes: Record<string, TxObject> = {}
-
-    constructor() {
-
-    }
-}
