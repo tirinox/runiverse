@@ -71,11 +71,6 @@ export class PoolObjectManager implements IPoolQuery {
         }
     }
 
-    public getPoolObjectOfTxMesh(t: TxObject, index: number = 0): THREE.Object3D {
-        const poolName = t.tx!.pools[index]
-        return this.getPoolByName(poolName)
-    }
-
     public getPoolByName(poolName: string) {
         const p = this.poolObjects[poolName]
         return p ? p.mesh! : this.core!

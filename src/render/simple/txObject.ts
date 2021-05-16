@@ -1,26 +1,11 @@
 import * as THREE from "three";
 import {Vector3} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
-import {ZeroVector3} from "@/helpers/3d";
-import {Transaction} from "@/provider/midgard/v2";
+import {PhysicalObject} from "@/helpers/physics";
 
 
-export class TxObject {
-    public mesh?: THREE.Object3D
-
+export class TxObject extends PhysicalObject {
     public targetPosition = new Vector3()
-    public sourcePosition = new Vector3()
-
-    public myLove?: TxObject
-
-    public targets: Array<string> = []
-
-    public tx?: ThorTransaction  // parent tx
-    public subTx?: Transaction  // specific sub tx of the parent tx
-
-    private velocity = new Vector3()
-    public mass: number = 1.0
-    public force = new Vector3()
 
     private static MinDistanceToTarget = 3.0
 
@@ -37,53 +22,21 @@ export class TxObject {
         return Math.max(1.0, sc)
     }
 
-    constructor(tx: ThorTransaction, runesPerAsset: number, sourcePosition: Vector3) {
-        this.tx = tx
+    constructor(mass: number, sourcePosition: Vector3) {
+        super(mass);
 
-        this.mesh = new THREE.Mesh(TxObject.geoBox, TxObject.whiteMaterial)
-
-        this.sourcePosition = sourcePosition.clone()
-        this.mesh.position.copy(sourcePosition)
-
-        const scale = this.scaleFromTx(tx, runesPerAsset)
-        this.mesh.scale.setScalar(scale)
-        this.mass = Math.max(scale, 0.1)
-    }
-
-    public dispose() {
-        if (this.mesh) {
-            this.mesh.parent?.remove(this.mesh)
-            this.mesh = undefined
-        }
-    }
-
-    public update(dt: number) {
-        if (!this.mesh) {
-            return
-        }
-
-        let accel = this.force.clone()
-        accel.multiplyScalar(dt / this.mass)
-        this.velocity.add(accel)
-
-        let shift = this.velocity.clone()
-        shift.multiplyScalar(dt)
-        this.mesh.position.add(shift)
-
-        if(this.mesh.position.length() > 1e8) {
-            console.log('Mesh has fled far away!')
-            this.mesh.position.copy(ZeroVector3)
-        }
+        this.obj3d = new THREE.Mesh(TxObject.geoBox, TxObject.whiteMaterial)
+        this.obj3d.position.copy(sourcePosition)
     }
 
     get isCloseToTarget(): boolean {
         const minDistanceToObject = TxObject.MinDistanceToTarget
 
-        if (!this.targetPosition || !this.mesh) {
+        if (!this.targetPosition || !this.obj3d) {
             return false
         } else {
             // clone is acutely important
-            let deltaPosition = this.targetPosition.clone().sub(this.mesh.position)
+            let deltaPosition = this.targetPosition.clone().sub(this.position!)
             return deltaPosition.length() < minDistanceToObject
         }
     }

@@ -3,20 +3,30 @@ import {Object3D} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {TxObject} from "@/render/simple/txObject";
 import {IPoolQuery, IWalletQuery} from "@/render/simple/interface";
-import {randomPointOnSphere} from "@/helpers/3d";
 
+const enum TxState {
+    Wallet_to_Pool,
+    Pool_to_Pool,
+    Pool_to_Wallet,
+    Wallet_to_Core,
+    Core_to_Wallet
+}
+
+interface TxObjectMeta {
+    objects: Array<TxObject>,
+    action: ThorTransaction,
+    state: TxState,
+    orbiting: boolean,
+    poolName: string
+    sourceWalletAddress: string
+}
 
 export class TxObjectManager {
     public scene?: Object3D
     public poolMan?: IPoolQuery
     public walletMan?: IWalletQuery
 
-    private static txSourcePlaceRadius: number = 3000
-
-    constructor() {
-    }
-
-    private txObjects: Record<string, TxObject> = {}
+    private txObjects: Record<string, TxObjectMeta> = {}
 
     private setInitialState(txObj: TxObject) {
         // const tx = txObj.tx!
@@ -36,25 +46,27 @@ export class TxObjectManager {
         // }
     }
 
-    private onReachedTarget(txObj: TxObject) {
-        if(txObj.targets.length > 0) {
-            txObj.targets.shift()
-            if(!txObj.targets.length) {
-                this.destroyTransactionMesh(txObj.tx!)
-            }
-        }
-    }
+    // private onReachedTarget(txObj: TxObject) {
+    //     if(txObj.targets.length > 0) {
+    //         txObj.targets.shift()
+    //         if(!txObj.targets.length) {
+    //             this.destroyTransactionMesh(txObj.tx!)
+    //         }
+    //     }
+    // }
 
-    private updateTxState(txObj: TxObject) {
-        if (txObj.isCloseToTarget) {
-            this.onReachedTarget(txObj)
-        }
-    }
+    // private updateTxState(txObj: TxObject) {
+    //     if (txObj.isCloseToTarget) {
+    //         this.onReachedTarget(txObj)
+    //     }
+    // }
 
     public update(dt: number) {
         for (const txObj of Object.values(this.txObjects)) {
-            txObj.update(dt)
-            this.updateTxState(txObj)
+            for (const txObjElement of txObj.objects) {
+                txObjElement.update(dt)
+            }
+            // this.updateTxState(txObj)
         }
     }
 
@@ -68,15 +80,21 @@ export class TxObjectManager {
 
         const position = this.walletMan?.findWalletByAddress(tx._in[0].address)?.obj?.position!
 
-        let txObject = new TxObject(tx, runesPerAsset, position)
-
+        let txObject = new TxObject(1.0, position)
         this.setInitialState(txObject)
 
         // store in cache
-        this.txObjects[hash] = txObject
+        this.txObjects[hash] = {
+            action: tx,
+            objects: [],
+            orbiting: false,
+            poolName: "",
+            sourceWalletAddress: "",
+            state: TxState.Wallet_to_Pool
+        }
 
         if (this.scene) {
-            this.scene.add(txObject.mesh!)
+            this.scene.add(txObject.obj3d!)
         }
 
         VisualLog.log(`new tx mesh ${tx.type} ${tx.pools[0]} ${tx.status}`)
@@ -85,21 +103,21 @@ export class TxObjectManager {
     }
 
     public updateTransactionMeshStatus(tx: ThorTransaction) {
-        const txObj = this.txObjects[tx.hash]
-        if(txObj) {
-            txObj.tx = tx
-        }
+        // const txObj = this.txObjects[tx.hash]
+        // if(txObj) {
+        //     txObj.tx = tx
+        // }
     }
 
     public destroyTransactionMesh(tx: ThorTransaction) {
-        const hash = tx.hash
-        const txObj = this.txObjects[hash]
-        if (txObj) {
-            VisualLog.log(`deleting tx mesh: ${txObj.tx!.pools[0]}`)
-
-            txObj.dispose()
-            delete this.txObjects[hash]
-        }
+        // const hash = tx.hash
+        // const txObj = this.txObjects[hash]
+        // if (txObj) {
+        //     VisualLog.log(`deleting tx mesh: ${txObj.tx!.pools[0]}`)
+        //
+        //     txObj.dispose()
+        //     delete this.txObjects[hash]
+        // }
     }
 
     public isThereTxMesh(txID: string): boolean {

@@ -107,3 +107,14 @@ export function polarToXYZ(p: PolarCoordinates): Vector3 {
 }
 
 export const RUNE_COLOR = 0x28f4af
+
+export function limitMaxLength(v: Vector3, maxLen: number): Vector3 {
+    if(v.length() > maxLen) {
+        let newV = v.clone()
+        newV.normalize()
+        newV.multiplyScalar(maxLen)
+        return newV
+    } else {
+        return v
+    }
+}
