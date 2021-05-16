@@ -38,6 +38,9 @@ export class WalletObjectManager {
         const addressHash = crypto.SHA256(address).toString(crypto.enc.Hex)
         const pos = polarToXYZ(hashToPolarCoordinates(addressHash, this.AddressRadius))
         newWalletObj.positionate(pos)
+
+        this.walletObjects[address] = newWalletObj
+
         VisualLog.log(`New wallet ${address}.`)
     }
 

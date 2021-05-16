@@ -27,13 +27,13 @@ export class TxAnalyzer {
         let changes: TxEvent[] = []
         let shouldContinue = false
         for (const tx of newTx) {
-            if (!tx || !tx._in || !tx._in.length) {
+            if (!tx || !tx.realInputHash) {
                 console.warn(`Tx has no In`, tx)
                 continue
             }
-
-            if (!(tx.hash in this.txCache)) {
-                this.txCache[tx.hash] = tx
+            const txHash = tx.realInputHash
+            if (!(txHash in this.txCache)) {
+                this.txCache[txHash] = tx
 
                 if (tx.ageSeconds <= Config.MaxAgeOfPendingTxSec) {
                     changes.push({
@@ -47,9 +47,9 @@ export class TxAnalyzer {
                 shouldContinue = true
 
             } else {
-                const oldTx = this.txCache[tx.hash]
+                const oldTx = this.txCache[txHash]
                 if (tx.status !== oldTx.status) {
-                    this.txCache[tx.hash] = tx
+                    this.txCache[txHash] = tx
 
                     changes.push({
                         type: TxEventType.StatusUpdated,
@@ -68,7 +68,7 @@ export class TxAnalyzer {
                     type: TxEventType.Destroy,
                     tx
                 })
-                delete this.txCache[tx.hash]
+                delete this.txCache[tx.realInputHash!]
             }
         }
 

@@ -7,6 +7,7 @@ export const WALLET_PREFIX = 'wallet:'
 
 export interface IPoolQuery {
     getPoolByName(poolName: string): THREE.Object3D;
+    runesPerAsset(poolName: string): number
 }
 
 export interface IWalletQuery {

@@ -110,7 +110,9 @@ export default {
         this.dataProvider = new RealtimeProvider(
             this.myScene, midgard,
             Config.RealtimeScannerTickIntervalSec,
-            Config.IgnoreOldTransactions)
+            Config.IgnoreOldTransactions,
+            Config.RealtimeScannerSuppressErrors
+        )
         this.dataProvider.run()
 
         this.resizeRendererToDisplaySize();

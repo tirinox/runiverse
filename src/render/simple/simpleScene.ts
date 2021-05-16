@@ -1,8 +1,9 @@
-import {Scene} from "three";
+import {Scene, Vector3} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
 import {TxObjectManager} from "@/render/simple/txObjectManager";
 import {PoolObjectManager} from "@/render/simple/poolObjectManager";
 import {WalletObjectManager} from "@/render/simple/walletObjectManager";
+import {TxObject} from "@/render/simple/txObject";
 
 
 export default class SimpleScene implements ThorEventListener {
@@ -34,6 +35,12 @@ export default class SimpleScene implements ThorEventListener {
         this.txObjManager.walletMan = this.walletObjManager
 
         this.walletObjManager.scene = scene
+
+        // debug!
+        // const pos = new Vector3(777, 777, 777)
+        // const txo = new TxObject(100, pos)
+        // txo.obj3d?.position.copy(pos)
+        // this.scene.add(txo.obj3d!)
     }
 
     // ------ event routing -------
@@ -59,15 +66,13 @@ export default class SimpleScene implements ThorEventListener {
             const ev = e.txEvent!
 
             if (ev.type == TxEventType.Add) {
-                const poolName = ev.tx.pools.length ? ev.tx.pools[0] : ''
-                const runesPerAsset = this.poolObjManager.runesPerAsset(poolName)
-                this.txObjManager.createTransactionMesh(ev.tx, runesPerAsset)
-                this.walletObjManager.makeWalletsFromTx(ev.tx)
+                this.walletObjManager.makeWalletsFromTx(ev.tx) // this is always 1st!
+                this.txObjManager.createTransactionMesh(ev.tx)
             } else if (ev.type == TxEventType.Destroy) {
                 this.txObjManager.destroyTransactionMesh(ev.tx)
             } else if (ev.type == TxEventType.StatusUpdated) {
+                this.walletObjManager.makeWalletsFromTx(ev.tx) // this is always 1st!
                 this.txObjManager.updateTransactionMeshStatus(ev.tx)
-                this.walletObjManager.makeWalletsFromTx(ev.tx)
             }
         }
     }

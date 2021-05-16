@@ -10,6 +10,7 @@ import {Action as TxDetailsV2, ActionStatusEnum, ActionTypeEnum, Metadata, Trans
 import sha256 from "fast-sha256";
 import {hex} from "@/helpers/data_utils";
 import {isRuneStr, parseThorBigNumber} from "@/provider/midgard/coinName";
+import {arrayNotEmpty} from "@/helpers/iter";
 
 
 export class ThorTransaction implements TxDetailsV2 {
@@ -28,8 +29,30 @@ export class ThorTransaction implements TxDetailsV2 {
 
     public readonly dateTimestampMs: number
 
-    get hash(): string {
+    get computedHash(): string {
         return this._lazyHash
+    }
+
+    get inputAddress(): string | null {
+        if(this._in.length > 0) {
+            const addr = this._in[0].address
+            return addr === '' ? null : addr
+        }
+        return null
+    }
+
+    get realInputHash(): string | null {
+        if(this._in.length > 0) {
+            const txId = this._in[0].txID
+            if(this.type == ActionTypeEnum.Switch && arrayNotEmpty(this._in) && arrayNotEmpty(this._in[0].coins)) {
+                // txId == '' for switch (sadly)
+                const amt = this._in[0].coins[0].amount
+                return `${this.date}-${this.inputAddress}-${amt}`
+            } else {
+                return txId === '' ? null : txId
+            }
+        }
+        return null
     }
 
     public getRuneVolume(txs: Array<Transaction>, runesPerAsset: number) {

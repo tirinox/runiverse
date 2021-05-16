@@ -22,16 +22,18 @@ class RealtimeProvider {
     public ignoreFirstTime: boolean = false
 
     private firstTimeActions = true
-    public SuppressErrors = true
+    public suppressErrors = true
 
     constructor(delegate: ThorEventListener, midgard: Midgard, intervalSec: number = 5,
-                ignoreFirstTime: boolean = false) {
+                ignoreFirstTime: boolean = false,
+                suppressErrors: boolean = false) {
         this.delegate = delegate
         this.midgard = midgard
         this.poolAnalyzer = new PoolChangeAnalyzer()
         this.txAnalyzer = new TxAnalyzer()
         this.intervalSec = intervalSec
         this.ignoreFirstTime = ignoreFirstTime
+        this.suppressErrors = suppressErrors
     }
 
     private async requestPools() {
@@ -86,7 +88,7 @@ class RealtimeProvider {
         this.counter++
 
         for(let attempt = 0; attempt < 3; ++attempt) {
-            if(this.SuppressErrors) {
+            if(this.suppressErrors) {
                 try {
                     await this.tickJob()
                     break

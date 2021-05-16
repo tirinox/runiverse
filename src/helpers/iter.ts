@@ -24,3 +24,6 @@ export function setIntersection<T>(setA: Set<T>, setB: Set<T>): Set<T> {
     return _intersection;
 }
 
+export function arrayNotEmpty(array: Array<any>) {
+    return Array.isArray(array) && array.length
+}
