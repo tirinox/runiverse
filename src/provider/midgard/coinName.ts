@@ -1,4 +1,4 @@
-export enum Coins {
+export enum CoinName {
     Bnb = 'BNB.BNB',
     BnbBusd = 'BNB.BUSD-BD1',
     BnbBusdTest1 = 'BNB.BUSD-BAF',
@@ -22,24 +22,32 @@ export enum Coins {
     EthUsdt = 'ETH.USDT-0X62E273709DA575835C7F6AEF4A31140CA5B1D190'
 }
 
-export function isRune(coin: Coins): boolean {
+export function isRune(coin: CoinName): boolean {
     return [
-        Coins.RuneNative,
-        Coins.RuneBnb,
-        Coins.RuneBnbTest,
-        Coins.RuneEth,
+        CoinName.RuneNative,
+        CoinName.RuneBnb,
+        CoinName.RuneBnbTest,
+        CoinName.RuneEth,
     ].includes(coin)
 }
 
-export function isStableCoin(coin: Coins): boolean {
+export function isRuneStr(coin: string): boolean {
+    return isRune(<CoinName>coin)
+}
+
+export function isStableCoin(coin: CoinName): boolean {
     return [
-        Coins.BnbUsdt,
-        Coins.BnbUsdtTest,
-        Coins.EthUsdt,
-        Coins.BnbBusd,
-        Coins.BnbBusdTest1,
-        Coins.BnbBusdTest2
+        CoinName.BnbUsdt,
+        CoinName.BnbUsdtTest,
+        CoinName.EthUsdt,
+        CoinName.BnbBusd,
+        CoinName.BnbBusdTest1,
+        CoinName.BnbBusdTest2
     ].includes(coin)
+}
+
+export function isStableCoinStr(coin: string): boolean {
+    return isStableCoin(<CoinName>coin)
 }
 
 export function parseThorBigNumber(x: string): number {

@@ -81,7 +81,7 @@ export interface PolarCoordinates {
     theta: number
 }
 
-export function hashToPolarCoordinates(hash: string): PolarCoordinates {
+export function hashToPolarCoordinates(hash: string, r: number = 1.0): PolarCoordinates {
     const middle = Math.floor(hash.length / 2)
     const leftPart = hash.substring(0, middle)
     const rightPart = hash.substring(middle, hash.length)
@@ -93,8 +93,17 @@ export function hashToPolarCoordinates(hash: string): PolarCoordinates {
     const theta = (Number(thetaInt) * 0.01 - 180.0) * Math.PI / 180.0
 
     return {
-        r: 1.0,
+        r,
         phi,
         theta
     }
 }
+
+export function polarToXYZ(p: PolarCoordinates): Vector3 {
+    const x = p.r * Math.sin(p.theta) * Math.cos(p.phi)
+    const y = p.r * Math.sin(p.theta) * Math.sin(p.phi)
+    const z = p.r * Math.cos(p.theta)
+    return new Vector3(x, y, z)
+}
+
+export const RUNE_COLOR = 0x28f4af

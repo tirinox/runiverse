@@ -22,6 +22,7 @@ class RealtimeProvider {
     public ignoreFirstTime: boolean = false
 
     private firstTimeActions = true
+    public SuppressErrors = true
 
     constructor(delegate: ThorEventListener, midgard: Midgard, intervalSec: number = 5,
                 ignoreFirstTime: boolean = false) {
@@ -85,12 +86,16 @@ class RealtimeProvider {
         this.counter++
 
         for(let attempt = 0; attempt < 3; ++attempt) {
-            try {
+            if(this.SuppressErrors) {
+                try {
+                    await this.tickJob()
+                    break
+                } catch (e) {
+                    console.error(`Tick error at ${attempt + 1} attempt: ${e}!`)
+                    await sleep(1.0)
+                }
+            } else {
                 await this.tickJob()
-                break
-            } catch (e) {
-                console.error(`Tick error at ${attempt + 1} attempt: ${e}!`)
-                await sleep(1.0)
             }
         }
 

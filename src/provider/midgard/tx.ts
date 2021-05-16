@@ -9,7 +9,7 @@ import {Action as TxDetailsV2, ActionStatusEnum, ActionTypeEnum, Metadata, Trans
 
 import sha256 from "fast-sha256";
 import {hex} from "@/helpers/data_utils";
-import {Coins, isRune, parseThorBigNumber} from "@/provider/midgard/coins";
+import {isRuneStr, parseThorBigNumber} from "@/provider/midgard/coinName";
 
 
 export class ThorTransaction implements TxDetailsV2 {
@@ -37,7 +37,7 @@ export class ThorTransaction implements TxDetailsV2 {
         for (const tx of txs) {
             for (const coin of tx.coins) {
                 const amt = parseThorBigNumber(coin.amount)
-                if (isRune(<Coins>coin.asset)) {
+                if (isRuneStr(coin.asset)) {
                     sum += amt
                 } else {
                     sum += amt * runesPerAsset

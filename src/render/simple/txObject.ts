@@ -1,32 +1,30 @@
 import * as THREE from "three";
+import {Vector3} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
-import {randomPointOnSphere} from "@/helpers/3d";
+import {ZeroVector3} from "@/helpers/3d";
+import {Transaction} from "@/provider/midgard/v2";
 
-
-export const enum TxObjectState {
-    Waiting = 'Waiting',
-    FromWalletToPool = 'FromWalletToPool',
-    BetweenPools = 'BetweenPools',
-    FromPoolToWallet = 'FromPoolToWallet',
-    FromWalletToCore = 'FromWalletToCore',
-    FromCoreToWallet = 'FromCoreToWallet',
-}
 
 export class TxObject {
     public mesh?: THREE.Object3D
 
-    public target?: THREE.Object3D
+    public targetPosition = new Vector3()
+    public sourcePosition = new Vector3()
 
-    public tx?: ThorTransaction
-    public state: TxObjectState = TxObjectState.Waiting
+    public myLove?: TxObject
 
-    public speed: number = 0.005
-    private static txSourcePlaceRadius: number = 3000
+    public targets: Array<string> = []
+
+    public tx?: ThorTransaction  // parent tx
+    public subTx?: Transaction  // specific sub tx of the parent tx
+
+    private velocity = new Vector3()
+    public mass: number = 1.0
+    public force = new Vector3()
+
     private static MinDistanceToTarget = 3.0
-    private static MinSpeed = 0.1
 
     private static geoBox: THREE.BoxGeometry = new THREE.BoxGeometry(5, 5, 5)
-
 
     private static whiteMaterial: THREE.Material = new THREE.MeshBasicMaterial({
         color: 0xFFFFFF,
@@ -39,18 +37,17 @@ export class TxObject {
         return Math.max(1.0, sc)
     }
 
-    constructor(tx: ThorTransaction, runesPerAsset: number) {
+    constructor(tx: ThorTransaction, runesPerAsset: number, sourcePosition: Vector3) {
         this.tx = tx
 
         this.mesh = new THREE.Mesh(TxObject.geoBox, TxObject.whiteMaterial)
 
-        const position = randomPointOnSphere(TxObject.txSourcePlaceRadius)
-        this.mesh.position.copy(position)
+        this.sourcePosition = sourcePosition.clone()
+        this.mesh.position.copy(sourcePosition)
 
         const scale = this.scaleFromTx(tx, runesPerAsset)
         this.mesh.scale.setScalar(scale)
-
-        this.speed = 0.05 / scale
+        this.mass = Math.max(scale, 0.1)
     }
 
     public dispose() {
@@ -61,30 +58,32 @@ export class TxObject {
     }
 
     public update(dt: number) {
-        const minUnitsPerSec = TxObject.MinSpeed
-
-        if (!this.target || !this.mesh) {
+        if (!this.mesh) {
             return
         }
 
-        let dx = this.target.position.clone()
-        dx.sub(this.mesh.position)
-        dx.multiplyScalar(this.speed)
-        if (dx.length() < minUnitsPerSec) {
-            dx.normalize()
-            dx.multiplyScalar(minUnitsPerSec)
+        let accel = this.force.clone()
+        accel.multiplyScalar(dt / this.mass)
+        this.velocity.add(accel)
+
+        let shift = this.velocity.clone()
+        shift.multiplyScalar(dt)
+        this.mesh.position.add(shift)
+
+        if(this.mesh.position.length() > 1e8) {
+            console.log('Mesh has fled far away!')
+            this.mesh.position.copy(ZeroVector3)
         }
-        this.mesh.position.add(dx)
     }
 
     get isCloseToTarget(): boolean {
         const minDistanceToObject = TxObject.MinDistanceToTarget
 
-        if (!this.target || !this.mesh) {
+        if (!this.targetPosition || !this.mesh) {
             return false
         } else {
-            // clone is archi importantn
-            let deltaPosition = this.target.position.clone().sub(this.mesh.position)
+            // clone is acutely important
+            let deltaPosition = this.targetPosition.clone().sub(this.mesh.position)
             return deltaPosition.length() < minDistanceToObject
         }
     }

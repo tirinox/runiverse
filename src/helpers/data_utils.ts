@@ -21,3 +21,12 @@ export function hexToBigInt(input: string): BigInt {
 
     return BigInt('0x' + input);
 }
+
+export function truncateStringAtMiddle(text: string, startChars: number, endChars: number, maxLength: number): string {
+    if (text.length > maxLength) {
+        var start = text.substring(0, startChars);
+        var end = text.substring(text.length - endChars, text.length);
+        return start + '...' + end;
+    }
+    return text;
+}

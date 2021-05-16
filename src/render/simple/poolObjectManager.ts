@@ -7,8 +7,9 @@ import {IPoolQuery} from "@/render/simple/interface";
 
 export class PoolObjectManager implements IPoolQuery {
     private poolObjects: Record<string, PoolObject> = {}
-    private txObjects: Record<string, TxObject> = {}
     private core?: Mesh;
+
+    // todo: track PoolObject state
 
     public scene?: Object3D
 
@@ -72,6 +73,10 @@ export class PoolObjectManager implements IPoolQuery {
 
     public getPoolObjectOfTxMesh(t: TxObject, index: number = 0): THREE.Object3D {
         const poolName = t.tx!.pools[index]
+        return this.getPoolByName(poolName)
+    }
+
+    public getPoolByName(poolName: string) {
         const p = this.poolObjects[poolName]
         return p ? p.mesh! : this.core!
     }
@@ -87,4 +92,12 @@ export class PoolObjectManager implements IPoolQuery {
             this.scene.add(this.core)
         }
     }
+
+    public hearBeat(pool: PoolDetail) {
+        const poolObj = this.poolObjects[pool.asset]
+        if(poolObj) {
+            poolObj.heartBeat()
+        }
+    }
+
 }

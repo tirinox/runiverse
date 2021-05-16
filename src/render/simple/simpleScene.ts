@@ -1,38 +1,24 @@
-import * as THREE from "three";
-import {Mesh, Scene} from "three";
+import {Scene} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
-import {PoolDetail} from "@/provider/midgard/poolDetail";
-
-import {TxObject} from "@/render/simple/txObject";
-import {PoolObject} from "@/render/simple/poolObject";
 import {TxObjectManager} from "@/render/simple/txObjectManager";
 import {PoolObjectManager} from "@/render/simple/poolObjectManager";
+import {WalletObjectManager} from "@/render/simple/walletObjectManager";
+
 
 export default class SimpleScene implements ThorEventListener {
     private scene: Scene;
 
-    private poolObjects: Record<string, PoolObject> = {}
-
-
     private txObjManager = new TxObjectManager()
     private poolObjManager = new PoolObjectManager()
-
-    // -------- tx meshes -------
+    private walletObjManager = new WalletObjectManager()
 
     updateAnimations(dt: number) {
         this.poolObjManager.update(dt)
         this.txObjManager.update(dt)
-    }
-
-    private heartBeat(pool: PoolDetail) {
-        const pm = this.poolObjects[pool.asset]
-        if (pm) {
-            pm.heartBeat()
-        }
+        this.walletObjManager.update(dt)
     }
 
     // --------- init & load & service -----
-
 
     onResize(w: number, h: number) {
     }
@@ -44,8 +30,10 @@ export default class SimpleScene implements ThorEventListener {
         this.poolObjManager.createCore()
 
         this.txObjManager.scene = scene
-
         this.txObjManager.poolMan = this.poolObjManager
+        this.txObjManager.walletMan = this.walletObjManager
+
+        this.walletObjManager.scene = scene
     }
 
     // ------ event routing -------
@@ -64,7 +52,7 @@ export default class SimpleScene implements ThorEventListener {
                     this.poolObjManager.addNewPoolMesh(change.pool!)
                 }
                 if (change.type == PoolChangeType.DepthChanged) {
-                    this.heartBeat(change.pool!)
+                    this.poolObjManager.hearBeat(e.poolChange?.pool!)
                 }
             }
         } else if (e.eventType == EventType.Transaction) {
@@ -74,10 +62,12 @@ export default class SimpleScene implements ThorEventListener {
                 const poolName = ev.tx.pools.length ? ev.tx.pools[0] : ''
                 const runesPerAsset = this.poolObjManager.runesPerAsset(poolName)
                 this.txObjManager.createTransactionMesh(ev.tx, runesPerAsset)
+                this.walletObjManager.makeWalletsFromTx(ev.tx)
             } else if (ev.type == TxEventType.Destroy) {
                 this.txObjManager.destroyTransactionMesh(ev.tx)
             } else if (ev.type == TxEventType.StatusUpdated) {
                 this.txObjManager.updateTransactionMeshStatus(ev.tx)
+                this.walletObjManager.makeWalletsFromTx(ev.tx)
             }
         }
     }
