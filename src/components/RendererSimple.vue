@@ -17,6 +17,11 @@ import {RealtimeProvider} from "@/provider/realtime";
 import {Midgard} from "@/provider/midgard/midgard";
 import {Config} from "@/config";
 import VisualLog from "@/components/VisualLog";
+import {WEBGL} from "three/examples/jsm/WebGL";
+
+
+const MAX_DT = 0.5
+
 
 export default {
     name: 'RendererSimple',
@@ -56,8 +61,10 @@ export default {
             } else {
                 const delta = (time - this.lastCalledTime);
                 this.lastCalledTime = time;
-                this.fps = 1000.0 / delta;
-                this.myScene.updateAnimations(delta / 1000.0)
+                this.fps = 1000.0 / delta
+
+                const dt = Math.min(MAX_DT, delta * 0.001)
+                this.myScene.updateAnimations(dt)
             }
 
             this.resizeRendererToDisplaySize(this.renderer);
@@ -87,6 +94,11 @@ export default {
             canvas,
             antialias: true
         });
+
+        if(devicePixelRatio) {
+            console.log(`Renderer: Setting devicePixelRatio = ${devicePixelRatio}.`)
+            renderer.setPixelRatio(devicePixelRatio)
+        }
         renderer.autoClearColor = false;
 
         this.scene = new THREE.Scene();
@@ -102,7 +114,14 @@ export default {
         this.dataProvider.run()
 
         this.resizeRendererToDisplaySize();
-        requestAnimationFrame(this.render);
+
+        if (WEBGL.isWebGLAvailable()) {
+            // Initiate function or other initializations here
+            requestAnimationFrame(this.render);
+        } else {
+            const warning = WEBGL.getWebGLErrorMessage();
+            document.getElementById('app').appendChild(warning);
+        }
     },
 
     beforeUnmount() {
