@@ -8,14 +8,13 @@
 
 import emitter from "@/helpers/emitter.ts"
 import cryptoRandomString from "crypto-random-string";
+import {Config} from "@/config";
 
 export const VISUAL_LOG_EVENT = 'visualLog'
 
 export function visualLog(message) {
     emitter.emit(VISUAL_LOG_EVENT, message)
 }
-
-const LOG_STAY_TIME = 2000
 
 export default {
     log(msg) {
@@ -32,23 +31,33 @@ export default {
 
     methods: {
         killMessage(ident) {
-            this.messages.splice(ident, 1)
+            this.messages = this.messages.filter(m => m.ident !== ident)
         },
 
         onNewLogItem(message) {
+            if(!Config.Logging.Visual.Enabled) {
+                this.messages = []
+                return
+            }
+
             const ts = +Date.now()
 
             const ident = cryptoRandomString({length: 10, type: 'ascii-printable'})
 
             setTimeout(() => {
                 this.killMessage(ident)
-            }, LOG_STAY_TIME)
+            }, Config.Logging.Visual.FadeTime * 1000.0)
 
             this.messages.push({
                 message,
                 tsCreatedAt: ts,
                 ident
             })
+
+            const excessRows = this.messages.length - Config.Logging.Visual.MaxRows
+            if(excessRows > 0) {
+                this.messages.splice(0, excessRows)
+            }
 
             console.debug(`Visual log received: ${message}`)
         }
