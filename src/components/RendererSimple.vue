@@ -18,7 +18,9 @@ import {Midgard} from "@/provider/midgard/midgard";
 import {Config} from "@/config";
 import VisualLog from "@/components/VisualLog";
 import {WEBGL} from "three/examples/jsm/WebGL";
-
+import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
+import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
+import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 
 
 export default {
@@ -29,7 +31,7 @@ export default {
     data() {
         return {
             fps: 1.0,
-            showFps: true,
+            showFps: Config.Logging.FPSCounter,
         }
     },
 
@@ -66,7 +68,7 @@ export default {
             }
 
             this.resizeRendererToDisplaySize(this.renderer);
-            this.renderer.render(this.scene, this.camera);
+            this.composer.render();
 
             requestAnimationFrame(this.render);
         },
@@ -82,10 +84,39 @@ export default {
             controls.maxDistance = 5000;
             controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
             controls.dampingFactor = 0.5;
+        },
+
+        makeBloom() {
+            if(this.bloomPass) {
+                return
+            }
+
+            this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            this.bloomPass.threshold = 0.8
+            this.bloomPass.strength = 1.0
+            this.bloomPass.radius = 10
+            this.composer.addPass(this.bloomPass);
+        },
+
+        runDataSource() {
+            const midgard = new Midgard(Config.RealtimeScanner.Network)
+            this.dataProvider = new RealtimeProvider(
+                this.myScene, midgard,
+                Config.RealtimeScanner.TickIntervalSec,
+                Config.RealtimeScanner.IgnoreOldTransactions,
+                Config.RealtimeScanner.SuppressErrors
+            )
+            this.dataProvider.run()
         }
     },
 
     mounted() {
+        if (!WEBGL.isWebGLAvailable()) {
+            const warning = WEBGL.getWebGLErrorMessage();
+            document.getElementById('app').appendChild(warning);
+            return
+        }
+
         let canvas = this.canvas = this.$refs.canvas
 
         let renderer = this.renderer = new THREE.WebGLRenderer({
@@ -93,35 +124,32 @@ export default {
             antialias: true
         });
 
-        if(devicePixelRatio) {
+        if (devicePixelRatio) {
             console.log(`Renderer: Setting devicePixelRatio = ${devicePixelRatio}.`)
             renderer.setPixelRatio(devicePixelRatio)
         }
         renderer.autoClearColor = false;
 
         this.scene = new THREE.Scene();
-
         this.myScene = new SimpleScene(this.scene)
         this.createCamera()
 
-        const midgard = new Midgard(Config.RealtimeScanner.Network)
-        this.dataProvider = new RealtimeProvider(
-            this.myScene, midgard,
-            Config.RealtimeScanner.TickIntervalSec,
-            Config.RealtimeScanner.IgnoreOldTransactions,
-            Config.RealtimeScanner.SuppressErrors
-        )
-        this.dataProvider.run()
+        const renderScene = new RenderPass(this.scene, this.camera);
+
+        const composer = new EffectComposer(this.renderer);
+        composer.addPass(renderScene);
+        this.composer = composer
+
+        if (Config.SimpleScene.Postprocessing.Bloom.Enabled) {
+            this.makeBloom()
+        }
 
         this.resizeRendererToDisplaySize();
 
-        if (WEBGL.isWebGLAvailable()) {
-            // Initiate function or other initializations here
-            requestAnimationFrame(this.render);
-        } else {
-            const warning = WEBGL.getWebGLErrorMessage();
-            document.getElementById('app').appendChild(warning);
-        }
+        this.runDataSource()
+
+        requestAnimationFrame(this.render);
+
     },
 
     beforeUnmount() {

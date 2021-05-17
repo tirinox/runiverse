@@ -4,6 +4,10 @@ import {TxObjectManager} from "@/render/simple/txObjectManager";
 import {PoolObjectManager} from "@/render/simple/poolObjectManager";
 import {WalletObjectManager} from "@/render/simple/walletObjectManager";
 import {PointLight, Scene} from "three";
+import {Config} from "@/config";
+import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
+import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
+import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 
 
 export default class SimpleScene implements ThorEventListener {
@@ -43,7 +47,10 @@ export default class SimpleScene implements ThorEventListener {
         // this.scene.add(txo.obj3d!)
 
         this.makeLight()
-        this.makeStarEnvironment()
+
+        if (Config.SimpleScene.Cubemap.Enabled) {
+            this.makeStarEnvironment()
+        }
     }
 
     private makeLight() {
@@ -51,16 +58,16 @@ export default class SimpleScene implements ThorEventListener {
         pointLight.position.set(0, 0, 0);
         this.scene.add(pointLight);
 
-        const ambient = new THREE.AmbientLight( 0xffffff );
-        this.scene.add( ambient );
+        const ambient = new THREE.AmbientLight(0xffffff);
+        this.scene.add(ambient);
     }
 
     private makeStarEnvironment() {
         const loader = new THREE.CubeTextureLoader();
         loader.setPath('textures/environment/starry_cubemap_1/');
 
-        const textureCube = loader.load(['right.png', 'left.png', 'bottom.png', 'top.png', 'front.png', 'back.png'])
-        textureCube.encoding = THREE.sRGBEncoding;
+        const textureCube = loader.load(['right.png', 'left.png', 'top.png', 'bottom.png', 'front.png', 'back.png'])
+        // textureCube.encoding = THREE.sRGBEncoding;
 
         this.scene.background = textureCube;
     }

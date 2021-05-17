@@ -2097,11 +2097,6 @@ bfj@^6.1.1:
     hoopy "^0.1.4"
     tryer "^1.0.1"
 
-bidi-js@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/bidi-js/-/bidi-js-1.0.0.tgz#793b37635a12bf404494740fae5e9f877354b40f"
-  integrity sha512-Hza9+ZqnUPeDYigxa7C9pByYzFxLJOgZDq+a1wX/5ikZRMKn0jI3IT8dC66gDrHD3a1UuiY+kiOHol+Ro0ay4w==
-
 big.js@^3.1.3:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/big.js/-/big.js-3.2.0.tgz#a5fc298b81b9e0dca2e458824784b65c52ba588e"
@@ -8206,6 +8201,11 @@ thread-loader@^2.1.3:
     loader-utils "^1.1.0"
     neo-async "^2.6.0"
 
+three-spritetext@^1.6.2:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/three-spritetext/-/three-spritetext-1.6.2.tgz#824e96db2ffe2148d26a7002d7b63ec11d19d0cf"
+  integrity sha512-VALj40t81Z6x/fDnY/tts8QU+mBl77bxoynBbcn/DW4oxfzZSwjaOfkQOe0jYpLoK2vtP0bAULvGgwIYnsN6oQ==
+
 three@^0.125.1:
   version "0.125.1"
   resolved "https://registry.npm.taobao.org/three/download/three-0.125.1.tgz#6eedbc5003b843fd5b6c48b3e61bfbd86bd3e0b2"
@@ -8307,25 +8307,6 @@ tough-cookie@~2.5.0:
   dependencies:
     psl "^1.1.28"
     punycode "^2.1.1"
-
-troika-three-text@^0.41.0:
-  version "0.41.0"
-  resolved "https://registry.yarnpkg.com/troika-three-text/-/troika-three-text-0.41.0.tgz#8e24de10d8c71a6b2a0a6444081e4089bb98eeb8"
-  integrity sha512-VfeUKuLVcyX97aQh8YJWmEJf0VSDFnriu44e8NkBCgALYt0zg7tQ1MJlY9WeXv9xl/0mS/b2Mw6VpBNzlzypsw==
-  dependencies:
-    bidi-js "^1.0.0"
-    troika-three-utils "^0.41.0"
-    troika-worker-utils "^0.41.0"
-
-troika-three-utils@^0.41.0:
-  version "0.41.0"
-  resolved "https://registry.yarnpkg.com/troika-three-utils/-/troika-three-utils-0.41.0.tgz#03d6c2e8c62b5f80c8314ebee6d38b3906843d92"
-  integrity sha512-QIHcvSFEQJgVpxxv/tOI0ZTYbiIw0R+6m4bDEXVBY6qYXpKSaz8iLunidrY53yjfkStmw1RYux5bjhobm7vQKQ==
-
-troika-worker-utils@^0.41.0:
-  version "0.41.0"
-  resolved "https://registry.yarnpkg.com/troika-worker-utils/-/troika-worker-utils-0.41.0.tgz#b811a9d2d5ca707869db50e9e096d5ef3b67b2e6"
-  integrity sha512-hW+L4RRJBgDKKQkOGQKDigv/l9DYNR7E5OoT1+ZixngoawhjQQG9r5DfbCs2rOW95uzTSEopdGJ1pfp3js/ObA==
 
 tryer@^1.0.1:
   version "1.0.1"

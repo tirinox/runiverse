@@ -3,6 +3,8 @@ import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 // @ts-ignore
 import {Text} from 'troika-three-text'
+import SpriteText from 'three-spritetext';
+import {Config} from "@/config";
 
 
 export class PoolObject {
@@ -11,9 +13,6 @@ export class PoolObject {
     public speed: number = 0.0
     public orbit?: Orbit
     public label?: Text
-
-    public static OrbitSpeedScale = 0.0001
-    public static MaxPoolNameLength = 14
 
     private static geoPool: THREE.SphereGeometry = new THREE.SphereGeometry(50, 100, 100)
 
@@ -25,6 +24,8 @@ export class PoolObject {
         this.pool = pool
 
         const enabled = pool.isEnabled
+
+        const cfg = Config.SimpleScene.PoolObject
 
         let color = new THREE.Color()
         color.setHSL(Math.random(), enabled ? 1.0 : 0.0, enabled ? 0.5 : 0.3)
@@ -41,7 +42,9 @@ export class PoolObject {
 
         this.mesh = poolMesh
 
-        const radius = enabled ? randomGauss(600, 50) : randomGauss(1200, 50);
+        const radius = enabled ?
+            randomGauss(cfg.Enabled.Distance.CenterGauss, cfg.Enabled.Distance.ScaleGauss) :
+            randomGauss(cfg.Staged.Distance.CenterGauss, cfg.Staged.Distance.ScaleGauss);
 
         const n = randomPointOnSphere(1.0)
 
@@ -49,7 +52,7 @@ export class PoolObject {
         this.orbit.randomizePhase()
         this.orbit!.step(0.0016)
 
-        this.speed = randomGauss(50.0, 40.0)
+        this.speed = randomGauss(cfg.Speed.CenterGauss, cfg.Speed.ScaleGauss)
 
         this.label = this.createLabel(pool.asset)
         this.label.position.y = 80
@@ -57,21 +60,18 @@ export class PoolObject {
         poolMesh.add(this.label)
     }
 
-    createLabel(name: string): Text {
-        if (name.length > PoolObject.MaxPoolNameLength) {
-            name = name.substring(0, PoolObject.MaxPoolNameLength) + '...'
+    createLabel(name: string) {
+        const maxLen = Config.SimpleScene.PoolObject.MaxPoolNameLength
+        if (name.length > maxLen) {
+            name = name.substring(0, maxLen) + '...'
         }
 
-        const myText = new Text()
-        myText.text = name
-        myText.fontSize = 24
-        myText.color = 0xFFFFFF
-        myText.sync()
+        const myText = new SpriteText(name, 24, 'white')
         return myText
     }
 
     public update(dt: number) {
-        this.orbit!.step(dt, PoolObject.OrbitSpeedScale * this.speed)
+        this.orbit!.step(dt, this.speed)
     }
 
     public dispose() {

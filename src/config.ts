@@ -28,8 +28,46 @@ export const Config = {
 
     SimpleScene: {
         Core: {
-            Radius: 140.0
+            Radius: 140.0,
+            Color: 0x202520,
+        },
+        PoolObject: {
+            OrbitFactorSpeed: 0.1,
+            MaxPoolNameLength: 14,
+            Speed: {
+                CenterGauss: 0.2,
+                ScaleGauss: 0.5
+            },
+            Staged: {
+                Distance: {
+                    CenterGauss: 1200.0,
+                    ScaleGauss: 140.0
+                }
+            },
+            Enabled: {
+                Distance: {
+                    CenterGauss: 600.0,
+                    ScaleGauss: 100.0
+                }
+            }
+        },
+        Cubemap: {
+            Enabled: true
+        },
+        Postprocessing: {
+            Bloom: {
+                Enabled: false
+            }
         }
+    },
+
+    Logging: {
+        Visual: {
+            Enabled: true,
+            MaxRows: 12,
+            FadeTime: 2.5,
+        },
+        FPSCounter: true
     },
 
     getMidgardBaseUrl(networkId: NetworkId): string {

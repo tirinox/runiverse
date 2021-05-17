@@ -1,16 +1,15 @@
 import * as THREE from "three";
 import {Object3D, Vector3} from "three";
 import {ZeroVector3} from "@/helpers/3d";
-// @ts-ignore
-import {Text} from 'troika-three-text'
 import {truncateStringAtMiddle} from "@/helpers/data_utils";
+import SpriteText from "three-spritetext";
 
 
 export class WalletObject {
     public obj?: THREE.Object3D
     private mesh?: THREE.Object3D
 
-    public label?: Text
+    public label?: SpriteText
 
     private static geom: THREE.ConeGeometry = new THREE.ConeGeometry(30, 50, 8, 1)
     private address: string;
@@ -65,14 +64,10 @@ export class WalletObject {
         this.mesh?.lookAt(ZeroVector3) // look at the center of the Runiverse
     }
 
-    createLabel(name: string): Text {
+    createLabel(name: string): SpriteText {
         name = truncateStringAtMiddle(name, 4, 4, 22)
 
-        const myText = new Text()
-        myText.text = name
-        myText.fontSize = 24
-        myText.color = 0xFFFFFF
-        myText.sync()
+        const myText = new SpriteText(name, 24, 'rgba(255,255,255,0.6)')
         return myText
     }
 
@@ -80,7 +75,6 @@ export class WalletObject {
     }
 
     public dispose() {
-        this.label.dispose()
         this.label = undefined
 
         if (this.obj) {

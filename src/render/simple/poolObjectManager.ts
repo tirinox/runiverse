@@ -9,7 +9,6 @@ export class PoolObjectManager implements IPoolQuery {
     private poolObjects: Record<string, PoolObject> = {}
     private core?: Mesh;
 
-
     // todo: track PoolObject state
 
     public scene?: Object3D
@@ -83,7 +82,7 @@ export class PoolObjectManager implements IPoolQuery {
         }
 
         const sphere = new THREE.SphereGeometry(Config.SimpleScene.Core.Radius, 100, 100)
-        this.core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x202520}))
+        this.core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: Config.SimpleScene.Core.Color}))
         if(this.scene) {
             this.scene.add(this.core)
         }
