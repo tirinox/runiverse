@@ -1,5 +1,6 @@
 import {limitMaxLength, ZeroVector3} from "@/helpers/3d";
 import {Object3D, Vector3} from "three";
+import {Config} from "@/config";
 
 export class PhysicalObject {
     public mass = 1.0
@@ -56,7 +57,7 @@ export class PhysicalObject {
         }
     }
 
-    isCloseToTarget(targetPosition: Vector3, minDistance = 10.0): boolean {
+    isCloseToTarget(targetPosition: Vector3, minDistance = Config.Animations.ProximityDistance): boolean {
         let deltaPosition = targetPosition.clone().sub(this.position!)
         return deltaPosition.length() < minDistance
     }

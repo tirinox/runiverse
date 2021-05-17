@@ -35,7 +35,7 @@ export class TxAnalyzer {
             if (!(txHash in this.txCache)) {
                 this.txCache[txHash] = tx
 
-                if (tx.ageSeconds <= Config.MaxAgeOfPendingTxSec) {
+                if (tx.ageSeconds <= Config.RealtimeScanner.MaxAgeOfPendingTxSec) {
                     changes.push({
                         type: TxEventType.Add,
                         tx
@@ -63,7 +63,7 @@ export class TxAnalyzer {
 
         // remove too old pending transactions
         for (const tx of this.allPendingTx) {
-            if (tx.ageSeconds > Config.MaxAgeOfPendingTxSec) {
+            if (tx.ageSeconds > Config.RealtimeScanner.MaxAgeOfPendingTxSec) {
                 changes.push({
                     type: TxEventType.Destroy,
                     tx

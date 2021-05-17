@@ -1,25 +1,17 @@
 import VisualLog from "@/components/VisualLog.vue";
 import {Object3D} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
-import {TxObject} from "@/render/simple/txObject";
+import {TxObject, TxState} from "@/render/simple/txObject";
 import {IPoolQuery, IWalletQuery} from "@/render/simple/interface";
 import {randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 import {ActionStatusEnum, ActionTypeEnum} from "@/provider/midgard/v2";
+import {Config} from "@/config";
 
-const enum TxState {
-    Wallet_to_Pool,
-    Pool_to_Pool,
-    Pool_to_Wallet,
-    Wallet_to_Core,
-    Core_to_Wallet
-}
 
 interface TxObjectMeta {
     objects: Array<TxObject>,
     action: ThorTransaction,
-    state: TxState,
     orbiting: boolean,
-    poolName: string
 }
 
 export class TxObjectManager {
@@ -39,8 +31,20 @@ export class TxObjectManager {
     // }
 
     private updateTxState(txMeta: TxObjectMeta, txObj: TxObject) {
-        const pos = this.poolMan?.getPoolByName(txMeta.poolName).position
-        txObj.force = txObj.myLogForceTo(1e10, pos ? pos : ZeroVector3, 100.0)
+        if(txObj.state == TxState.Wallet_to_Pool || txObj.state == TxState.Pool_to_Pool) {
+            const targetPoolPos = this.poolMan?.getPoolByName(txObj.poolName).position
+            if(targetPoolPos) {
+                txObj.force = txObj.myGravityTo(1e10, targetPoolPos)
+                if(txObj.isCloseToTarget(targetPoolPos)) {
+                    this.destroyTxObject(txMeta, txObj)
+                }
+            }
+        } else if(txObj.state == TxState.Pool_to_Wallet) {
+            const targetPos = this.walletMan?.findWalletByAddress(txObj.walletAddress)?.obj?.position
+            if(targetPos) {
+                txObj.force = txObj.myGravityTo(1e10, targetPos)
+            }
+        }
     }
 
     public update(dt: number) {
@@ -77,7 +81,14 @@ export class TxObjectManager {
                 const mass = 100.0
                 let txObject = new TxObject(mass, sourcePosition)
 
-                txObject.setVelocityToDirection(ZeroVector3, this.InitialSpeed)
+                if (tx.type == ActionTypeEnum.Switch) {
+                    txObject.state = TxState.Wallet_to_Core
+                } else {
+                    txObject.state = TxState.Wallet_to_Pool
+                    txObject.poolName = tx.pools.length > 0 ? tx.pools[0] : ''
+                }
+
+                txObject.setVelocityToDirection(ZeroVector3, Config.Tx.InitialSpeed)
 
                 if (this.scene) {
                     this.scene.add(txObject.obj3d!)
@@ -87,41 +98,45 @@ export class TxObjectManager {
             }
         }
 
-        let state = TxState.Wallet_to_Pool
-        if (tx.type == ActionTypeEnum.Switch) {
-            state = TxState.Wallet_to_Core
-        }
-
-        const poolName = tx.pools.length > 0 ? tx.pools[0] : ''
-
         // store in cache
         this.txObjects[hash] = {
             action: tx,
             objects: txObjects,
             orbiting: tx.status == ActionStatusEnum.Pending,
-            poolName,
-            state
         }
 
         VisualLog.log(`new tx mesh ${tx.type} ${tx.pools[0]} ${tx.status}`)
     }
 
     public updateTransactionMeshStatus(tx: ThorTransaction) {
+        // todo!
+
         // const txObj = this.txObjects[tx.realInputHash]
         // if(txObj) {
         //     txObj.tx = tx
         // }
     }
 
+    public destroyTxObject(txMeta: TxObjectMeta, txObj?: TxObject) {
+        if(txObj) {
+            txObj.dispose()
+            VisualLog.log(`deleting tx mesh: ${txObj.poolName}`)
+            txMeta.objects = txMeta.objects.filter(o => o != txObj)
+            if(!txMeta.objects.length) {
+                delete this.txObjects[txMeta.action.realInputHash!]
+            }
+        }
+    }
+
     public destroyTransactionMesh(tx: ThorTransaction) {
-        // const hash = tx.realInputHash
-        // const txObj = this.txObjects[hash]
-        // if (txObj) {
-        //     VisualLog.log(`deleting tx mesh: ${txObj.tx!.pools[0]}`)
-        //
-        //     txObj.dispose()
-        //     delete this.txObjects[hash]
-        // }
+        const hash = tx.realInputHash!
+        const txMeta = this.txObjects[hash]
+        if(txMeta) {
+            for(const txObj of txMeta.objects) {
+                this.destroyTxObject(txMeta, txObj)
+            }
+            delete this.txObjects[hash]
+        }
     }
 
     public isThereTxMesh(txID: string): boolean {

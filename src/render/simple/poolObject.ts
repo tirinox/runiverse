@@ -15,7 +15,7 @@ export class PoolObject {
     public static OrbitSpeedScale = 0.0001
     public static MaxPoolNameLength = 14
 
-    private static geoPool: THREE.IcosahedronGeometry = new THREE.IcosahedronGeometry(50, 1);
+    private static geoPool: THREE.SphereGeometry = new THREE.SphereGeometry(50, 100, 100)
 
     scaleFromPool(pool: PoolDetail): number {
         return Math.pow(pool.runeDepth.toNumber(), 0.11) / 20
@@ -28,9 +28,11 @@ export class PoolObject {
 
         let color = new THREE.Color()
         color.setHSL(Math.random(), enabled ? 1.0 : 0.0, enabled ? 0.5 : 0.3)
-        const material = new THREE.MeshBasicMaterial({
+        const material = new THREE.MeshPhongMaterial({
             color: color,
             reflectivity: 0.1,
+            emissive: color,
+            emissiveIntensity: 0.5,
         });
 
         let poolMesh = new THREE.Mesh(PoolObject.geoPool, material)

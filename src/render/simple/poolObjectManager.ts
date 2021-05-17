@@ -1,15 +1,14 @@
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {PoolObject} from "@/render/simple/poolObject";
-import {TxObject} from "@/render/simple/txObject";
 import * as THREE from "three";
 import {Mesh, Object3D} from "three";
 import {IPoolQuery} from "@/render/simple/interface";
+import {Config} from "@/config";
 
 export class PoolObjectManager implements IPoolQuery {
     private poolObjects: Record<string, PoolObject> = {}
     private core?: Mesh;
 
-    private readonly CoreRadius = 140;
 
     // todo: track PoolObject state
 
@@ -83,7 +82,7 @@ export class PoolObjectManager implements IPoolQuery {
             return
         }
 
-        const sphere = new THREE.SphereGeometry(this.CoreRadius, 10, 10)
+        const sphere = new THREE.SphereGeometry(Config.SimpleScene.Core.Radius, 100, 100)
         this.core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: 0x202520}))
         if(this.scene) {
             this.scene.add(this.core)

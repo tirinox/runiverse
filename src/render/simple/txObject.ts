@@ -5,8 +5,18 @@ import {PhysicalObject} from "@/helpers/physics";
 import {RUNE_COLOR} from "@/helpers/3d";
 
 
+export const enum TxState {
+    Wallet_to_Pool,
+    Pool_to_Pool,
+    Pool_to_Wallet,
+    Wallet_to_Core,
+    Core_to_Wallet
+}
+
 export class TxObject extends PhysicalObject {
-    public WalletAddress = ''
+    public walletAddress = ''
+    public poolName = ''
+    public state: TxState = TxState.Wallet_to_Pool
 
     private static geoBox: THREE.BoxGeometry = new THREE.BoxGeometry(1, 1, 1)
 
@@ -33,5 +43,3 @@ export class TxObject extends PhysicalObject {
         this.obj3d.position.copy(sourcePosition)
     }
 }
-
-

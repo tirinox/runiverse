@@ -1,9 +1,9 @@
-import {Scene, Vector3} from "three";
+import * as THREE from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
 import {TxObjectManager} from "@/render/simple/txObjectManager";
 import {PoolObjectManager} from "@/render/simple/poolObjectManager";
 import {WalletObjectManager} from "@/render/simple/walletObjectManager";
-import {TxObject} from "@/render/simple/txObject";
+import {PointLight, Scene} from "three";
 
 
 export default class SimpleScene implements ThorEventListener {
@@ -41,6 +41,28 @@ export default class SimpleScene implements ThorEventListener {
         // const txo = new TxObject(100, pos)
         // txo.obj3d?.position.copy(pos)
         // this.scene.add(txo.obj3d!)
+
+        this.makeLight()
+        this.makeStarEnvironment()
+    }
+
+    private makeLight() {
+        const pointLight = new PointLight(0xffffff, 1.0);
+        pointLight.position.set(0, 0, 0);
+        this.scene.add(pointLight);
+
+        const ambient = new THREE.AmbientLight( 0xffffff );
+        this.scene.add( ambient );
+    }
+
+    private makeStarEnvironment() {
+        const loader = new THREE.CubeTextureLoader();
+        loader.setPath('textures/environment/starry_cubemap_1/');
+
+        const textureCube = loader.load(['right.png', 'left.png', 'bottom.png', 'top.png', 'front.png', 'back.png'])
+        textureCube.encoding = THREE.sRGBEncoding;
+
+        this.scene.background = textureCube;
     }
 
     // ------ event routing -------

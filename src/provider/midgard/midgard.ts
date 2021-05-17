@@ -1,40 +1,22 @@
 import {DefaultApi as MidgardAPIV1} from "@/provider/midgard/v1/index"
-import {Action, DefaultApi as MidgardAPIV2} from "@/provider/midgard/v2/index"
+import {DefaultApi as MidgardAPIV2} from "@/provider/midgard/v2/index"
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {TxBatch} from "@/provider/midgard/tx";
+import {Config, NetworkId} from "@/config";
 
-
-export enum NetworkId {
-    TestnetMultiChain = 'testnet-multi',
-    ChaosnetSingleBep2 = 'chaosnet-bep2',
-    ChaosnetMultiChain = 'chaosnet-multi',
-    Mainnet = ChaosnetMultiChain,
-}
 
 export const MAX_ACTIONS_PER_CALL = 50
+
 
 export class Midgard {
     public readonly networkId: NetworkId;
     private apiV1?: MidgardAPIV1
     private apiV2?: MidgardAPIV2
 
-    static getMidgardBaseUrl(networkId: NetworkId): string {
-        if (networkId === NetworkId.TestnetMultiChain) {
-            return `https://testnet.midgard.thorchain.info`
-        } else if (networkId === NetworkId.ChaosnetSingleBep2) {
-            return `https://chaosnet-midgard.bepswap.com`
-        } else if (networkId === NetworkId.ChaosnetMultiChain) {
-            return 'https://midgard.thorchain.info'
-        } else {
-            alert(`Network "${networkId}" is not supported!`)
-        }
-        return ''
-    }
-
     constructor(networkId: NetworkId) {
         this.networkId = networkId
 
-        const url = Midgard.getMidgardBaseUrl(networkId)
+        const url = Config.getMidgardBaseUrl(networkId)
         if(networkId == NetworkId.ChaosnetSingleBep2) {
             this.apiV1 = new MidgardAPIV1(undefined, url)
         } else {

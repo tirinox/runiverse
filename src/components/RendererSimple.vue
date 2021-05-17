@@ -20,8 +20,6 @@ import VisualLog from "@/components/VisualLog";
 import {WEBGL} from "three/examples/jsm/WebGL";
 
 
-const MAX_DT = 0.5
-
 
 export default {
     name: 'RendererSimple',
@@ -63,7 +61,7 @@ export default {
                 this.lastCalledTime = time;
                 this.fps = 1000.0 / delta
 
-                const dt = Math.min(MAX_DT, delta * 0.001)
+                const dt = Math.min(Config.Animations.MaxDeltaTimeOfFrame, delta * 0.001)
                 this.myScene.updateAnimations(dt)
             }
 
@@ -106,12 +104,12 @@ export default {
         this.myScene = new SimpleScene(this.scene)
         this.createCamera()
 
-        const midgard = new Midgard(Config.Network)
+        const midgard = new Midgard(Config.RealtimeScanner.Network)
         this.dataProvider = new RealtimeProvider(
             this.myScene, midgard,
-            Config.RealtimeScannerTickIntervalSec,
-            Config.IgnoreOldTransactions,
-            Config.RealtimeScannerSuppressErrors
+            Config.RealtimeScanner.TickIntervalSec,
+            Config.RealtimeScanner.IgnoreOldTransactions,
+            Config.RealtimeScanner.SuppressErrors
         )
         this.dataProvider.run()
 

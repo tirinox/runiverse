@@ -51,7 +51,8 @@ class RealtimeProvider {
     }
 
     private async requestActions() {
-        for(let page = 0; page < Config.MaxPagesOfActions; ++page) {
+        const maxPage = Config.RealtimeScanner.MaxPagesOfActions
+        for(let page = 0; page < maxPage; ++page) {
             const offset = page * MAX_ACTIONS_PER_CALL
             const batch = await this.midgard.getUserActions(offset, MAX_ACTIONS_PER_CALL)
             const [changes, goOnFlag] = this.txAnalyzer.processTransactions(batch.txs)
@@ -87,7 +88,7 @@ class RealtimeProvider {
     private async tick() {
         this.counter++
 
-        for(let attempt = 0; attempt < 3; ++attempt) {
+        for(let attempt = 0; attempt < Config.RealtimeScanner.FetchAttempts; ++attempt) {
             if(this.suppressErrors) {
                 try {
                     await this.tickJob()
