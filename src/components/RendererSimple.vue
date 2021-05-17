@@ -47,7 +47,8 @@ export default {
 
             const needResize = canvas.width !== width || canvas.height !== height;
             if (needResize) {
-                renderer.setSize(width, height, false);
+                // renderer.setSize(width, height, false);
+                this.composer.setSize(width, height)
                 this.myScene.onResize(width, height)
             }
 
@@ -91,10 +92,10 @@ export default {
                 return
             }
 
-            this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-            this.bloomPass.threshold = 0.8
+            this.bloomPass = new UnrealBloomPass({x: 1024, y: 1024});
+            this.bloomPass.threshold = 0.4
             this.bloomPass.strength = 1.0
-            this.bloomPass.radius = 10
+            this.bloomPass.radius = 0
             this.composer.addPass(this.bloomPass);
         },
 
@@ -121,7 +122,7 @@ export default {
 
         let renderer = this.renderer = new THREE.WebGLRenderer({
             canvas,
-            antialias: true
+            antialias: false
         });
 
         if (devicePixelRatio) {
