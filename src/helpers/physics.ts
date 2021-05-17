@@ -1,4 +1,4 @@
-import {limitMaxLength, ZeroVector3} from "@/helpers/3d";
+import {limitLength, vectorFromPositionToDirection, ZeroVector3} from "@/helpers/3d";
 import {Object3D, Vector3} from "three";
 import {Config} from "@/config";
 
@@ -7,8 +7,9 @@ export class PhysicalObject {
     public obj3d?: Object3D
     public force = new Vector3()
     public velocity = new Vector3()
+    public dissipation = 0.0
 
-    public maxSpeed = 10000.0
+    public maxSpeed = Config.Physics.MaxSpeed
 
     get position() {
         return this.obj3d?.position
@@ -20,11 +21,8 @@ export class PhysicalObject {
     }
 
     setVelocityToDirection(dir: Vector3, speed: number) {
-        let delta = this.obj3d?.position.clone()!
-        delta.sub(dir)
-        delta.normalize()
-        delta.multiplyScalar(-speed)
-        this.velocity = delta
+        let myPos = this.obj3d?.position!
+        this.velocity = vectorFromPositionToDirection(myPos, dir, speed)
     }
 
     public dispose() {
@@ -43,11 +41,13 @@ export class PhysicalObject {
         accel.multiplyScalar(dt / this.mass)
         this.velocity.add(accel)
 
-        this.velocity = limitMaxLength(this.velocity, this.maxSpeed)
+        this.velocity = limitLength(this.velocity, 0.0, this.maxSpeed)
 
         let shift = this.velocity.clone()
         shift.multiplyScalar(dt)
         this.obj3d.position.add(shift)
+
+        this.velocity.multiplyScalar(1.0 - this.dissipation * dt)
 
         // console.log(this.obj3d.position)
 
@@ -63,11 +63,12 @@ export class PhysicalObject {
     }
 
     public static gravityForce(m1: number, pos1: Vector3, m2: number, pos2: Vector3): Vector3 {
-        const GravityConst = 1e-2
         let dx = pos2.clone().sub(pos1)
         const r = Math.max(0.01, dx.length())
         dx.normalize()
-        return dx.multiplyScalar(GravityConst * m1 * m2 / (Math.pow(r, 2)))
+        const mag = Config.Physics.Gravity.Constant * m1 * m2 / (Math.pow(r, 2)) + 0.05 * Math.pow(r, 1.6)
+
+        return dx.multiplyScalar(mag)
     }
 
     public myGravityTo(mass: number, position: Vector3) {
@@ -85,5 +86,14 @@ export class PhysicalObject {
 
     public myLogForceTo(mass: number, position: Vector3, cutDistance: 100.0) {
         return PhysicalObject.logForce(this.mass, this.obj3d?.position!, mass, position, cutDistance)
+    }
+
+    public repelFrom(mass: number, position: Vector3, repelConst: number = 1e-6): Vector3 {
+        const myPos = this.obj3d?.position!
+        let dx = myPos.clone().sub(position)
+        dx.normalize()
+        const mag = Math.pow(dx.length(), 2) * repelConst
+        dx.multiplyScalar(mag)
+        return dx
     }
 }

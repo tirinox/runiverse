@@ -108,13 +108,33 @@ export function polarToXYZ(p: PolarCoordinates): Vector3 {
 
 export const RUNE_COLOR = 0x28f4af
 
-export function limitMaxLength(v: Vector3, maxLen: number): Vector3 {
-    if(v.length() > maxLen) {
+export function limitLength(v: Vector3, minLen: number = 0.0, maxLen: number = 1e10): Vector3 {
+    const currentLen = v.length()
+    if(currentLen === 0.0) {
+        return ZeroVector3.clone()
+    }
+
+    minLen = Math.abs(minLen)
+    maxLen = Math.abs(maxLen)
+
+    if (currentLen > maxLen || currentLen < minLen) {
         let newV = v.clone()
         newV.normalize()
-        newV.multiplyScalar(maxLen)
+        if(currentLen > maxLen) {
+            newV.multiplyScalar(maxLen)
+        } else {
+            newV.multiplyScalar(minLen)
+        }
         return newV
     } else {
         return v
     }
+}
+
+export function vectorFromPositionToDirection(pos: Vector3, dir: Vector3, magnitude: number = 1.0) {
+    let delta = pos.clone()
+    delta.sub(dir)
+    delta.normalize()
+    delta.multiplyScalar(-magnitude)
+    return delta
 }

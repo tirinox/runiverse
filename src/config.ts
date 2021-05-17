@@ -17,13 +17,23 @@ export const Config = {
         FetchAttempts: 3,
     },
 
-    Tx: {
-        InitialSpeed: 50
-    },
-
     Animations: {
         MaxDeltaTimeOfFrame: 0.5,
         ProximityDistance: 15.0
+    },
+
+    Physics: {
+        Gravity: {
+            Constant: 1e6
+        },
+        MaxSpeed: 1e6
+    },
+
+    Camera: {
+        MinDistance: 200,
+        StartDistance: 5000,
+        MaxDistance: 7000,
+        FOV: 60,
     },
 
     SimpleScene: {
@@ -32,24 +42,30 @@ export const Config = {
             Color: 0x202520,
         },
         PoolObject: {
-            OrbitFactorSpeed: 0.1,
+
             MaxPoolNameLength: 14,
+            Mass: 10000,
             Speed: {
-                CenterGauss: 0.2,
-                ScaleGauss: 0.5
+                CenterGauss: 0.04,
+                ScaleGauss: 0.02
             },
             Staged: {
                 Distance: {
-                    CenterGauss: 1200.0,
-                    ScaleGauss: 140.0
+                    CenterGauss: 2500.0,
+                    ScaleGauss: 770.0
                 }
             },
             Enabled: {
                 Distance: {
-                    CenterGauss: 600.0,
+                    CenterGauss: 1400.0,
                     ScaleGauss: 100.0
                 }
             }
+        },
+        TxObject: {
+            DissipationOfSpeed: 0.3,
+            RepelFactor: 1e-6,
+            InitialSpeed: 0.0,
         },
         Cubemap: {
             Enabled: true

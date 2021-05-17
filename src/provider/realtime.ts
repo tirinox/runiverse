@@ -5,6 +5,7 @@ import {Config} from "@/config";
 import {TxAnalyzer} from "@/provider/process/txAnalyze";
 import {ActionStatusEnum} from "@/provider/midgard/v2";
 import {sleep} from "@/helpers/async_utils";
+import VisualLog from "@/components/VisualLog.vue";
 
 
 class RealtimeProvider {
@@ -112,6 +113,12 @@ class RealtimeProvider {
             date: Date.now(),
             eventType: EventType.ResetAll
         })
+
+        try {
+            await this.requestPools()  // pools first!
+        } catch (e) {
+            VisualLog.log('failed to initially get pools info!')
+        }
 
         await this.tick()
     }

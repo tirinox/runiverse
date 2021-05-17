@@ -1,11 +1,13 @@
 import VisualLog from "@/components/VisualLog.vue";
-import {Object3D} from "three";
+import {Object3D, Vector3} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {TxObject, TxState} from "@/render/simple/txObject";
 import {IPoolQuery, IWalletQuery} from "@/render/simple/interface";
 import {randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 import {ActionStatusEnum, ActionTypeEnum} from "@/provider/midgard/v2";
 import {Config} from "@/config";
+import {PhysicalObject} from "@/helpers/physics";
+import {Tx} from "@/provider/midgard/v1";
 
 
 interface TxObjectMeta {
@@ -30,11 +32,37 @@ export class TxObjectManager {
     //     }
     // }
 
+    private forceRepelAllPoolsExceptOne(poolName: string, txObj: TxObject): Vector3 {
+        if(!this.poolMan) {
+            return new Vector3()
+        }
+
+        const poolMass = Config.SimpleScene.PoolObject.Mass
+
+        let force = new Vector3()
+        for(const poolObj of this.poolMan?.allPools()) {
+            const poolPos = poolObj.mesh?.position!
+            let forcePart: Vector3
+            if(poolObj.pool?.asset! === poolName) {
+                forcePart = txObj.myGravityTo(poolMass, poolPos)
+            } else {
+                // forcePart = txObj.repelFrom(poolMass, poolPos, Config.SimpleScene.TxObject.RepelFactor)
+                forcePart = ZeroVector3.clone()
+            }
+            force.add(forcePart)
+        }
+        force.clampLength(0.0, 1e6)
+        return force
+    }
+
     private updateTxState(txMeta: TxObjectMeta, txObj: TxObject) {
+
+
         if(txObj.state == TxState.Wallet_to_Pool || txObj.state == TxState.Pool_to_Pool) {
             const targetPoolPos = this.poolMan?.getPoolByName(txObj.poolName).position
             if(targetPoolPos) {
-                txObj.force = txObj.myGravityTo(1e10, targetPoolPos)
+                txObj.force = this.forceRepelAllPoolsExceptOne(txObj.poolName, txObj)
+
                 if(txObj.isCloseToTarget(targetPoolPos)) {
                     this.destroyTxObject(txMeta, txObj)
                 }
@@ -43,6 +71,10 @@ export class TxObjectManager {
             const targetPos = this.walletMan?.findWalletByAddress(txObj.walletAddress)?.obj?.position
             if(targetPos) {
                 txObj.force = txObj.myGravityTo(1e10, targetPos)
+                txObj.force.clampLength(1e3, 1e6)
+                if(txObj.isCloseToTarget(targetPos)) {
+                    this.destroyTxObject(txMeta, txObj)
+                }
             }
         }
     }
@@ -56,7 +88,29 @@ export class TxObjectManager {
         }
     }
 
-    private readonly InitialSpeed = 0;
+    private createNewTxObject(tx: ThorTransaction, sourcePosition: Vector3) {
+        const mass = 100.0
+
+        let txObject = new TxObject(mass, sourcePosition)
+        txObject.dissipation = Config.SimpleScene.TxObject.DissipationOfSpeed
+
+        let velocityDirection = ZeroVector3.clone()
+        if (tx.type == ActionTypeEnum.Switch) {
+            txObject.state = TxState.Wallet_to_Core
+        } else {
+            txObject.state = TxState.Wallet_to_Pool
+            txObject.poolName = tx.pools.length > 0 ? tx.pools[0] : ''
+            velocityDirection = this.poolMan?.getPoolByName(txObject.poolName).position ?? velocityDirection
+        }
+
+        txObject.setVelocityToDirection(velocityDirection, Config.SimpleScene.TxObject.InitialSpeed)
+
+        if (this.scene) {
+            this.scene.add(txObject.obj3d!)
+        }
+
+        return txObject
+    }
 
     public createTransactionMesh(tx: ThorTransaction) {
         const hash = tx.realInputHash
@@ -78,23 +132,7 @@ export class TxObjectManager {
             }
 
             for (const coin of inTx.coins) {
-                const mass = 100.0
-                let txObject = new TxObject(mass, sourcePosition)
-
-                if (tx.type == ActionTypeEnum.Switch) {
-                    txObject.state = TxState.Wallet_to_Core
-                } else {
-                    txObject.state = TxState.Wallet_to_Pool
-                    txObject.poolName = tx.pools.length > 0 ? tx.pools[0] : ''
-                }
-
-                txObject.setVelocityToDirection(ZeroVector3, Config.Tx.InitialSpeed)
-
-                if (this.scene) {
-                    this.scene.add(txObject.obj3d!)
-                }
-
-                txObjects.push(txObject)
+                txObjects.push(this.createNewTxObject(tx, sourcePosition))
             }
         }
 
@@ -105,7 +143,7 @@ export class TxObjectManager {
             orbiting: tx.status == ActionStatusEnum.Pending,
         }
 
-        VisualLog.log(`new tx mesh ${tx.type} ${tx.pools[0]} ${tx.status}`)
+        VisualLog.log(`new tx mesh >>${tx.type}<< ${tx.pools[0]} ${tx.status}`)
     }
 
     public updateTransactionMeshStatus(tx: ThorTransaction) {

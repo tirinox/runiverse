@@ -95,4 +95,7 @@ export class PoolObjectManager implements IPoolQuery {
         }
     }
 
+    public allPools(): Array <PoolObject> {
+        return Object.values(this.poolObjects)
+    }
 }

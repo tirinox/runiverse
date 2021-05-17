@@ -11,7 +11,6 @@
 <script>
 
 import * as THREE from "three"
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import SimpleScene from "@/render/simple/simpleScene";
 import {RealtimeProvider} from "@/provider/realtime";
 import {Midgard} from "@/provider/midgard/midgard";
@@ -21,6 +20,7 @@ import {WEBGL} from "three/examples/jsm/WebGL";
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
 import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 
 export default {
@@ -75,16 +75,19 @@ export default {
         },
 
         createCamera() {
-            this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+            const cfg = Config.Camera
+            this.camera = new THREE.PerspectiveCamera(cfg.FOV, window.innerWidth / window.innerHeight, 1, 10000);
 
             const controls = new OrbitControls(this.camera, this.renderer.domElement);
-            controls.listenToKeyEvents(this.canvas);
 
-            controls.minDistance = 100;
-            this.camera.position.z = 2500
-            controls.maxDistance = 5000;
+            // const controls = new TrackballControls(this.camera, this.renderer.domElement)
+            // controls.listenToKeyEvents(this.canvas);
+
+            controls.minDistance = cfg.MinDistance;
+            this.camera.position.z = cfg.StartDistance
+            controls.maxDistance = cfg.MaxDistance
             controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-            controls.dampingFactor = 0.5;
+            controls.dampingFactor = 0.02
         },
 
         makeBloom() {
