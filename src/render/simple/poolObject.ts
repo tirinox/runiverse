@@ -5,6 +5,7 @@ import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d
 import {Text} from 'troika-three-text'
 import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
+import {Vector3} from "three";
 
 
 export class PoolObject {
@@ -18,6 +19,10 @@ export class PoolObject {
 
     scaleFromPool(pool: PoolDetail): number {
         return Math.pow(pool.runeDepth.toNumber(), 0.11) / 20
+    }
+
+    get position() {
+        return this.mesh?.position ?? new Vector3()
     }
 
     constructor(pool: PoolDetail) {

@@ -46,7 +46,7 @@ export class TxObjectManager {
             if(poolObj.pool?.asset! === poolName) {
                 forcePart = txObj.myGravityTo(poolMass, poolPos)
             } else {
-                // forcePart = txObj.repelFrom(poolMass, poolPos, Config.SimpleScene.TxObject.RepelFactor)
+                forcePart = txObj.repelFrom(poolMass, poolPos, Config.SimpleScene.TxObject.RepelFactor)
                 forcePart = ZeroVector3.clone()
             }
             force.add(forcePart)
@@ -56,27 +56,44 @@ export class TxObjectManager {
     }
 
     private updateTxState(txMeta: TxObjectMeta, txObj: TxObject) {
-
-
         if(txObj.state == TxState.Wallet_to_Pool || txObj.state == TxState.Pool_to_Pool) {
-            const targetPoolPos = this.poolMan?.getPoolByName(txObj.poolName).position
+            const targetPoolPos = this.poolMan?.getPoolByName(txObj.poolName)?.position
             if(targetPoolPos) {
                 txObj.force = this.forceRepelAllPoolsExceptOne(txObj.poolName, txObj)
 
                 if(txObj.isCloseToTarget(targetPoolPos)) {
-                    this.destroyTxObject(txMeta, txObj)
+                    this.onReachedPool(txMeta, txObj)
                 }
             }
-        } else if(txObj.state == TxState.Pool_to_Wallet) {
+        } else if(txObj.state == TxState.Pool_to_Wallet || txObj.state == TxState.Core_to_Wallet) {
             const targetPos = this.walletMan?.findWalletByAddress(txObj.walletAddress)?.obj?.position
             if(targetPos) {
                 txObj.force = txObj.myGravityTo(1e10, targetPos)
-                txObj.force.clampLength(1e3, 1e6)
+
                 if(txObj.isCloseToTarget(targetPos)) {
-                    this.destroyTxObject(txMeta, txObj)
+                    this.onReachedWallet(txMeta, txObj)
                 }
             }
+        } else if(txObj.state == TxState.Wallet_to_Core) {
+            const targetPos = new Vector3()
+            txObj.force = txObj.myGravityTo(1e10, targetPos)
+
+            if(txObj.isCloseToTarget(targetPos)) {
+                this.onReachedCore(txMeta, txObj)
+            }
         }
+    }
+
+    private onReachedPool(txMeta: TxObjectMeta, txObj: TxObject) {
+        this.destroyTxObject(txMeta, txObj)
+    }
+
+    private onReachedWallet(txMeta: TxObjectMeta, txObj: TxObject) {
+        this.destroyTxObject(txMeta, txObj)
+    }
+
+    private onReachedCore(txMeta: TxObjectMeta, txObj: TxObject) {
+        this.destroyTxObject(txMeta, txObj)
     }
 
     public update(dt: number) {
@@ -94,13 +111,14 @@ export class TxObjectManager {
         let txObject = new TxObject(mass, sourcePosition)
         txObject.dissipation = Config.SimpleScene.TxObject.DissipationOfSpeed
 
-        let velocityDirection = ZeroVector3.clone()
+        // let velocityDirection = ZeroVector3.clone()
+        let velocityDirection = randomPointOnSphere(1.0)
         if (tx.type == ActionTypeEnum.Switch) {
             txObject.state = TxState.Wallet_to_Core
         } else {
             txObject.state = TxState.Wallet_to_Pool
             txObject.poolName = tx.pools.length > 0 ? tx.pools[0] : ''
-            velocityDirection = this.poolMan?.getPoolByName(txObject.poolName).position ?? velocityDirection
+            // velocityDirection = this.poolMan?.getPoolByName(txObject.poolName)?.position ?? velocityDirection
         }
 
         txObject.setVelocityToDirection(velocityDirection, Config.SimpleScene.TxObject.InitialSpeed)

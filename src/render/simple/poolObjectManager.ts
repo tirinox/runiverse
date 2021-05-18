@@ -72,8 +72,7 @@ export class PoolObjectManager implements IPoolQuery {
     }
 
     public getPoolByName(poolName: string) {
-        const p = this.poolObjects[poolName]
-        return p ? p.mesh! : this.core!
+        return this.poolObjects[poolName]
     }
 
     public createCore() {

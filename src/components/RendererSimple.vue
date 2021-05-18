@@ -87,7 +87,7 @@ export default {
             this.camera.position.z = cfg.StartDistance
             controls.maxDistance = cfg.MaxDistance
             controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-            controls.dampingFactor = 0.02
+            controls.dampingFactor = cfg.Damp
         },
 
         makeBloom() {

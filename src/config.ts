@@ -24,9 +24,10 @@ export const Config = {
 
     Physics: {
         Gravity: {
-            Constant: 1e6
+            Constant: 1e5,
+            LongDistConstant: 0.0001,
         },
-        MaxSpeed: 1e6
+        MaxSpeed: 1e8
     },
 
     Camera: {
@@ -34,6 +35,7 @@ export const Config = {
         StartDistance: 5000,
         MaxDistance: 7000,
         FOV: 60,
+        Damp: 0.2,
     },
 
     SimpleScene: {
@@ -63,9 +65,9 @@ export const Config = {
             }
         },
         TxObject: {
-            DissipationOfSpeed: 0.3,
+            DissipationOfSpeed: 0.2,
             RepelFactor: 1e-6,
-            InitialSpeed: 0.0,
+            InitialSpeed: 1440.0,
         },
         Cubemap: {
             Enabled: true

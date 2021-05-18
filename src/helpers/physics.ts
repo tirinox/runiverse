@@ -66,7 +66,9 @@ export class PhysicalObject {
         let dx = pos2.clone().sub(pos1)
         const r = Math.max(0.01, dx.length())
         dx.normalize()
-        const mag = Config.Physics.Gravity.Constant * m1 * m2 / (Math.pow(r, 2)) + 0.05 * Math.pow(r, 1.6)
+        const mag =
+            Config.Physics.Gravity.Constant * m1 * m2 / (Math.pow(r, 2)) +
+            Config.Physics.Gravity.LongDistConstant * Math.pow(r, 1.6)
 
         return dx.multiplyScalar(mag)
     }
