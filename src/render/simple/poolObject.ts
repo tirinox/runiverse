@@ -1,19 +1,18 @@
 import * as THREE from "three";
+import {Vector3} from "three";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
-// @ts-ignore
-import {Text} from 'troika-three-text'
 import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
-import {Vector3} from "three";
 
 
-export class PoolObject {
-    public mesh?: THREE.Object3D
+export class PoolObject extends THREE.Object3D {
     public pool?: PoolDetail
     public speed: number = 0.0
     public orbit?: Orbit
-    public label?: Text
+
+    private runeSideMesh?: THREE.Mesh
+    private assetSideMesh?: THREE.Mesh
 
     private static geoPool: THREE.SphereGeometry = new THREE.SphereGeometry(50, 100, 100)
 
@@ -21,11 +20,9 @@ export class PoolObject {
         return Math.pow(pool.runeDepth.toNumber(), 0.11) / 20
     }
 
-    get position() {
-        return this.mesh?.position ?? new Vector3()
-    }
-
     constructor(pool: PoolDetail) {
+        super();
+
         this.pool = pool
 
         const enabled = pool.isEnabled
@@ -41,11 +38,10 @@ export class PoolObject {
             emissiveIntensity: 0.5,
         });
 
+        // todo make 2 sides in binary system
         let poolMesh = new THREE.Mesh(PoolObject.geoPool, material)
-
         poolMesh.scale.setScalar(this.scaleFromPool(pool))
-
-        this.mesh = poolMesh
+        this.add(poolMesh)
 
         const radius = enabled ?
             randomGauss(cfg.Enabled.Distance.CenterGauss, cfg.Enabled.Distance.ScaleGauss) :
@@ -53,16 +49,16 @@ export class PoolObject {
 
         const n = randomPointOnSphere(1.0)
 
-        this.orbit = new Orbit(poolMesh, ZeroVector3.clone(), radius, n)
+        this.orbit = new Orbit(this, ZeroVector3.clone(), radius, n)
         this.orbit.randomizePhase()
         this.orbit!.step(0.0016)
 
         this.speed = randomGauss(cfg.Speed.CenterGauss, cfg.Speed.ScaleGauss)
 
-        this.label = this.createLabel(pool.asset)
-        this.label.position.y = 80
-        this.label.position.x = -40
-        poolMesh.add(this.label)
+        const label = this.createLabel(pool.asset)
+        label.position.y = 80
+        label.position.x = -40
+        this.add(label)
     }
 
     createLabel(name: string) {
@@ -71,30 +67,21 @@ export class PoolObject {
             name = name.substring(0, maxLen) + '...'
         }
 
-        const myText = new SpriteText(name, 24, 'white')
-        return myText
+        return new SpriteText(name, 24, 'white')
     }
 
     public update(dt: number) {
         this.orbit!.step(dt, this.speed)
+        // todo rotate binary system
     }
 
     public dispose() {
-        this.label.dispose()
-        this.label = undefined
-
-        if (this.mesh) {
-            this.mesh.parent?.remove(this.mesh)
-            this.mesh = undefined
-        }
     }
 
     public heartBeat() {
         const factor = 1.05
-        if (this.mesh) {
-            const oldScale = this.mesh.scale.x
-            this.mesh.scale.setScalar(oldScale * factor)
-            setTimeout(() => this.mesh!.scale.setScalar(oldScale), 500)
-        }
+        const oldScale = this.scale.x
+        this.scale.setScalar(oldScale * factor)
+        setTimeout(() => this.scale.setScalar(oldScale), 500)
     }
 }

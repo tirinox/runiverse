@@ -58,7 +58,7 @@ export class PoolObjectManager implements IPoolQuery {
         this.poolObjects[pool.asset] = poolObj
 
         if(this.scene) {
-            this.scene.add(poolObj.mesh!);
+            this.scene.add(poolObj);
         }
 
         console.debug(`add new mesh for ${pool.asset}`)

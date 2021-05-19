@@ -31,7 +31,7 @@ export class TxObjectManager {
 
         let force = new Vector3()
         for(const poolObj of this.poolMan?.allPools()) {
-            const poolPos = poolObj.mesh?.position!
+            const poolPos = poolObj.position!
             let forcePart: Vector3
             if(poolObj.pool?.asset! === poolName) {
                 forcePart = txObj.myGravityTo(poolMass, poolPos)
@@ -145,7 +145,7 @@ export class TxObjectManager {
             return
         }
 
-        const mass = Config.SimpleScene.TxObject.Mass
+        const mass = Config.SimpleScene.TxObject.Mass * Math.log10(runeAmount)
         let txObject = new TxObject(mass, sourcePosition, runeAmount)
         txObject.dissipation = Config.SimpleScene.TxObject.DissipationOfSpeed
 
@@ -197,7 +197,6 @@ export class TxObjectManager {
                 this.createNewTxObject(tx, sourcePosition, coin)
             }
         }
-
 
         VisualLog.log(`new tx mesh >>${tx.type}<< ${tx.pools[0]} ${tx.status}`)
     }
