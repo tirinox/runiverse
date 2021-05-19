@@ -1,6 +1,6 @@
 <template>
     <div class="canvas-holder">
-        <canvas class="canvas-full" ref="canvas"></canvas>
+        <canvas class="canvas-full" ref="canvas" tabindex="1" @keydown="onKeyDown"></canvas>
         <div class="fps-counter" v-show="showFps">
             <span>{{ Number(fps).toFixed(2) }} FPS</span>
             <VisualLog></VisualLog>
@@ -36,6 +36,18 @@ export default {
     },
 
     methods: {
+        onKeyDown(event) {
+            console.log(event)
+            if(event.code === 'KeyR') {
+                this.resetCamera()
+                VisualLog.log('Camera reset.')
+            }
+        },
+
+        resetCamera() {
+            this.controls.reset()
+        },
+
         resizeRendererToDisplaySize() {
             const renderer = this.renderer
             const canvas = renderer.domElement;
@@ -81,13 +93,15 @@ export default {
             const controls = new OrbitControls(this.camera, this.renderer.domElement);
 
             // const controls = new TrackballControls(this.camera, this.renderer.domElement)
-            // controls.listenToKeyEvents(this.canvas);
+            controls.listenToKeyEvents(this.canvas);
 
             controls.minDistance = cfg.MinDistance;
             this.camera.position.z = cfg.StartDistance
             controls.maxDistance = cfg.MaxDistance
             controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
             controls.dampingFactor = cfg.Damp
+            controls.saveState()
+            this.controls = controls
         },
 
         makeBloom() {
@@ -117,11 +131,16 @@ export default {
     mounted() {
         if (!WEBGL.isWebGLAvailable()) {
             const warning = WEBGL.getWebGLErrorMessage();
+            this.showFps = false
             document.getElementById('app').appendChild(warning);
             return
         }
 
         let canvas = this.canvas = this.$refs.canvas
+
+        // canvas.addEventListener('keydown', (e) => {
+        //     console.log(e)
+        // })
 
         let renderer = this.renderer = new THREE.WebGLRenderer({
             canvas,
@@ -157,7 +176,9 @@ export default {
     },
 
     beforeUnmount() {
-        this.dataProvider.stop()
+        if(this.dataProvider) {
+            this.dataProvider.stop()
+        }
     }
 }
 
@@ -170,7 +191,8 @@ export default {
     height: 100%;
     position: absolute;
     left: 0;
-    top: 0
+    top: 0;
+    outline: none;
 }
 
 .fps-counter {

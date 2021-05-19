@@ -11,11 +11,13 @@ import RendererSimple from "@/components/RendererSimple.vue";
 export default defineComponent({
     name: 'App',
 
+    methods: {},
+
     components: {
         RendererSimple,
     },
-    mounted() {
-    }
+
+    mounted() {}
 });
 
 </script>
@@ -29,6 +31,7 @@ export default defineComponent({
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
     color: #2c3e50;
+    overflow: hidden;
 }
 
 </style>
