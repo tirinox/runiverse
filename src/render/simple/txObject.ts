@@ -3,6 +3,7 @@ import {Vector3} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {PhysicalObject} from "@/helpers/physics";
 import {RUNE_COLOR} from "@/helpers/3d";
+import {Config} from "@/config";
 
 
 export const enum TxState {
@@ -25,20 +26,18 @@ export class TxObject extends PhysicalObject {
         reflectivity: 0.1,
     });
 
-    scaleFromTx(tx: ThorTransaction, runesPerAsset: number): number {
-        const runeVolume = tx.runeVolume(runesPerAsset)
-        const sc = Math.pow(runeVolume, 0.15)
+    scaleFromTx(runeAmount: number): number {
+        const cfg = Config.SimpleScene.TxObject
+        const sc = cfg.ScaleConst * Math.pow(runeAmount, cfg.ScalePower)
         return Math.max(1.0, sc)
     }
 
-    constructor(mass: number, sourcePosition: Vector3) {
+    constructor(mass: number, sourcePosition: Vector3, runeAmount: number) {
         super(mass);
 
         this.obj3d = new THREE.Mesh(TxObject.geoBox, TxObject.whiteMaterial)
 
-        const scale = Math.log10(Math.max(1e-5, mass)) + 10
-
-        this.obj3d.scale.setScalar(scale)
+        this.obj3d.scale.setScalar(this.scaleFromTx(runeAmount))
 
         this.obj3d.position.copy(sourcePosition)
     }

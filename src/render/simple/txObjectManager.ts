@@ -4,10 +4,9 @@ import {ThorTransaction} from "@/provider/midgard/tx";
 import {TxObject, TxState} from "@/render/simple/txObject";
 import {IPoolQuery, IWalletQuery} from "@/render/simple/interface";
 import {randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
-import {ActionStatusEnum, ActionTypeEnum} from "@/provider/midgard/v2";
+import {ActionStatusEnum, ActionTypeEnum, Coin} from "@/provider/midgard/v2";
 import {Config} from "@/config";
-import {PhysicalObject} from "@/helpers/physics";
-import {Tx} from "@/provider/midgard/v1";
+import {isRuneStr, parseThorBigNumber} from "@/provider/midgard/coinName";
 
 
 interface TxObjectMeta {
@@ -22,15 +21,6 @@ export class TxObjectManager {
     public walletMan?: IWalletQuery
 
     private txObjects: Record<string, TxObjectMeta> = {}
-
-    // private onReachedTarget(txObj: TxObject) {
-    //     if(txObj.targets.length > 0) {
-    //         txObj.targets.shift()
-    //         if(!txObj.targets.length) {
-    //             this.destroyTransactionMesh(txObj.tx!)
-    //         }
-    //     }
-    // }
 
     private forceRepelAllPoolsExceptOne(poolName: string, txObj: TxObject): Vector3 {
         if(!this.poolMan) {
@@ -85,7 +75,28 @@ export class TxObjectManager {
     }
 
     private onReachedPool(txMeta: TxObjectMeta, txObj: TxObject) {
-        this.destroyTxObject(txMeta, txObj)
+        if(txMeta.action.type == ActionTypeEnum.Swap) {
+            if(txMeta.action.isDoubleSwap) {
+                if(txObj.state == TxState.Pool_to_Pool) {
+                    txObj.state = TxState.Pool_to_Wallet
+                    // todo: txObj.walletAddress =
+                } else {
+                    txObj.poolName = txMeta.action.pools[1]
+                    txObj.state = TxState.Pool_to_Pool
+                    txObj.state = TxState.Pool_to_Pool
+                }
+            } else {
+                txObj.state = TxState.Pool_to_Wallet
+                // todo: txObj.walletAddress =
+            }
+
+        } else {
+            // todo:
+            // if(txMeta.action.type == ActionTypeEnum.Withdraw) {
+            //     this.createNewTxObject(txMeta.action, txObj.position!)
+            // }
+            this.destroyTxObject(txMeta, txObj)
+        }
     }
 
     private onReachedWallet(txMeta: TxObjectMeta, txObj: TxObject) {
@@ -105,11 +116,40 @@ export class TxObjectManager {
         }
     }
 
-    private createNewTxObject(tx: ThorTransaction, sourcePosition: Vector3) {
-        const mass = 100.0
+    private calcRuneAmount(coin: Coin) {
+        const amt = parseThorBigNumber(coin.amount)
+        if(isRuneStr(coin.asset)) {
+            return amt
+        } else {
+            const price = this.poolMan?.runesPerAsset(coin.asset) ?? 0.0
+            return amt * price
+        }
+    }
 
-        let txObject = new TxObject(mass, sourcePosition)
+    private createNewTxObject(tx: ThorTransaction, sourcePosition: Vector3, coin: Coin) {
+        const hash = tx.realInputHash
+        let txMeta = this.txObjects[hash!]
+        if(!txMeta) {
+            console.error('no TX meta for this tx', hash, coin)
+            return
+        }
+
+        if(!this.scene) {
+            console.error('no scene detected!')
+            return
+        }
+
+        const runeAmount = this.calcRuneAmount(coin)
+        if(!runeAmount) {
+            console.warn('no value of tx object!', tx)
+            return
+        }
+
+        const mass = Config.SimpleScene.TxObject.Mass
+        let txObject = new TxObject(mass, sourcePosition, runeAmount)
         txObject.dissipation = Config.SimpleScene.TxObject.DissipationOfSpeed
+
+        txObject.walletAddress = tx.inputAddress!
 
         // let velocityDirection = ZeroVector3.clone()
         let velocityDirection = randomPointOnSphere(1.0)
@@ -123,14 +163,13 @@ export class TxObjectManager {
 
         txObject.setVelocityToDirection(velocityDirection, Config.SimpleScene.TxObject.InitialSpeed)
 
-        if (this.scene) {
-            this.scene.add(txObject.obj3d!)
-        }
+        this.scene.add(txObject.obj3d!)
+        txMeta.objects.push(txObject)
 
         return txObject
     }
 
-    public createTransactionMesh(tx: ThorTransaction) {
+    public createTransactionObjects(tx: ThorTransaction) {
         const hash = tx.realInputHash
         if (hash === null || tx.inputAddress === null) {
             return
@@ -141,7 +180,12 @@ export class TxObjectManager {
             return
         }
 
-        let txObjects: Array<TxObject> = []
+        // store in cache
+        this.txObjects[hash] = {
+            action: tx,
+            objects: [],
+            orbiting: tx.status == ActionStatusEnum.Pending,
+        }
 
         for (const inTx of tx._in) {
             let sourcePosition = this.walletMan?.findWalletByAddress(inTx.address)?.obj?.position!
@@ -150,16 +194,10 @@ export class TxObjectManager {
             }
 
             for (const coin of inTx.coins) {
-                txObjects.push(this.createNewTxObject(tx, sourcePosition))
+                this.createNewTxObject(tx, sourcePosition, coin)
             }
         }
 
-        // store in cache
-        this.txObjects[hash] = {
-            action: tx,
-            objects: txObjects,
-            orbiting: tx.status == ActionStatusEnum.Pending,
-        }
 
         VisualLog.log(`new tx mesh >>${tx.type}<< ${tx.pools[0]} ${tx.status}`)
     }

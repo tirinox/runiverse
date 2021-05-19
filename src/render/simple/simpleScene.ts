@@ -96,7 +96,7 @@ export default class SimpleScene implements ThorEventListener {
 
             if (ev.type == TxEventType.Add) {
                 this.walletObjManager.makeWalletsFromTx(ev.tx) // this is always 1st!
-                this.txObjManager.createTransactionMesh(ev.tx)
+                this.txObjManager.createTransactionObjects(ev.tx)
             } else if (ev.type == TxEventType.Destroy) {
                 this.txObjManager.destroyTransactionMesh(ev.tx)
             } else if (ev.type == TxEventType.StatusUpdated) {

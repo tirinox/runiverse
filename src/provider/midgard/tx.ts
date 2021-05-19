@@ -29,6 +29,10 @@ export class ThorTransaction implements TxDetailsV2 {
 
     public readonly dateTimestampMs: number
 
+    get isDoubleSwap() {
+        return this.type == ActionTypeEnum.Swap && this.pools.length == 2
+    }
+
     get computedHash(): string {
         return this._lazyHash
     }

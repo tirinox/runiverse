@@ -65,9 +65,12 @@ export const Config = {
             }
         },
         TxObject: {
-            DissipationOfSpeed: 0.2,
+            DissipationOfSpeed: 0.4, // 0.2
             RepelFactor: 1e-6,
             InitialSpeed: 1440.0,
+            Mass: 100.0,
+            ScaleConst: 3.5,
+            ScalePower: 0.15,
         },
         Cubemap: {
             Enabled: true

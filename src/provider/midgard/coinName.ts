@@ -1,3 +1,5 @@
+import { BigNumber } from 'bignumber.js'
+
 export enum CoinName {
     Bnb = 'BNB.BNB',
     BnbBusd = 'BNB.BUSD-BD1',
@@ -51,5 +53,7 @@ export function isStableCoinStr(coin: string): boolean {
 }
 
 export function parseThorBigNumber(x: string): number {
-    return Number(BigInt(x) / 100_000_000n)
+    const bn = new BigNumber(x)
+    const bn1 = bn.div(new BigNumber(1e8))
+    return bn1.toNumber()
 }
