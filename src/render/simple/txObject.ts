@@ -2,7 +2,7 @@ import * as THREE from "three";
 import {Vector3} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {PhysicalObject} from "@/helpers/physics";
-import {RUNE_COLOR} from "@/helpers/3d";
+import {randomGauss, randomPointOnSphere, RUNE_COLOR} from "@/helpers/3d";
 import {Config} from "@/config";
 
 
@@ -18,6 +18,9 @@ export class TxObject extends PhysicalObject {
     public walletAddress = ''
     public poolName = ''
     public state: TxState = TxState.Wallet_to_Pool
+
+    public rotationAxis = randomPointOnSphere(1.0)
+    public rotationSpeed = randomGauss(0.0, Config.SimpleScene.TxObject.RotationSpeedGaussMagnitude)
 
     private static geoBox: THREE.BoxGeometry = new THREE.BoxGeometry(1, 1, 1)
 
@@ -40,5 +43,12 @@ export class TxObject extends PhysicalObject {
         this.obj3d.scale.setScalar(this.scaleFromTx(runeAmount))
 
         this.obj3d.position.copy(sourcePosition)
+    }
+
+    update(dt: number) {
+        super.update(dt);
+        if(this.obj3d) {
+            this.obj3d.rotateOnAxis(this.rotationAxis, this.rotationSpeed * dt)
+        }
     }
 }

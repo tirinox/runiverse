@@ -69,8 +69,9 @@ export const Config = {
             RepelFactor: 1e-6,
             InitialSpeed: 1440.0,
             Mass: 100.0,
-            ScaleConst: 3.5,
+            ScaleConst: 5.5,
             ScalePower: 0.15,
+            RotationSpeedGaussMagnitude: 42.0
         },
         Cubemap: {
             Enabled: true
