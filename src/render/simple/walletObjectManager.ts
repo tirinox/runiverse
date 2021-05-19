@@ -3,7 +3,7 @@ import {ThorTransaction} from "@/provider/midgard/tx";
 import {Transaction} from "@/provider/midgard/v2";
 import {Object3D} from "three";
 import {hashToPolarCoordinates, polarToXYZ} from "@/helpers/3d";
-import VisualLog from "@/components/VisualLog.vue";
+import VisualLog from "@/components/elements/VisualLog.vue";
 import * as crypto from "crypto-js";
 
 

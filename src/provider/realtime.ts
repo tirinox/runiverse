@@ -5,7 +5,7 @@ import {Config} from "@/config";
 import {TxAnalyzer} from "@/provider/process/txAnalyze";
 import {ActionStatusEnum} from "@/provider/midgard/v2";
 import {sleep} from "@/helpers/async_utils";
-import VisualLog from "@/components/VisualLog.vue";
+import VisualLog from "@/components/elements/VisualLog.vue";
 
 
 class RealtimeProvider {

@@ -5,6 +5,9 @@
             <span>{{ Number(fps).toFixed(2) }} FPS</span>
             <VisualLog></VisualLog>
         </div>
+        <div class="control-panel">
+            <ButtonFullScreen></ButtonFullScreen>
+        </div>
     </div>
 </template>
 
@@ -15,17 +18,18 @@ import SimpleScene from "@/render/simple/simpleScene";
 import {RealtimeProvider} from "@/provider/realtime";
 import {Midgard} from "@/provider/midgard/midgard";
 import {Config} from "@/config";
-import VisualLog from "@/components/VisualLog";
+import VisualLog from "@/components/elements/VisualLog";
 import {WEBGL} from "three/examples/jsm/WebGL";
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
 import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import ButtonFullScreen from "@/components/elements/ButtonFullScreen";
 
 
 export default {
     name: 'RendererSimple',
-    components: {VisualLog},
+    components: {VisualLog, ButtonFullScreen},
     props: {},
 
     data() {
@@ -38,11 +42,13 @@ export default {
     methods: {
         onKeyDown(event) {
             console.log(event)
-            if(event.code === 'KeyR') {
+            if (event.code === 'KeyR') {
                 this.resetCamera()
                 VisualLog.log('Camera reset.')
             }
         },
+
+
 
         resetCamera() {
             this.controls.reset()
@@ -105,7 +111,7 @@ export default {
         },
 
         makeBloom() {
-            if(this.bloomPass) {
+            if (this.bloomPass) {
                 return
             }
 
@@ -176,7 +182,7 @@ export default {
     },
 
     beforeUnmount() {
-        if(this.dataProvider) {
+        if (this.dataProvider) {
             this.dataProvider.stop()
         }
     }
@@ -208,6 +214,12 @@ export default {
 .canvas-holder {
     width: 100%;
     height: 100%;
+}
+
+.control-panel {
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }
 
 </style>

@@ -89,7 +89,7 @@ export const Config = {
             MaxRows: 12,
             FadeTime: 2.5,
         },
-        FPSCounter: true
+        FPSCounter: false
     },
 
     getMidgardBaseUrl(networkId: NetworkId): string {

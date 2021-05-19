@@ -1,4 +1,4 @@
-import VisualLog from "@/components/VisualLog.vue";
+import VisualLog from "@/components/elements/VisualLog.vue";
 import {Object3D, Vector3} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {TxObject, TxState} from "@/render/simple/txObject";
