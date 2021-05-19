@@ -5,9 +5,8 @@
             <span>{{ Number(fps).toFixed(2) }} FPS</span>
             <VisualLog></VisualLog>
         </div>
-        <div class="control-panel">
-            <ButtonFullScreen></ButtonFullScreen>
-        </div>
+
+        <ControlPanel></ControlPanel>
     </div>
 </template>
 
@@ -24,12 +23,12 @@ import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
 import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import ButtonFullScreen from "@/components/elements/ButtonFullScreen";
-
+import ControlPanel from "@/components/elements/ControlPanel";
+import emitter from "@/helpers/emitter.ts"
 
 export default {
     name: 'RendererSimple',
-    components: {VisualLog, ButtonFullScreen},
+    components: {ControlPanel, VisualLog},
     props: {},
 
     data() {
@@ -41,14 +40,18 @@ export default {
 
     methods: {
         onKeyDown(event) {
-            console.log(event)
             if (event.code === 'KeyR') {
                 this.resetCamera()
                 VisualLog.log('Camera reset.')
+            } else if (event.code === 'KeyD') {
+                this.showFps = !this.showFps
+                if (this.showFps) {
+                    VisualLog.log('debug on!')
+                }
+            } else if(event.code === 'KeyH') {
+                emitter.emit('ToggleHelp')
             }
         },
-
-
 
         resetCamera() {
             this.controls.reset()
@@ -144,10 +147,6 @@ export default {
 
         let canvas = this.canvas = this.$refs.canvas
 
-        // canvas.addEventListener('keydown', (e) => {
-        //     console.log(e)
-        // })
-
         let renderer = this.renderer = new THREE.WebGLRenderer({
             canvas,
             antialias: false
@@ -178,7 +177,6 @@ export default {
         this.runDataSource()
 
         requestAnimationFrame(this.render);
-
     },
 
     beforeUnmount() {
@@ -216,10 +214,5 @@ export default {
     height: 100%;
 }
 
-.control-panel {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-}
 
 </style>

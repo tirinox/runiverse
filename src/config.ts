@@ -19,7 +19,7 @@ export const Config = {
 
     Animations: {
         MaxDeltaTimeOfFrame: 0.5,
-        ProximityDistance: 15.0
+        ProximityDistance: 35.0  // todo: move to PoolObject/WalletObject
     },
 
     Physics: {

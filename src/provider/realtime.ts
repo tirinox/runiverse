@@ -41,6 +41,10 @@ class RealtimeProvider {
         const now = Date.now()
 
         const pools = await this.midgard.getPoolState()
+        if(!pools) {
+            return
+        }
+
         const changes = this.poolAnalyzer.processPools(pools)
         for(const poolChange of changes) {
             this.delegate.receiveEvent({
@@ -56,6 +60,10 @@ class RealtimeProvider {
         for(let page = 0; page < maxPage; ++page) {
             const offset = page * MAX_ACTIONS_PER_CALL
             const batch = await this.midgard.getUserActions(offset, MAX_ACTIONS_PER_CALL)
+            if(!batch) {
+                break
+            }
+
             const [changes, goOnFlag] = this.txAnalyzer.processTransactions(batch.txs)
 
             for(const ev of changes) {

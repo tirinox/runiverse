@@ -34,4 +34,13 @@ export default defineComponent({
     overflow: hidden;
 }
 
+a {
+    color: white;
+}
+
+a:visited {
+    color: white;
+}
+
+
 </style>

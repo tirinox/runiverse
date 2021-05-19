@@ -1,13 +1,10 @@
 import * as THREE from "three";
+import {PointLight, Scene} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
 import {TxObjectManager} from "@/render/simple/txObjectManager";
 import {PoolObjectManager} from "@/render/simple/poolObjectManager";
 import {WalletObjectManager} from "@/render/simple/walletObjectManager";
-import {PointLight, Scene} from "three";
 import {Config} from "@/config";
-import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
-import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
-import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 
 
 export default class SimpleScene implements ThorEventListener {
@@ -39,12 +36,6 @@ export default class SimpleScene implements ThorEventListener {
         this.txObjManager.walletMan = this.walletObjManager
 
         this.walletObjManager.scene = scene
-
-        // debug!
-        // const pos = new Vector3(777, 777, 777)
-        // const txo = new TxObject(100, pos)
-        // txo.obj3d?.position.copy(pos)
-        // this.scene.add(txo.obj3d!)
 
         this.makeLight()
 
