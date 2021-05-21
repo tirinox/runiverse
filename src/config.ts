@@ -44,12 +44,12 @@ export const Config = {
             Color: 0x202520,
         },
         PoolObject: {
-
             MaxPoolNameLength: 14,
             Mass: 10000,
+            InitialScale: 0.5,
             Speed: {
-                CenterGauss: 0.04,
-                ScaleGauss: 0.02
+                CenterGauss: 0.06,
+                ScaleGauss: 0.04
             },
             Staged: {
                 Distance: {
@@ -62,7 +62,9 @@ export const Config = {
                     CenterGauss: 1400.0,
                     ScaleGauss: 100.0
                 }
-            }
+            },
+            InnerOrbitRadius: 62.0,
+            InnerOrbitSpeed: 15.0
         },
         TxObject: {
             DissipationOfSpeed: 0.4, // 0.2

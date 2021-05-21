@@ -3,7 +3,7 @@ import {hexToBigInt} from "@/helpers/data_utils";
 
 export const ZeroVector3 = new Vector3()
 
-export function randomPointOnSphere(r: number, center: Vector3 = ZeroVector3): Vector3 {
+export function randomPointOnSphere(r: number = 1.0, center: Vector3 = ZeroVector3): Vector3 {
     let point = new Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1)
     point.normalize();
     point.multiplyScalar(r);
@@ -46,7 +46,7 @@ export class Orbit {
         this.t = Math.random() * Math.PI * 2
     }
 
-    step(dt: number, speed: number = 1.0): Vector3 {
+    step(dt: number = 0.016, speed: number = 1.0): Vector3 {
         this.t += dt * speed
         const p = this.getPosition(this.t)
         if (this.targetObj) {
@@ -65,6 +65,7 @@ export class Orbit {
         this.center = center
     }
 }
+
 
 export function randomGauss(center: number, scale: number) {
     let r = 0;
@@ -100,13 +101,10 @@ export function hashToPolarCoordinates(hash: string, r: number = 1.0): PolarCoor
 }
 
 export function polarToXYZ(p: PolarCoordinates): Vector3 {
-    const x = p.r * Math.sin(p.theta) * Math.cos(p.phi)
-    const y = p.r * Math.sin(p.theta) * Math.sin(p.phi)
-    const z = p.r * Math.cos(p.theta)
-    return new Vector3(x, y, z)
+    let v = new Vector3()
+    v.setFromSphericalCoords(p.r, p.phi, p.theta)
+    return v
 }
-
-export const RUNE_COLOR = 0x28f4af
 
 export function limitLength(v: Vector3, minLen: number = 0.0, maxLen: number = 1e10): Vector3 {
     const currentLen = v.length()

@@ -2,8 +2,9 @@ import * as THREE from "three";
 import {Vector3} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {PhysicalObject} from "@/helpers/physics";
-import {randomGauss, randomPointOnSphere, RUNE_COLOR} from "@/helpers/3d";
+import {randomGauss, randomPointOnSphere} from "@/helpers/3d";
 import {Config} from "@/config";
+import {RUNE_COLOR} from "@/helpers/colors";
 
 
 export const enum TxState {
