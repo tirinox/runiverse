@@ -2,38 +2,27 @@ import {limitLength, vectorFromPositionToDirection, ZeroVector3} from "@/helpers
 import {Object3D, Vector3} from "three";
 import {Config} from "@/config";
 
-export class PhysicalObject {
+
+export class PhysicalObject extends Object3D {
     public mass = 1.0
-    public obj3d?: Object3D
     public force = new Vector3()
     public velocity = new Vector3()
     public dissipation = 0.0
+    public enabledPhysics = true
 
     public maxSpeed = Config.Physics.MaxSpeed
 
-    get position() {
-        return this.obj3d?.position
-    }
-
-    constructor(mass: number = 1.0, obj3d?: Object3D) {
+    constructor(mass: number = 1.0) {
+        super();
         this.mass = mass
-        this.obj3d = obj3d
     }
 
     setVelocityToDirection(dir: Vector3, speed: number) {
-        let myPos = this.obj3d?.position!
-        this.velocity = vectorFromPositionToDirection(myPos, dir, speed)
-    }
-
-    public dispose() {
-        if (this.obj3d) {
-            this.obj3d.parent?.remove(this.obj3d)
-            this.obj3d = undefined
-        }
+        this.velocity = vectorFromPositionToDirection(this.position, dir, speed)
     }
 
     public update(dt: number) {
-        if (!this.obj3d) {
+        if(!this.enabledPhysics) {
             return
         }
 
@@ -45,15 +34,15 @@ export class PhysicalObject {
 
         let shift = this.velocity.clone()
         shift.multiplyScalar(dt)
-        this.obj3d.position.add(shift)
+        this.position.add(shift)
 
         this.velocity.multiplyScalar(1.0 - this.dissipation * dt)
 
         // console.log(this.obj3d.position)
 
-        if (this.obj3d.position.length() > 1e8) {
+        if (this.position.length() > Config.Physics.DistanceLimit) {
             console.log('Mesh has fled far away!')
-            this.obj3d.position.copy(ZeroVector3)
+            this.position.copy(ZeroVector3)
         }
     }
 
@@ -74,7 +63,7 @@ export class PhysicalObject {
     }
 
     public myGravityTo(mass: number, position: Vector3) {
-        return PhysicalObject.gravityForce(this.mass, this.obj3d?.position!, mass, position)
+        return PhysicalObject.gravityForce(this.mass, this.position, mass, position)
     }
 
     public static logForce(m1: number, pos1: Vector3, m2: number, pos2: Vector3, cutDistance: 100.0): Vector3 {
@@ -87,12 +76,11 @@ export class PhysicalObject {
     }
 
     public myLogForceTo(mass: number, position: Vector3, cutDistance: 100.0) {
-        return PhysicalObject.logForce(this.mass, this.obj3d?.position!, mass, position, cutDistance)
+        return PhysicalObject.logForce(this.mass, this.position, mass, position, cutDistance)
     }
 
     public repelFrom(mass: number, position: Vector3, repelConst: number = 1e-6): Vector3 {
-        const myPos = this.obj3d?.position!
-        let dx = myPos.clone().sub(position)
+        let dx = this.position.clone().sub(position)
         dx.normalize()
         const mag = Math.pow(dx.length(), 2) * repelConst
         dx.multiplyScalar(mag)

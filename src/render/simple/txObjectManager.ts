@@ -12,7 +12,7 @@ import {isRuneStr, parseThorBigNumber} from "@/provider/midgard/coinName";
 interface TxObjectMeta {
     objects: Array<TxObject>,
     action: ThorTransaction,
-    orbiting: boolean,
+    orbiting: boolean
 }
 
 export class TxObjectManager {
@@ -23,17 +23,17 @@ export class TxObjectManager {
     private txObjects: Record<string, TxObjectMeta> = {}
 
     private forceRepelAllPoolsExceptOne(poolName: string, txObj: TxObject): Vector3 {
-        if(!this.poolMan) {
+        if (!this.poolMan) {
             return new Vector3()
         }
 
         const poolMass = Config.SimpleScene.PoolObject.Mass
 
         let force = new Vector3()
-        for(const poolObj of this.poolMan?.allPools()) {
+        for (const poolObj of this.poolMan?.allPools()) {
             const poolPos = poolObj.position!
             let forcePart: Vector3
-            if(poolObj.pool?.asset! === poolName) {
+            if (poolObj.pool?.asset! === poolName) {
                 forcePart = txObj.myGravityTo(poolMass, poolPos)
             } else {
                 forcePart = txObj.repelFrom(poolMass, poolPos, Config.SimpleScene.TxObject.RepelFactor)
@@ -46,57 +46,75 @@ export class TxObjectManager {
     }
 
     private updateTxState(txMeta: TxObjectMeta, txObj: TxObject) {
-        if(txObj.state == TxState.Wallet_to_Pool || txObj.state == TxState.Pool_to_Pool) {
-            const targetPoolPos = this.poolMan?.getPoolByName(txObj.poolName)?.position
-            if(targetPoolPos) {
-                txObj.force = this.forceRepelAllPoolsExceptOne(txObj.poolName, txObj)
+        // if (txObj.state == TxState.Wallet_to_Pool || txObj.state == TxState.Pool_to_Pool) {
+        //     const targetPoolPos = this.poolMan?.getPoolByName(txObj.poolName)?.position
+        //     if (targetPoolPos) {
+        //         txObj.force = this.forceRepelAllPoolsExceptOne(txObj.poolName, txObj)
+        //
+        //         if (txObj.isCloseToTarget(targetPoolPos)) {
+        //             this.onReachedPool(txMeta, txObj)
+        //         }
+        //     }
+        // } else if (txObj.state == TxState.Pool_to_Wallet || txObj.state == TxState.Core_to_Wallet) {
+        //     const targetPos = this.getWalletPosition(txObj.walletAddress)
+        //     if (targetPos) {
+        //         txObj.force = txObj.myGravityTo(1e10, targetPos)
+        //
+        //         if (txObj.isCloseToTarget(targetPos)) {
+        //             this.onReachedWallet(txMeta, txObj)
+        //         }
+        //     }
+        // } else if (txObj.state == TxState.Wallet_to_Core) {
+        //     const targetPos = new Vector3()
+        //     txObj.force = txObj.myGravityTo(1e10, targetPos)
+        //
+        //     if (txObj.isCloseToTarget(targetPos)) {
+        //         this.onReachedCore(txMeta, txObj)
+        //     }
+        // }
 
-                if(txObj.isCloseToTarget(targetPoolPos)) {
-                    this.onReachedPool(txMeta, txObj)
-                }
-            }
-        } else if(txObj.state == TxState.Pool_to_Wallet || txObj.state == TxState.Core_to_Wallet) {
-            const targetPos = this.walletMan?.findWalletByAddress(txObj.walletAddress)?.obj?.position
-            if(targetPos) {
-                txObj.force = txObj.myGravityTo(1e10, targetPos)
+        // fixme: debug
+        const targetPos = new Vector3()
+        txObj.force = txObj.myGravityTo(1e3, targetPos)
 
-                if(txObj.isCloseToTarget(targetPos)) {
-                    this.onReachedWallet(txMeta, txObj)
-                }
-            }
-        } else if(txObj.state == TxState.Wallet_to_Core) {
-            const targetPos = new Vector3()
-            txObj.force = txObj.myGravityTo(1e10, targetPos)
 
-            if(txObj.isCloseToTarget(targetPos)) {
-                this.onReachedCore(txMeta, txObj)
-            }
+        if (txObj.isCloseToTarget(targetPos)) {
+            this.onReachedCore(txMeta, txObj)
         }
     }
 
+    private static isLastOneObject(txMeta: TxObjectMeta) {
+        return txMeta.objects.length == 1
+    }
+
     private onReachedPool(txMeta: TxObjectMeta, txObj: TxObject) {
-        if(txMeta.action.type == ActionTypeEnum.Swap) {
-            if(txMeta.action.isDoubleSwap) {
-                if(txObj.state == TxState.Pool_to_Pool) {
+        if (TxObjectManager.isLastOneObject(txMeta)) {
+            // time to go to the next state
+            if (txMeta.action.type == ActionTypeEnum.Swap) {
+                if (txMeta.action.isDoubleSwap) {
+                    if (txObj.state == TxState.Pool_to_Pool) {
+                        // this.createNewTxObject(txMeta.action, txObj.position!, )
+                        txObj.state = TxState.Pool_to_Wallet
+                        // todo: txObj.walletAddress =
+                    } else {
+                        txObj.poolName = txMeta.action.pools[1]
+                        txObj.state = TxState.Pool_to_Pool
+                        txObj.state = TxState.Pool_to_Pool
+                    }
+                } else {
                     txObj.state = TxState.Pool_to_Wallet
                     // todo: txObj.walletAddress =
-                } else {
-                    txObj.poolName = txMeta.action.pools[1]
-                    txObj.state = TxState.Pool_to_Pool
-                    txObj.state = TxState.Pool_to_Pool
                 }
-            } else {
-                txObj.state = TxState.Pool_to_Wallet
-                // todo: txObj.walletAddress =
-            }
 
-        } else {
-            // todo:
-            // if(txMeta.action.type == ActionTypeEnum.Withdraw) {
-            //     this.createNewTxObject(txMeta.action, txObj.position!)
-            // }
-            this.destroyTxObject(txMeta, txObj)
+            } else {
+                // todo:
+                // if(txMeta.action.type == ActionTypeEnum.Withdraw) {
+                //     this.createNewTxObject(txMeta.action, txObj.position!)
+                // }
+                this.destroyTxObject(txMeta, txObj)
+            }
         }
+        this.destroyTxObject(txMeta, txObj)
     }
 
     private onReachedWallet(txMeta: TxObjectMeta, txObj: TxObject) {
@@ -110,15 +128,17 @@ export class TxObjectManager {
     public update(dt: number) {
         for (const txObjMeta of Object.values(this.txObjects)) {
             for (const txObjElement of txObjMeta.objects) {
-                txObjElement.update(dt)
-                this.updateTxState(txObjMeta, txObjElement)
+                if (!txObjElement.waiting) {
+                    txObjElement.update(dt)
+                    this.updateTxState(txObjMeta, txObjElement)
+                }
             }
         }
     }
 
     private calcRuneAmount(coin: Coin) {
         const amt = parseThorBigNumber(coin.amount)
-        if(isRuneStr(coin.asset)) {
+        if (isRuneStr(coin.asset)) {
             return amt
         } else {
             const price = this.poolMan?.runesPerAsset(coin.asset) ?? 0.0
@@ -126,47 +146,45 @@ export class TxObjectManager {
         }
     }
 
-    private createNewTxObject(tx: ThorTransaction, sourcePosition: Vector3, coin: Coin) {
+    private createNewTxObject(tx: ThorTransaction, sourcePosition: Vector3, coin: Coin, state: TxState) {
         const hash = tx.realInputHash
         let txMeta = this.txObjects[hash!]
-        if(!txMeta) {
+        if (!txMeta) {
             console.error('no TX meta for this tx', hash, coin)
             return
         }
 
-        if(!this.scene) {
+        if (!this.scene) {
             console.error('no scene detected!')
             return
         }
 
         const runeAmount = this.calcRuneAmount(coin)
-        if(!runeAmount) {
+        if (!runeAmount) {
             console.warn('no value of tx object!', tx)
             return
         }
 
         const mass = Config.SimpleScene.TxObject.Mass * Math.log10(runeAmount)
-        let txObject = new TxObject(mass, sourcePosition, runeAmount)
+        let txObject = new TxObject(mass, runeAmount, isRuneStr(coin.asset))
+        txObject.position.copy(sourcePosition)
         txObject.dissipation = Config.SimpleScene.TxObject.DissipationOfSpeed
-
+        txObject.state = state
         txObject.walletAddress = tx.inputAddress!
+        txObject.poolName = tx.pools.length > 0 ? tx.pools[0] : ''
+        txObject.waiting = false
 
-        // let velocityDirection = ZeroVector3.clone()
         let velocityDirection = randomPointOnSphere(1.0)
-        if (tx.type == ActionTypeEnum.Switch) {
-            txObject.state = TxState.Wallet_to_Core
-        } else {
-            txObject.state = TxState.Wallet_to_Pool
-            txObject.poolName = tx.pools.length > 0 ? tx.pools[0] : ''
-            // velocityDirection = this.poolMan?.getPoolByName(txObject.poolName)?.position ?? velocityDirection
-        }
-
         txObject.setVelocityToDirection(velocityDirection, Config.SimpleScene.TxObject.InitialSpeed)
 
-        this.scene.add(txObject.obj3d!)
+        this.scene.add(txObject)
         txMeta.objects.push(txObject)
 
         return txObject
+    }
+
+    private getWalletPosition(address: string): Vector3 | undefined {
+        return this.walletMan?.findWalletByAddress(address)?.position
     }
 
     public createTransactionObjects(tx: ThorTransaction) {
@@ -180,6 +198,13 @@ export class TxObjectManager {
             return
         }
 
+        let state: TxState
+        if (tx.type == ActionTypeEnum.Switch) {
+            state = TxState.Wallet_to_Core
+        } else {
+            state = TxState.Wallet_to_Pool
+        }
+
         // store in cache
         this.txObjects[hash] = {
             action: tx,
@@ -188,13 +213,13 @@ export class TxObjectManager {
         }
 
         for (const inTx of tx._in) {
-            let sourcePosition = this.walletMan?.findWalletByAddress(inTx.address)?.obj?.position!
+            let sourcePosition = this.getWalletPosition(inTx.address)
             if (sourcePosition == undefined) {
                 sourcePosition = randomPointOnSphere(1e5)
             }
 
             for (const coin of inTx.coins) {
-                this.createNewTxObject(tx, sourcePosition, coin)
+                this.createNewTxObject(tx, sourcePosition, coin, state)
             }
         }
 
@@ -211,11 +236,11 @@ export class TxObjectManager {
     }
 
     public destroyTxObject(txMeta: TxObjectMeta, txObj?: TxObject) {
-        if(txObj) {
-            txObj.dispose()
+        if (txObj) {
+            txObj.parent?.remove(txObj)
             VisualLog.log(`deleting tx mesh: ${txObj.poolName}`)
             txMeta.objects = txMeta.objects.filter(o => o != txObj)
-            if(!txMeta.objects.length) {
+            if (!txMeta.objects.length) {
                 delete this.txObjects[txMeta.action.realInputHash!]
             }
         }
@@ -224,8 +249,8 @@ export class TxObjectManager {
     public destroyTransactionMesh(tx: ThorTransaction) {
         const hash = tx.realInputHash!
         const txMeta = this.txObjects[hash]
-        if(txMeta) {
-            for(const txObj of txMeta.objects) {
+        if (txMeta) {
+            for (const txObj of txMeta.objects) {
                 this.destroyTxObject(txMeta, txObj)
             }
             delete this.txObjects[hash]

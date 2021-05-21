@@ -27,7 +27,8 @@ export const Config = {
             Constant: 1e5,
             LongDistConstant: 0.0001,
         },
-        MaxSpeed: 1e8
+        MaxSpeed: 1e8,
+        DistanceLimit: 2e8,
     },
 
     Camera: {
@@ -72,7 +73,7 @@ export const Config = {
             InitialSpeed: 1440.0,
             Mass: 100.0,
             ScaleConst: 5.5,
-            ScalePower: 0.15,
+            ScalePower: 0.25,
             RotationSpeedGaussMagnitude: 42.0
         },
         Cubemap: {

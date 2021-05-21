@@ -22,6 +22,7 @@ export class WalletObjectManager {
         for (const subTx of subTxs) {
             if(subTx.address && subTx.coins.length > 0) {
                 this.updateWallet(subTx)
+                // todo: they are all friends => so add a force to draw them to each other
             }
 
             for (const coin of subTx.coins) {
@@ -30,10 +31,18 @@ export class WalletObjectManager {
         }
     }
 
+    public removeWallet(address: string) {
+        const wo = this.walletObjects[address]
+        if(wo) {
+            wo.dispose()
+            delete this.walletObjects[address]
+        }
+    }
+
     private makeNewWalletObj(address: string) {
         const newWalletObj = new WalletObject(address)
 
-        this.scene?.add(newWalletObj.obj!)
+        this.scene?.add(newWalletObj)
 
         const addressHash = crypto.SHA256(address).toString(crypto.enc.Hex)
         const pos = polarToXYZ(hashToPolarCoordinates(addressHash, this.AddressRadius))
@@ -61,10 +70,5 @@ export class WalletObjectManager {
     }
 
     public update(dt: number) {
-
-    }
-
-    private addFriend(oldFriend: string, newFriend: string) {
-        // todo!
     }
 }
