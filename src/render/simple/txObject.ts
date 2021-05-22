@@ -7,18 +7,18 @@ import {RUNE_COLOR} from "@/helpers/colors";
 
 
 export const enum TxState {
-    Wallet_to_Pool,
-    Pool_to_Pool,
-    Pool_to_Wallet,
-    Wallet_to_Core,
-    Core_to_Wallet
+    ToPool,
+    CrossPool,
+    ToWallet,
+    ToCore,
 }
 
 export class TxObject extends PhysicalObject {
     public walletAddress = ''
     public poolName = ''
-    public state: TxState = TxState.Wallet_to_Pool
+    public state: TxState = TxState.ToPool
     public waiting = false
+    public iterations = 0
 
     private mesh?: Mesh
 
@@ -54,6 +54,7 @@ export class TxObject extends PhysicalObject {
 
     update(dt: number) {
         super.update(dt);
+        this.iterations++
         if(this.mesh) {
             this.mesh.rotateOnAxis(this.rotationAxis, this.rotationSpeed * dt)
         }

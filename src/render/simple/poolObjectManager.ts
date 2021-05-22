@@ -4,6 +4,7 @@ import * as THREE from "three";
 import {Mesh, Object3D} from "three";
 import {IPoolQuery} from "@/render/simple/interface";
 import {Config} from "@/config";
+import {isRuneStr} from "@/provider/midgard/coinName";
 
 export class PoolObjectManager implements IPoolQuery {
     private poolObjects: Record<string, PoolObject> = {}
@@ -38,6 +39,10 @@ export class PoolObjectManager implements IPoolQuery {
     }
 
     public runesPerAsset(poolName: string): number {
+        if(isRuneStr(poolName)) {
+            return 1.0
+        }
+
         const poolMesh = this.poolObjects[poolName]
         if (poolMesh) {
             const pool = poolMesh.pool

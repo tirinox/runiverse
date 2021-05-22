@@ -59,7 +59,7 @@ export default {
                 this.messages.splice(0, excessRows)
             }
 
-            console.debug(`Visual log received: ${message}`)
+            console.log(`Visual log: ${message}`)
         }
     },
 

@@ -30,3 +30,11 @@ export function truncateStringAtMiddle(text: string, startChars: number, endChar
     }
     return text;
 }
+
+export function truncStringTail(text: string, maxLength: number = 10): string {
+    if (text.length > maxLength) {
+        return text.substring(0, maxLength) + '...'
+    } else {
+        return text
+    }
+}

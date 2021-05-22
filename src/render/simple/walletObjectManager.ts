@@ -66,6 +66,10 @@ export class WalletObjectManager {
     }
 
     public findWalletByAddress(address: string): WalletObject | undefined {
+        if(!address || address === '') {
+            return undefined
+        }
+        // todo: make new wallet it there is no requested one.
         return this.walletObjects[address]
     }
 

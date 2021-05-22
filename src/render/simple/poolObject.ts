@@ -5,6 +5,7 @@ import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d
 import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
 import {RUNE_COLOR} from "@/helpers/colors";
+import {truncStringTail} from "@/helpers/data_utils";
 
 
 export class PoolObject extends THREE.Object3D {
@@ -96,10 +97,10 @@ export class PoolObject extends THREE.Object3D {
 
         this.speed = randomGauss(cfg.Speed.CenterGauss, cfg.Speed.ScaleGauss) * scale
 
-        const geometry = new THREE.CircleGeometry( 5, 32 );
-        const material = new THREE.MeshBasicMaterial( { color: 0x666666 } );
-        const circle = new THREE.Mesh( geometry, material );
-        this.add( circle );
+        // const geometry = new THREE.CircleGeometry( 5, 32 );
+        // const material = new THREE.MeshBasicMaterial( { color: 0x666666 } );
+        // const circle = new THREE.Mesh( geometry, material );
+        // this.add( circle );
 
         const label = this.createLabel(pool.asset)
         label.position.y = 80
@@ -109,10 +110,7 @@ export class PoolObject extends THREE.Object3D {
 
     createLabel(name: string) {
         const maxLen = Config.SimpleScene.PoolObject.MaxPoolNameLength
-        if (name.length > maxLen) {
-            name = name.substring(0, maxLen) + '...'
-        }
-
+        name = truncStringTail(name, maxLen)
         return new SpriteText(name, 24, 'white')
     }
 

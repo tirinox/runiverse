@@ -52,8 +52,16 @@ export function isStableCoinStr(coin: string): boolean {
     return isStableCoin(<CoinName>coin)
 }
 
+const thorConst = new BigNumber(1e8)
+
 export function parseThorBigNumber(x: string): number {
     const bn = new BigNumber(x)
-    const bn1 = bn.div(new BigNumber(1e8))
+    const bn1 = bn.div(thorConst)
     return bn1.toNumber()
+}
+
+export function convertToThorBigNumber(x: BigNumber | number): string {
+    const bigX: BigNumber = x instanceof BigNumber ? x : new BigNumber(x)
+    const bigThor = bigX.multipliedBy(thorConst)
+    return bigThor.toString(10)
 }

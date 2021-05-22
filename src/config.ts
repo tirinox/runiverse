@@ -64,7 +64,7 @@ export const Config = {
                     ScaleGauss: 100.0
                 }
             },
-            InnerOrbitRadius: 62.0,
+            InnerOrbitRadius: 12.0,
             InnerOrbitSpeed: 15.0
         },
         TxObject: {
