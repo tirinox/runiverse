@@ -2,49 +2,22 @@ import asyncio
 import datetime
 import os
 import time
+from operator import itemgetter
 
 import aiohttp
 import json
 
-from aiohttp import ClientSession
-
-from analizer import Analyzer
+from analizer import ListAnalyzer
+from midgard import Midgard, action_get_hash
 
 OUT_DIRECTORY = 'out'
 DEFAULT_OUT_FILE = os.path.join(OUT_DIRECTORY, 'record_default.json')
 
 
-class Midgard:
-    BASE_URL = 'https://midgard.thorchain.info/v2/'
-
-    def __init__(self, session: ClientSession):
-        self.session = session
-        self.retries = 3
-
-    async def _get(self, path: str):
-        for try_no in range(self.retries):
-            try:
-                path = path.rstrip('/')
-                url = f'{self.BASE_URL}{path}'
-
-                print(f'Get "{url}"...', end='')
-                async with self.session.get(url) as resp:
-                    print(f' finished! Status = {resp.status}.')
-                    return await resp.json()
-            except Exception as e:
-                print(f'(!) Error {e}')
-
-    async def get_actions(self, offset, limit=50):
-        return await self._get(f'actions?offset={offset}&limit={limit}')
-
-    async def get_pool_state(self):
-        return await self._get('pools')
-
-
 class EventContinuousRecorder:
     @staticmethod
     def new_session(midgard: Midgard, period=1.0):
-        formatted_date = datetime.datetime.now().isoformat()
+        formatted_date = datetime.datetime.now().isoformat().replace('/', '-')
         name = os.path.join(OUT_DIRECTORY, f'record_{formatted_date}.json')
         return EventContinuousRecorder(name, period, midgard)
 
@@ -53,8 +26,12 @@ class EventContinuousRecorder:
         self.filename = filename
         self.period = period
         self.midgard = midgard
-        self.pool_anal = Analyzer(sort_function=lambda x: x['asset'])
-        self.tx_anal = Analyzer()
+        self._create_analizers()
+
+    def _create_analizers(self):
+        self.pool_anal = ListAnalyzer(key_fuction=lambda x: x['asset'], need_sort=True)
+        # significant_keys=['runeDepth', 'assetDepth', 'units', 'status']
+        self.tx_anal = ListAnalyzer(key_fuction=action_get_hash, need_sort=False)
 
     def save(self):
         with open(self.filename, 'w') as f:
@@ -65,27 +42,55 @@ class EventContinuousRecorder:
         start = time.monotonic()
         print(f'Starting event recording session; out = {self.filename!r}')
 
-        self.pool_anal = Analyzer()
+        self._create_analizers()
 
-        while True:
+        ticks = []
+        try:
+            while True:
+                await asyncio.sleep(self.period)
 
-            pools, actions = await asyncio.gather(
-                self.midgard.get_pool_state(),
-                self.midgard.get_actions(0, 50)
-            )
+                this_tick_start = time.monotonic()
+                pools, actions = await asyncio.gather(
+                    self.midgard.get_pool_state(),
+                    self.midgard.get_actions(0, 50)
+                )
 
-            pool_diff = self.pool_anal.feed(pools)
-            tx_diff = self.tx_anal.feed(actions)
+                if not pools or not isinstance(pools, list):
+                    print('👺 Warning: pools is not a filled list:', pools)
+                    continue
 
-            print(tx_diff)
+                if not actions or not isinstance(actions, list):
+                    print('👺 Warning: actions is not a filled list:', actions)
+                    continue
 
-            await asyncio.sleep(self.period)
+                pool_diff = self.pool_anal.feed(pools)
+                tx_diff = self.tx_anal.feed(actions)
 
+                print()
+                # print('-' * 100)
+                # print(f'Pool diff = {pool_diff}')
 
-            elapsed = (time.monotonic() - start)
+                print('-' * 100)
+                print(f'TX diff = {tx_diff}')
 
-            print(f'[{int(elapsed)}s] Tick #{tick}')
-            tick += 1
+                elapsed = (time.monotonic() - start)
+                this_tick_elapsed = (time.monotonic() - this_tick_start)
+                print(f'[{int(elapsed)}s] Tick #{tick}')
+                ticks.append({
+                    't': this_tick_elapsed,
+                    'i': ticks
+                })
+                tick += 1
+        except KeyboardInterrupt:
+            print('Interrupted!')
+        finally:
+            if ticks:
+                dts = list(map(itemgetter('t'), ticks))
+                min_dt = min(dts)
+                max_dt = max(dts)
+                avg_dt = sum(dts) / len(dts)
+                print(
+                    f'Tick summary: total = {len(ticks)} ticks, {min_dt = :.3f} s, {max_dt = :.3f} s, {avg_dt = :.3f} s')
 
 
 async def main():
