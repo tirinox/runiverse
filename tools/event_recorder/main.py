@@ -27,6 +27,9 @@ class EventContinuousRecorder:
         self.period = period
         self.midgard = midgard
         self._create_analizers()
+        self._t_start = 0
+        self._i = 0
+        self.save_every_events = 10
 
     def _create_analizers(self):
         self.pool_anal = ListAnalyzer(key_fuction=lambda x: x['asset'], need_sort=True)
@@ -37,9 +40,21 @@ class EventContinuousRecorder:
         with open(self.filename, 'w') as f:
             json.dump(self.data, f, indent=4)
 
+    def _add_event(self, type, evt):
+        self.data.append({
+            'timestamp': datetime.datetime.now().timestamp(),
+            'sec_from_start': time.monotonic() - self._t_start,
+            'type': type,
+            'event': evt
+        })
+        self._i += 1
+        if self._i >= self.save_every_events:
+            self.save()
+            self._i = 0
+
     async def run(self):
         tick = 1
-        start = time.monotonic()
+        self._t_start = start = time.monotonic()
         print(f'Starting event recording session; out = {self.filename!r}')
 
         self._create_analizers()
@@ -64,14 +79,14 @@ class EventContinuousRecorder:
                     continue
 
                 pool_diff = self.pool_anal.feed(pools)
+                if not self.pool_anal.is_empty_result(pool_diff):
+                    print(f'Pool evt = {self.pool_anal.changes_count(pool_diff)} items')
+                    self._add_event('pool_event', pool_diff)
+
                 tx_diff = self.tx_anal.feed(actions)
-
-                print()
-                # print('-' * 100)
-                # print(f'Pool diff = {pool_diff}')
-
-                print('-' * 100)
-                print(f'TX diff = {tx_diff}')
+                if not self.tx_anal.is_empty_result(tx_diff):
+                    print(f'Tx evt = {self.tx_anal.changes_count(tx_diff)} items')
+                    self._add_event('tx_event', tx_diff)
 
                 elapsed = (time.monotonic() - start)
                 this_tick_elapsed = (time.monotonic() - this_tick_start)

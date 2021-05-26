@@ -1,5 +1,9 @@
 from copy import deepcopy
 
+KEY_ADDED = 'added'
+KEY_REMOVED = 'removed'
+KEY_CHANGED = 'changed'
+
 
 class ListAnalyzer:
     def __init__(self, key_fuction=None, significant_keys=None, need_sort=True):
@@ -45,10 +49,18 @@ class ListAnalyzer:
                     result_changed.append(new_item)
 
         return {
-            'added': list(new_dic[k] for k in added_items_ids),
-            'removed': list(self._old[k] for k in removed_items_ids),
-            'changed': result_changed
+            KEY_ADDED: list(new_dic[k] for k in added_items_ids),
+            KEY_REMOVED: list(self._old[k] for k in removed_items_ids),
+            KEY_CHANGED: result_changed
         }
+
+    @staticmethod
+    def is_empty_result(r):
+        return not r.get(KEY_ADDED) and not r.get(KEY_REMOVED) and not r.get(KEY_CHANGED)
+
+    @staticmethod
+    def changes_count(r):
+        return len(r.get(KEY_CHANGED, [])) + len(r.get(KEY_ADDED, [])) + len(r.get(KEY_REMOVED, []))
 
     def _to_dic(self, items) -> dict:
         results = {}
