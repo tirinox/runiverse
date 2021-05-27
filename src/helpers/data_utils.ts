@@ -38,3 +38,7 @@ export function truncStringTail(text: string, maxLength: number = 10): string {
         return text
     }
 }
+
+export function lastElement<Type>(arg: Array<Type>): Type {
+    return arg[arg.length - 1]
+}

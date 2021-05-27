@@ -6,11 +6,12 @@ KEY_CHANGED = 'changed'
 
 
 class ListAnalyzer:
-    def __init__(self, key_fuction=None, significant_keys=None, need_sort=True):
+    def __init__(self, key_fuction=None, significant_keys=None, need_sort=True, ignore_remove=False):
         self._old = {}
         self.key_function = key_fuction
         self.significant_keys = set(significant_keys or [])
         self.need_sort = need_sort
+        self.ignore_remove = ignore_remove
 
     def reset(self):
         self._old = {}
@@ -48,9 +49,12 @@ class ListAnalyzer:
                 if old_item != new_item:
                     result_changed.append(new_item)
 
+        added_items = list(new_dic[k] for k in added_items_ids)
+        removed_items = list(self._old[k] for k in removed_items_ids) if not self.ignore_remove else []
+
         return {
-            KEY_ADDED: list(new_dic[k] for k in added_items_ids),
-            KEY_REMOVED: list(self._old[k] for k in removed_items_ids),
+            KEY_ADDED: added_items,
+            KEY_REMOVED: removed_items,
             KEY_CHANGED: result_changed
         }
 

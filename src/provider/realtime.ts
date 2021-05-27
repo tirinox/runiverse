@@ -6,12 +6,12 @@ import {TxAnalyzer} from "@/provider/process/txAnalyze";
 import {ActionStatusEnum} from "@/provider/midgard/v2";
 import {sleep} from "@/helpers/async_utils";
 import VisualLog from "@/components/elements/VisualLog.vue";
+import {BaseDataProvider} from "@/provider/data_provider";
 
 
-class RealtimeProvider {
+export class RealtimeProvider extends BaseDataProvider {
     public readonly intervalSec: number = 5
 
-    public delegate: ThorEventListener
     public midgard: Midgard
 
     private poolAnalyzer: PoolChangeAnalyzer
@@ -28,7 +28,7 @@ class RealtimeProvider {
     constructor(delegate: ThorEventListener, midgard: Midgard, intervalSec: number = 5,
                 ignoreFirstTime: boolean = false,
                 suppressErrors: boolean = false) {
-        this.delegate = delegate
+        super(delegate);
         this.midgard = midgard
         this.poolAnalyzer = new PoolChangeAnalyzer()
         this.txAnalyzer = new TxAnalyzer()
@@ -117,10 +117,7 @@ class RealtimeProvider {
     public async run() {
         console.info('RealtimeProvider starts...')
 
-        this.delegate.receiveEvent({
-            date: Date.now(),
-            eventType: EventType.ResetAll
-        })
+        this.sendReset()
 
         try {
             await this.requestPools()  // pools first!
@@ -139,8 +136,4 @@ class RealtimeProvider {
             this.timer = undefined
         }
     }
-}
-
-export {
-    RealtimeProvider
 }

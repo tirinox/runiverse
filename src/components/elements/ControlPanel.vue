@@ -32,6 +32,7 @@
                 <span v-else>×</span>
             </button>
 
+            <PlaybackPanel v-if="isPlayback"></PlaybackPanel>
         </div>
     </div>
 
@@ -41,14 +42,16 @@
 
 import {isMobile} from "@/helpers/platform";
 import emitter from "@/helpers/emitter.ts"
+import PlaybackPanel from "@/components/elements/PlaybackPanel";
 
 export default {
     name: 'ControlPanel',
-
+    components: {PlaybackPanel},
     data() {
         return {
             fullScreen: false,
-            helpOn: false
+            helpOn: false,
+            isPlayback: false,
         }
     },
 

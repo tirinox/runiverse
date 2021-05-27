@@ -16,9 +16,14 @@ DEFAULT_OUT_FILE = os.path.join(OUT_DIRECTORY, 'record_default.json')
 
 class EventContinuousRecorder:
     @staticmethod
+    def version(midgard: Midgard):
+        return 'v2' if midgard.is_v2 else 'v1'
+
+    @staticmethod
     def new_session(midgard: Midgard, period=1.0):
-        formatted_date = datetime.datetime.now().isoformat().replace('/', '-')
-        name = os.path.join(OUT_DIRECTORY, f'record_{formatted_date}.json')
+        formatted_date = datetime.datetime.now().isoformat().replace(':', '-')
+        version = EventContinuousRecorder.version(midgard)
+        name = os.path.join(OUT_DIRECTORY, f'record_{version}_{formatted_date}.json')
         return EventContinuousRecorder(name, period, midgard)
 
     def __init__(self, filename=DEFAULT_OUT_FILE, period=1.0, midgard: Midgard = None) -> None:
@@ -28,17 +33,24 @@ class EventContinuousRecorder:
         self.midgard = midgard
         self._create_analizers()
         self._t_start = 0
+        self._date_start = datetime.datetime.now()
         self._i = 0
         self.save_every_events = 10
+        self.json_indent = None  # 4 for pretty
 
     def _create_analizers(self):
         self.pool_anal = ListAnalyzer(key_fuction=lambda x: x['asset'], need_sort=True)
         # significant_keys=['runeDepth', 'assetDepth', 'units', 'status']
-        self.tx_anal = ListAnalyzer(key_fuction=action_get_hash, need_sort=False)
+        self.tx_anal = ListAnalyzer(key_fuction=action_get_hash, need_sort=False, ignore_remove=True)
 
     def save(self):
         with open(self.filename, 'w') as f:
-            json.dump(self.data, f, indent=4)
+            data = {
+                "version": self.version(self.midgard),
+                "start_date": self._date_start.isoformat(),
+                "events": self.data,
+            }
+            json.dump(data, f, indent=self.json_indent)
 
     def _add_event(self, type, evt):
         self.data.append({
@@ -53,11 +65,13 @@ class EventContinuousRecorder:
             self._i = 0
 
     async def run(self):
-        tick = 1
-        self._t_start = start = time.monotonic()
         print(f'Starting event recording session; out = {self.filename!r}')
 
         self._create_analizers()
+
+        tick = 1
+        self._t_start = start = time.monotonic()
+        self._date_start = datetime.datetime.now()
 
         ticks = []
         try:
@@ -108,10 +122,21 @@ class EventContinuousRecorder:
                     f'Tick summary: total = {len(ticks)} ticks, {min_dt = :.3f} s, {max_dt = :.3f} s, {avg_dt = :.3f} s')
 
 
+def mccn_midgard(session):
+    return Midgard(session, Midgard.BASE_URL_MCCN, is_v2=True)
+
+
+def sccn_midgard(session):
+    return Midgard(session, Midgard.BASE_URL_SCCN, is_v2=False)
+
+
 async def main():
+    network = os.environ.get('THOR_NETWORK', 'MCCN').upper()
     global recorder
     async with aiohttp.ClientSession() as session:
-        midgard = Midgard(session)
+
+        midgard = sccn_midgard(session) if network == 'SCCN' else mccn_midgard(session)
+
         recorder = EventContinuousRecorder.new_session(midgard)
         await recorder.run()
     return recorder

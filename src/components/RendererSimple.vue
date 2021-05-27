@@ -25,6 +25,7 @@ import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import ControlPanel from "@/components/elements/ControlPanel";
 import emitter from "@/helpers/emitter.ts"
+import {PlaybackDataProvider} from "@/provider/playback";
 
 export default {
     name: 'RendererSimple',
@@ -125,7 +126,7 @@ export default {
             this.composer.addPass(this.bloomPass);
         },
 
-        runDataSource() {
+        createRealtimeDataSource() {
             const midgard = new Midgard(Config.RealtimeScanner.Network)
             this.dataProvider = new RealtimeProvider(
                 this.myScene, midgard,
@@ -133,6 +134,19 @@ export default {
                 Config.RealtimeScanner.IgnoreOldTransactions,
                 Config.RealtimeScanner.SuppressErrors
             )
+        },
+
+        createPlaybackDataSource() {
+            const path = Config.DataSource.PlaybackFile
+            this.dataProvider = new PlaybackDataProvider(this.myScene, path)
+        },
+
+        runDataSource() {
+            if(Config.DataSource.Realtime) {
+                this.createRealtimeDataSource()
+            } else {
+                this.createPlaybackDataSource()
+            }
             this.dataProvider.run()
         }
     },

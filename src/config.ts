@@ -7,6 +7,11 @@ export enum NetworkId {
 
 
 export const Config = {
+    DataSource: {
+        Realtime: false,
+        PlaybackFile: './records/example1_v2.json'
+    },
+
     RealtimeScanner: {
         Network: NetworkId.Mainnet,
         MaxPagesOfActions: 2,
@@ -92,7 +97,7 @@ export const Config = {
             MaxRows: 12,
             FadeTime: 2.5,
         },
-        FPSCounter: false
+        FPSCounter: true
     },
 
     getMidgardBaseUrl(networkId: NetworkId): string {
@@ -107,5 +112,4 @@ export const Config = {
         }
         return ''
     },
-
 }
