@@ -28,6 +28,15 @@ export class TxObjectManager {
         return randomPointOnSphere(1e5)
     }
 
+    public removeAll() {
+        for(let txObjGroup of Object.values(this.txObjects)) {
+            for(let txObj of txObjGroup.objects) {
+                txObj.parent?.remove(txObj)
+            }
+        }
+        this.txObjects = {}
+    }
+
     private forceRepelAllPoolsExceptOne(poolName: string, txObj: TxObject): Vector3 {
         if (!this.poolMan) {
             return new Vector3()

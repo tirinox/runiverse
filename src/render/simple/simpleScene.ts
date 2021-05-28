@@ -63,12 +63,18 @@ export default class SimpleScene implements ThorEventListener {
         this.scene.background = textureCube;
     }
 
+    private resetAll() {
+        console.log('Boom! Reset the scene!')
+        this.poolObjManager.removeAllPoolMeshes()
+        this.txObjManager.removeAll()
+        this.walletObjManager.removeAll()
+    }
+
     // ------ event routing -------
 
     receiveEvent(e: ThorEvent): void {
         if (e.eventType == EventType.ResetAll) {
-            console.log('booms! reset all')
-            this.poolObjManager.removeAllPoolMeshes()
+            this.resetAll()
         } else if (e.eventType == EventType.UpdatePool) {
             const change = e.poolChange!
 

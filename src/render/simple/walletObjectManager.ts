@@ -9,11 +9,17 @@ import * as crypto from "crypto-js";
 
 export class WalletObjectManager {
     private walletObjects: Record<string, WalletObject> = {}
-    private friendList: Record<string, Array<string>> = {}
 
     public scene?: Object3D
 
     private AddressRadius = 4000.0
+
+    public removeAll() {
+        for(let walletObj of Object.values(this.walletObjects)) {
+            walletObj.parent?.remove(walletObj)
+        }
+        this.walletObjects = {}
+    }
 
     public makeWalletsFromTx(tx: ThorTransaction) {
         const subTxs = [...tx._in, ...tx.out]

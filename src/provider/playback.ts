@@ -25,6 +25,7 @@ export class PlaybackDataProvider extends BaseDataProvider {
     private events: Array<RecordEvent> = []
     private prevEventTime: number = 0.0
     private started: boolean = false
+    private version: string = ''
 
     get isRunning() {
         return this._isRunning
@@ -34,10 +35,14 @@ export class PlaybackDataProvider extends BaseDataProvider {
         return lastElement(this.events).sec_from_start * this.timeScale
     }
 
-    public progress(): number {
+    get progress(): number {
         const duration = this.totalDurationSec
-        const dt = duration - this.currentEvent!.sec_from_start
-        return dt / duration
+        const curr = this.currentEvent
+        if(curr) {
+            return curr.sec_from_start / duration
+        } else {
+            return 0.0
+        }
     }
 
     get currentEvent(): RecordEvent | undefined {
@@ -69,8 +74,9 @@ export class PlaybackDataProvider extends BaseDataProvider {
 
         this.isFileLoaded = true
         this.currentEventIndex = 0
-        this.events = json
-        console.log('PlaybackDataProvider loaded: v =', json.version, 'start =', json.start_date)
+        this.events = json.events
+        this.version = json.version
+        console.log('PlaybackDataProvider loaded: version:', json.version, 'start =', json.start_date)
     }
 
     async run(): Promise<void> {
@@ -99,7 +105,7 @@ export class PlaybackDataProvider extends BaseDataProvider {
     }
 
     private executeEvent(evt: RecordEvent) {
-        console.log('event:', evt)
+        console.log('event:', evt, "progress = ", this.progress * 100, '%')
     }
 
     private async tick() {
