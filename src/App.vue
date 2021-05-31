@@ -17,7 +17,8 @@ export default defineComponent({
         RendererSimple,
     },
 
-    mounted() {}
+    mounted() {
+    }
 });
 
 </script>
@@ -32,6 +33,7 @@ export default defineComponent({
     text-align: center;
     color: #2c3e50;
     overflow: hidden;
+    background: black;
 }
 
 a {

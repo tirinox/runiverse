@@ -1,8 +1,8 @@
 <template>
     <div>
-        <transition mode="out-in">
-            <div class="help-panel" v-if="helpOn">
-                <a href="#" class="close-it" @click="helpOn = false">×</a>
+        <transition name="shrink" mode="out-in">
+            <div v-if="isHelpOn" class="help-panel">
+                <a href="#" class="close-it" @click="isHelpOn = false">×</a>
                 <h2>Runiverse</h2>
                 <strong>Controls</strong>
                 <p>
@@ -24,7 +24,7 @@
         </transition>
 
         <div class="control-panel">
-            <button class="outline-button help-button" v-if="!fullScreen" @click="helpOn = !helpOn">
+            <button class="outline-button help-button" v-if="!fullScreen" @click="isHelpOn = !isHelpOn">
                 ?
             </button>
             <button class="outline-button" :class="{'button-faded': fullScreen}" @click="goFullScreen" v-if="canGoFullScreen">
@@ -50,7 +50,7 @@ export default {
     data() {
         return {
             fullScreen: false,
-            helpOn: false,
+            isHelpOn: false,
             isPlayback: false,
         }
     },
@@ -87,7 +87,7 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
 
 .control-panel {
     position: absolute;
@@ -105,7 +105,7 @@ export default {
     border-radius: 5px;
     opacity: 0.4;
     cursor: pointer;
-    transition: all .15s ease-in-out;
+    transition: all .12s ease-in-out;
 }
 
 .outline-button:hover {
@@ -140,18 +140,20 @@ export default {
     text-align: left;
 }
 
+.shrink-enter-active,
+.shrink-leave-active {
+    transition: 0.24s ease;
+}
 
-.v-enter,
-.v-leave-to {
+.shrink-enter-from,
+.shrink-leave-to {
     opacity: 0;
-    transform: rotateY(90deg);
+    transform: rotateY(40deg);
 }
 
-.v-enter-active,
-.v-leave-active {
-    transition: 0.2s ease;
+h2 {
+    margin-top: 2px;
 }
-
 
 .close-it {
     position: absolute;
