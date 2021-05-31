@@ -138,7 +138,8 @@ export default {
 
         createPlaybackDataSource() {
             const path = Config.DataSource.PlaybackFile
-            this.dataProvider = new PlaybackDataProvider(this.myScene, path)
+            const timeScale = Config.DataSource.PlaybackSpeedMult
+            this.dataProvider = new PlaybackDataProvider(this.myScene, path, timeScale)
         },
 
         runDataSource() {

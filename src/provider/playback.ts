@@ -88,7 +88,7 @@ export class PlaybackDataProvider extends BaseDataProvider {
         this.timeScale = timeScale
         this._isRunning = false
         this.poolAnalyzer = new PoolChangeAnalyzer()
-        this.txAnalyzer = new TxAnalyzer()
+        this.txAnalyzer = new TxAnalyzer(false)
     }
 
     async loadFile() {
@@ -163,7 +163,7 @@ export class PlaybackDataProvider extends BaseDataProvider {
             }
         }
 
-        const txStream = Object.values(this.txState).sort((a, b) => a.dateTimestampMs - b.dateTimestampMs)
+        const txStream = Object.values(this.txState).sort((a, b) => b.dateTimestampMs - a.dateTimestampMs)
         const maxNumber = 50
         const txStreamExcess = txStream.slice(maxNumber)
         for(const tx of txStreamExcess) {
@@ -227,7 +227,7 @@ export class PlaybackDataProvider extends BaseDataProvider {
         this.txState = {}
         this.poolsState = {}
         this.poolAnalyzer = new PoolChangeAnalyzer()
-        this.txAnalyzer = new TxAnalyzer()
+        this.txAnalyzer = new TxAnalyzer(false)
     }
 
     rewindToStart() {

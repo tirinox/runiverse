@@ -23,7 +23,7 @@ export class ThorTransaction implements TxDetailsV2 {
         public pools: Array<string>,
         public status: ActionStatusEnum,
         public type: ActionTypeEnum,
-        private _lazyHash: string) {
+        private _lazyHash: string = '') {
         this.dateTimestampMs = Number(BigInt(date) / 1_000_000n)
     }
 
@@ -31,10 +31,6 @@ export class ThorTransaction implements TxDetailsV2 {
 
     get isDoubleSwap() {
         return this.type == ActionTypeEnum.Swap && this.pools.length == 2
-    }
-
-    get computedHash(): string {
-        return this._lazyHash
     }
 
     get inputAddress(): string | null {
@@ -45,18 +41,22 @@ export class ThorTransaction implements TxDetailsV2 {
         return null
     }
 
-    get realInputHash(): string | null {
+    get realInputHash(): string {
+        if(this._lazyHash !== '') {
+            return this._lazyHash
+        }
+
         if(this._in.length > 0) {
             const txId = this._in[0].txID
             if(this.type == ActionTypeEnum.Switch && arrayNotEmpty(this._in) && arrayNotEmpty(this._in[0].coins)) {
                 // txId == '' for switch (sadly)
                 const amt = this._in[0].coins[0].amount
-                return `${this.date}-${this.inputAddress}-${amt}`
+                this._lazyHash = `${this.date}-${this.inputAddress}-${amt}`
             } else {
-                return txId === '' ? null : txId
+                this._lazyHash = txId
             }
         }
-        return null
+        return this._lazyHash
     }
 
     public getRuneVolume(txs: Array<Transaction>, runesPerAsset: number) {
@@ -132,8 +132,7 @@ export class ThorTransaction implements TxDetailsV2 {
             throw new Error('not implemented')
         }
 
-        let lazyHash = this.calcHash(in_tx)!
-        return new ThorTransaction(in_tx, date, j.height!, meta, out_tx, pools, status, actionType, lazyHash)
+        return new ThorTransaction(in_tx, date, j.height!, meta, out_tx, pools, status, actionType)
     }
 
     private static calcHash(in_tx: Array<Transaction>) {
@@ -141,15 +140,14 @@ export class ThorTransaction implements TxDetailsV2 {
             return in_tx[0].txID
         } else {
             const encoder = new TextEncoder()
-            const encodedData = sha256(encoder.encode(JSON.stringify(this)))
+            const encodedData = sha256(encoder.encode(JSON.stringify(in_tx)))
             return hex(encodedData)
         }
     }
 
     public static fromMidgardV2(j: TxDetailsV2) {
         let inArray = typeof j._in !== 'undefined' ? j._in : j['in']
-        const lazyHash = this.calcHash(inArray!)
-        return new ThorTransaction(inArray!, j.date, j.height, j.metadata, j.out, j.pools, j.status, j.type, lazyHash)
+        return new ThorTransaction(inArray!, j.date, j.height, j.metadata, j.out, j.pools, j.status, j.type)
     }
 }
 

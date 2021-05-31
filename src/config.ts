@@ -9,7 +9,8 @@ export enum NetworkId {
 export const Config = {
     DataSource: {
         Realtime: false,
-        PlaybackFile: './records/example1_v2.json'
+        PlaybackFile: './records/example1_v2.json',
+        PlaybackSpeedMult: 10.0
     },
 
     RealtimeScanner: {

@@ -6,6 +6,11 @@ import {EventType, ThorEvent, TxEvent, TxEventType} from "@/provider/types";
 
 export class TxAnalyzer {
     private txCache: Record<string, ThorTransaction> = {}
+    private ignoreOld: boolean;
+
+    constructor(ignoreOld: boolean = true) {
+        this.ignoreOld = ignoreOld
+    }
 
     // todo: find all old pending tx and recheck their status
     get allPendingTx(): ThorTransaction[] {
@@ -34,8 +39,8 @@ export class TxAnalyzer {
             const txHash = tx.realInputHash
             if (!(txHash in this.txCache)) {
                 this.txCache[txHash] = tx
-
-                if (tx.ageSeconds <= Config.RealtimeScanner.MaxAgeOfPendingTxSec) {
+                const tooOld = tx.ageSeconds <= Config.RealtimeScanner.MaxAgeOfPendingTxSec && this.ignoreOld
+                if (!tooOld) {
                     changes.push({
                         type: TxEventType.Add,
                         tx
@@ -45,7 +50,6 @@ export class TxAnalyzer {
                 }
 
                 shouldContinue = true
-
             } else {
                 const oldTx = this.txCache[txHash]
                 if (tx.status !== oldTx.status) {
@@ -63,7 +67,7 @@ export class TxAnalyzer {
 
         // remove too old pending transactions
         for (const tx of this.allPendingTx) {
-            if (tx.ageSeconds > Config.RealtimeScanner.MaxAgeOfPendingTxSec) {
+            if (this.ignoreOld && tx.ageSeconds > Config.RealtimeScanner.MaxAgeOfPendingTxSec) {
                 changes.push({
                     type: TxEventType.Destroy,
                     tx
