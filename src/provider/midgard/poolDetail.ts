@@ -8,22 +8,24 @@ export class PoolDetail {
                 public units: BigNumber) {
     }
 
-    static from_midgard_v2(j: any): PoolDetail {
+    static fromMidgardV2(j: any): PoolDetail {
+        const status = j.status.toLowerCase()
         return new PoolDetail(
             j.asset,
             new BigNumber(j.assetDepth),
             new BigNumber(j.runeDepth),
-            j.status == 'enabled' || j.status == 'available',
+            status == 'enabled' || status == 'available',
             new BigNumber(j.units)
         )
     }
 
-    static from_midgard_v1(j: any): PoolDetail {
+    static fromMidgardV1(j: any): PoolDetail {
+        const status = j.status.toLowerCase()
         return new PoolDetail(
             j.asset,
             new BigNumber(j.assetDepth),
             new BigNumber(j.runeDepth),
-            j.status == 'enabled',
+            status == 'enabled',
             new BigNumber(j.poolUnits)
         )
     }

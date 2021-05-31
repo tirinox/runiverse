@@ -200,10 +200,6 @@ export class TxObjectManager {
             return
         }
 
-        // if(state == TxState.Pool_to_Wallet) {
-        //     console.warn('debug!')
-        // }
-
         const runeAmount = this.calcRuneAmount(coin)
         if (!runeAmount) {
             console.warn('no value of tx object!', tx)

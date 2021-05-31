@@ -1,7 +1,7 @@
 <template>
     <div>
         <transition name="shrink" mode="out-in">
-            <div v-if="isHelpOn" class="help-panel">
+            <div v-if="isHelpOn" class="window-panel">
                 <a href="#" class="close-it" @click="isHelpOn = false">×</a>
                 <h2>Runiverse</h2>
                 <strong>Controls</strong>
@@ -40,9 +40,11 @@
 
 <script>
 
+import "@/assets/css/common.css"
 import {isMobile} from "@/helpers/platform";
 import emitter from "@/helpers/emitter.ts"
 import PlaybackPanel from "@/components/elements/PlaybackPanel";
+import {Config} from "@/config";
 
 export default {
     name: 'ControlPanel',
@@ -51,7 +53,7 @@ export default {
         return {
             fullScreen: false,
             isHelpOn: false,
-            isPlayback: false,
+            isPlayback: !Config.DataSource.Realtime,
         }
     },
 
@@ -87,7 +89,7 @@ export default {
 
 </script>
 
-<style scoped>
+<style>
 
 .control-panel {
     position: absolute;
@@ -95,77 +97,9 @@ export default {
     right: 4px;
 }
 
-.outline-button {
-    margin: 4px;
-    background: transparent;
-    border: 1px solid #afd;
-    color: #afd;
-    padding: 4px;
-    font-size: 10pt;
-    border-radius: 5px;
-    opacity: 0.4;
-    cursor: pointer;
-    transition: all .12s ease-in-out;
-}
-
-.outline-button:hover {
-    transform: scale(1.05);
-    opacity: 1;
-}
-
-.button-faded {
-    opacity: 0.23;
-}
-
-.button-faded:hover {
-    opacity: 1.0;
-}
-
 .help-button {
     padding-left: 10px;
     padding-right: 10px;
-}
-
-.help-panel {
-    margin-right: 8px;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.62);
-    border: 1px solid #afd;
-    border-radius: 12px;
-    position: absolute;
-    right: 0;
-    bottom: 42px;
-    font-size: 12pt;
-    color: white;
-    text-align: left;
-}
-
-.shrink-enter-active,
-.shrink-leave-active {
-    transition: 0.24s ease;
-}
-
-.shrink-enter-from,
-.shrink-leave-to {
-    opacity: 0;
-    transform: rotateY(40deg);
-}
-
-h2 {
-    margin-top: 2px;
-}
-
-.close-it {
-    position: absolute;
-
-    right: 0;
-    top: 0;
-    padding: 2px 6px 2px 6px;
-    margin: 6px;
-    color: #afd;
-    text-decoration: none;
-    font-size: 16pt;
-    /*border: 1px solid white;*/
 }
 
 </style>

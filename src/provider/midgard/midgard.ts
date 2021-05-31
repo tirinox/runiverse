@@ -47,10 +47,10 @@ export class Midgard {
             if (this.apiV1) {
                 const pools: Array<string> = (await this.apiV1.getPools()).data.sort()
                 const details = (await this.apiV1.getPoolsDetails(pools.join(','), 'simple')).data
-                return details.map((item) => PoolDetail.from_midgard_v1(item))
+                return details.map((item) => PoolDetail.fromMidgardV1(item))
             } else {
                 const pools = (await this.apiV2!.getPools()).data
-                return pools.map((item) => PoolDetail.from_midgard_v2(item))
+                return pools.map((item) => PoolDetail.fromMidgardV2(item))
             }
         } catch (e) {
             VisualLog.log(`Midgard error: ${e.toString()}`)

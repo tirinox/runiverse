@@ -1,4 +1,4 @@
-import {EventType, ThorEventListener} from "@/provider/types";
+import {ThorEventListener} from "@/provider/types";
 import {MAX_ACTIONS_PER_CALL, Midgard} from "@/provider/midgard/midgard";
 import {PoolChangeAnalyzer} from "@/provider/process/poolChangeAnalize";
 import {Config} from "@/config";
@@ -41,45 +41,38 @@ export class RealtimeProvider extends BaseDataProvider {
         const now = Date.now()
 
         const pools = await this.midgard.getPoolState()
-        if(!pools) {
+        if (!pools) {
             return
         }
 
-        const changes = this.poolAnalyzer.processPools(pools)
-        for(const poolChange of changes) {
-            this.delegate.receiveEvent({
-                date: now,
-                eventType: EventType.UpdatePool,
-                poolChange
-            })
+        const poolEvents = this.poolAnalyzer.processPools(pools)
+        for (const poolEvent of poolEvents) {
+            this.delegate.receiveEvent(poolEvent)
         }
     }
 
     private async requestActions() {
         const maxPage = Config.RealtimeScanner.MaxPagesOfActions
-        for(let page = 0; page < maxPage; ++page) {
+        for (let page = 0; page < maxPage; ++page) {
             const offset = page * MAX_ACTIONS_PER_CALL
             const batch = await this.midgard.getUserActions(offset, MAX_ACTIONS_PER_CALL)
-            if(!batch) {
+            if (!batch) {
                 break
             }
 
-            const [changes, goOnFlag] = this.txAnalyzer.processTransactions(batch.txs)
+            const [events, goOnFlag] = this.txAnalyzer.processTransactions(batch.txs)
 
-            for(const ev of changes) {
-                if(this.ignoreFirstTime && this.firstTimeActions && ev.tx.status == ActionStatusEnum.Success) {
+            for (const ev of events) {
+                const tx = ev.txEvent!.tx
+                if (this.ignoreFirstTime && this.firstTimeActions && tx.status == ActionStatusEnum.Success) {
                     // ignore success TX events first time, count only pending
                     continue
                 }
 
-                this.delegate.receiveEvent({
-                    date: ev.tx.dateTimestampMs,  // todo: or maybe now?
-                    eventType: EventType.Transaction,
-                    txEvent: ev
-                })
+                this.delegate.receiveEvent(ev)
             }
 
-            if(!goOnFlag) {
+            if (!goOnFlag) {
                 break
             }
         }
@@ -97,8 +90,8 @@ export class RealtimeProvider extends BaseDataProvider {
     private async tick() {
         this.counter++
 
-        for(let attempt = 0; attempt < Config.RealtimeScanner.FetchAttempts; ++attempt) {
-            if(this.suppressErrors) {
+        for (let attempt = 0; attempt < Config.RealtimeScanner.FetchAttempts; ++attempt) {
+            if (this.suppressErrors) {
                 try {
                     await this.tickJob()
                     break
@@ -131,7 +124,7 @@ export class RealtimeProvider extends BaseDataProvider {
     public stop() {
         console.warn('stop data provider!')
 
-        if(this.timer) {
+        if (this.timer) {
             clearTimeout(this.timer!)
             this.timer = undefined
         }

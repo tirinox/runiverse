@@ -1,12 +1,21 @@
 import {setDifference, setIntersection} from "@/helpers/iter";
-import {PoolChange, PoolChangeType} from "@/provider/types";
+import {EventType, PoolChange, PoolChangeType, ThorEvent} from "@/provider/types";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 
 
 export class PoolChangeAnalyzer {
     private prevPoolsMapping: Record<string, PoolDetail> = {}
 
-    public processPools(pools: Array<PoolDetail>): PoolChange[] {
+    public static poolChangeToEvent(poolChange: PoolChange): ThorEvent {
+        const now = Date.now()
+        return {
+            date: now,
+            eventType: EventType.UpdatePool,
+            poolChange
+        }
+    }
+
+    public processPools(pools: Array<PoolDetail>): ThorEvent[] {
         if (!pools) {
             return []
         }
@@ -53,6 +62,6 @@ export class PoolChangeAnalyzer {
         // console.info('pool changes: ', poolChanges.map((i) => i.pool.toString()))
 
         this.prevPoolsMapping = currentPoolsMapping
-        return poolChanges
+        return poolChanges.map(e => PoolChangeAnalyzer.poolChangeToEvent(e))
     }
 }

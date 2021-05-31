@@ -1,7 +1,7 @@
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {ActionStatusEnum} from "@/provider/midgard/v2";
 import {Config} from "@/config";
-import {TxEvent, TxEventType} from "@/provider/types";
+import {EventType, ThorEvent, TxEvent, TxEventType} from "@/provider/types";
 
 
 export class TxAnalyzer {
@@ -23,7 +23,7 @@ export class TxAnalyzer {
         return Object.values(this.txCache).filter((tx) => tx.dateTimestampMs < beforeTs)
     }
 
-    public processTransactions(newTx: Array<ThorTransaction>): [TxEvent[], boolean] {
+    public processTransactions(newTx: Array<ThorTransaction>): [ThorEvent[], boolean] {
         let changes: TxEvent[] = []
         let shouldContinue = false
         for (const tx of newTx) {
@@ -72,6 +72,12 @@ export class TxAnalyzer {
             }
         }
 
-        return [changes, shouldContinue]
+        const events = changes.map(c => ({
+            date: c.tx.dateTimestampMs,  // todo: or maybe now?
+            eventType: EventType.Transaction,
+            txEvent: c
+        }))
+
+        return [events, shouldContinue]
     }
 }
