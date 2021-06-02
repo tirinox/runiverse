@@ -5,6 +5,8 @@ import {Mesh, Object3D} from "three";
 import {IPoolQuery} from "@/render/simple/interface";
 import {Config} from "@/config";
 import {isRuneStr} from "@/provider/midgard/coinName";
+import SpriteText from "three-spritetext";
+import {truncateStringAtMiddle} from "@/helpers/data_utils";
 
 export class PoolObjectManager implements IPoolQuery {
     private poolObjects: Record<string, PoolObject> = {}
@@ -80,14 +82,21 @@ export class PoolObjectManager implements IPoolQuery {
         return this.poolObjects[poolName]
     }
 
+
     public createCore() {
         if(this.core) {
             return
         }
 
-        const sphere = new THREE.SphereGeometry(Config.SimpleScene.Core.Radius, 100, 100)
-        this.core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: Config.SimpleScene.Core.Color}))
         if(this.scene) {
+            const sphere = new THREE.SphereGeometry(Config.SimpleScene.Core.Radius, 100, 100)
+            this.core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: Config.SimpleScene.Core.Color}))
+
+            const label = new SpriteText('Black Hole', 24, 'rgba(255, 255, 255, 0.6)')
+            label.position.y = 200
+            label.position.x = 0
+            this.core.add(label)
+
             this.scene.add(this.core)
         }
     }
