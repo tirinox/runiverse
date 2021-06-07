@@ -4,6 +4,7 @@ import {Object3D} from "three";
 import {IPoolQuery} from "@/render/simple/interface";
 import {isRuneStr} from "@/provider/midgard/coinName";
 import {CoreObject} from "@/render/simple/coreObject";
+import * as THREE from "three";
 
 export class PoolObjectManager implements IPoolQuery {
     private poolObjects: Record<string, PoolObject> = {}
@@ -14,6 +15,12 @@ export class PoolObjectManager implements IPoolQuery {
     public scene?: Object3D
 
     constructor() {
+    }
+
+    public setEnvironment(environment: THREE.CubeTexture) {
+        if(this.core) {
+            this.core.setEnvironment(environment)
+        }
     }
 
     public removeAllPoolMeshes() {

@@ -2,22 +2,69 @@ import * as THREE from "three";
 import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
 import {truncStringTail} from "@/helpers/data_utils";
-import {Mesh} from "three";
 
 
-export class CoreObject extends THREE.Object3D {
-    private static geoCore: THREE.SphereGeometry = new THREE.SphereGeometry(Config.SimpleScene.Core.Radius, 100, 100)
-    private core: Mesh;
+const CoreObjSize = 5.0;
+const CoreObjScale = Config.SimpleScene.Core.Radius / CoreObjSize
+
+
+export class CoreObject extends THREE.Group {
+    private core?: THREE.Mesh;
+    private material?: THREE.ShaderMaterial;
+
+    private cubeMap?: THREE.CubeTexture;
+
+    private t = 0.0
+
+    public setEnvironment(environment: THREE.CubeTexture) {
+        this.cubeMap = environment
+        if(this.material) {
+            this.material.uniforms["texEnvironMap"].value = this.cubeMap
+        }
+    }
+
+    private async loadCoreMesh() {
+        const loader = new THREE.FileLoader()
+        const vertexShader: string = <string>await loader.loadAsync('shaders/black_hole.vert')
+        const fragmentShader: string = <string>await loader.loadAsync('shaders/black_hole.frag')
+
+        const textureLoader = new THREE.TextureLoader()
+        const noiseTexture = await textureLoader.loadAsync("textures/grain.png")
+
+        const uniforms = {
+            "time": {value: 1.0},
+            texEnvironMap: {type: 't', value: this.cubeMap},
+            texNoise: {type: 't', value: noiseTexture}
+        }
+
+        this.material = new THREE.ShaderMaterial({
+            uniforms,
+            vertexShader,
+            fragmentShader,
+            transparent: true
+        })
+
+        this.core = new THREE.Mesh(
+            // new THREE.BoxGeometry(CoreObjSize, CoreObjSize, CoreObjSize),
+            new THREE.SphereGeometry(CoreObjSize, 20, 20),
+            this.material
+        )
+        this.core.scale.setScalar(CoreObjScale)
+        this.add(this.core)
+    }
 
     constructor() {
         super();
 
-        this.core = new THREE.Mesh(CoreObject.geoCore, new THREE.MeshBasicMaterial({color: Config.SimpleScene.Core.Color}))
-        this.add(this.core)
+        const loader = new THREE.FileLoader()
+        const vertexShader = loader.load('shaders/black_hole.vert')
+        const fragmentShader = loader.load('shaders/black_hole.frag')
+
+        this.loadCoreMesh().then()
 
         const label = this.createLabel("Black hole")
-        label.position.y = 80
-        label.position.x = -40
+        label.position.y = 180
+        label.position.x = -140
         this.add(label)
     }
 
@@ -28,6 +75,8 @@ export class CoreObject extends THREE.Object3D {
     }
 
     public update(dt: number) {
+        this.t += dt
+        this.material!.uniforms.time.value = this.t
     }
 
     public dispose() {

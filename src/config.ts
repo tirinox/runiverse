@@ -8,7 +8,7 @@ export enum NetworkId {
 
 export const Config = {
     DataSource: {
-        Realtime: false,
+        Realtime: true,
         PlaybackFile: './records/example1_v2.json',
         PlaybackSpeedMult: 10.0
     },
@@ -39,7 +39,7 @@ export const Config = {
 
     Camera: {
         MinDistance: 200,
-        StartDistance: 5000,
+        StartDistance: 3000,
         MaxDistance: 7000,
         FOV: 60,
         Damp: 0.2,
@@ -47,7 +47,7 @@ export const Config = {
 
     SimpleScene: {
         Core: {
-            Radius: 140.0,
+            Radius: 340.0,
             Color: 0x202520,
         },
         PoolObject: {
@@ -83,7 +83,9 @@ export const Config = {
             RotationSpeedGaussMagnitude: 42.0
         },
         Cubemap: {
-            Enabled: true
+            Enabled: true,
+            // Name: "starry_cubemap_debug"
+            Name: "starry_cubemap_1",
         },
         Postprocessing: {
             Bloom: {
