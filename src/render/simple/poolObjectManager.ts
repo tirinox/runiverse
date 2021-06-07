@@ -1,16 +1,13 @@
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {PoolObject} from "@/render/simple/poolObject";
-import * as THREE from "three";
-import {Mesh, Object3D} from "three";
+import {Object3D} from "three";
 import {IPoolQuery} from "@/render/simple/interface";
-import {Config} from "@/config";
 import {isRuneStr} from "@/provider/midgard/coinName";
-import SpriteText from "three-spritetext";
-import {truncateStringAtMiddle} from "@/helpers/data_utils";
+import {CoreObject} from "@/render/simple/coreObject";
 
 export class PoolObjectManager implements IPoolQuery {
     private poolObjects: Record<string, PoolObject> = {}
-    private core?: Mesh;
+    private core?: CoreObject;
 
     // todo: track PoolObject state
 
@@ -41,7 +38,7 @@ export class PoolObjectManager implements IPoolQuery {
     }
 
     public runesPerAsset(poolName: string): number {
-        if(isRuneStr(poolName)) {
+        if (isRuneStr(poolName)) {
             return 1.0
         }
 
@@ -64,7 +61,7 @@ export class PoolObjectManager implements IPoolQuery {
 
         this.poolObjects[pool.asset] = poolObj
 
-        if(this.scene) {
+        if (this.scene) {
             this.scene.add(poolObj);
         }
 
@@ -82,33 +79,25 @@ export class PoolObjectManager implements IPoolQuery {
         return this.poolObjects[poolName]
     }
 
-
     public createCore() {
-        if(this.core) {
+        if (this.core) {
             return
         }
 
-        if(this.scene) {
-            const sphere = new THREE.SphereGeometry(Config.SimpleScene.Core.Radius, 100, 100)
-            this.core = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({color: Config.SimpleScene.Core.Color}))
-
-            const label = new SpriteText('Black Hole', 24, 'rgba(255, 255, 255, 0.6)')
-            label.position.y = 200
-            label.position.x = 0
-            this.core.add(label)
-
+        if (this.scene) {
+            this.core = new CoreObject()
             this.scene.add(this.core)
         }
     }
 
     public hearBeat(pool: PoolDetail) {
         const poolObj = this.poolObjects[pool.asset]
-        if(poolObj) {
+        if (poolObj) {
             poolObj.heartBeat()
         }
     }
 
-    public allPools(): Array <PoolObject> {
+    public allPools(): Array<PoolObject> {
         return Object.values(this.poolObjects)
     }
 }
