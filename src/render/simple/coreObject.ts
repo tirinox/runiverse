@@ -4,7 +4,7 @@ import {Config} from "@/config";
 import {truncStringTail} from "@/helpers/data_utils";
 
 
-const CoreObjSize = 5.0;
+const CoreObjSize = 4.0;
 const CoreObjScale = Config.SimpleScene.Core.Radius / CoreObjSize
 
 
@@ -18,7 +18,7 @@ export class CoreObject extends THREE.Group {
 
     public setEnvironment(environment: THREE.CubeTexture) {
         this.cubeMap = environment
-        if(this.material) {
+        if (this.material) {
             this.material.uniforms["texEnvironMap"].value = this.cubeMap
         }
     }
@@ -46,7 +46,7 @@ export class CoreObject extends THREE.Group {
 
         this.core = new THREE.Mesh(
             // new THREE.BoxGeometry(CoreObjSize, CoreObjSize, CoreObjSize),
-            new THREE.SphereGeometry(CoreObjSize, 20, 20),
+            new THREE.SphereGeometry(CoreObjSize, 8, 8),
             this.material
         )
         this.core.scale.setScalar(CoreObjScale)
@@ -57,8 +57,6 @@ export class CoreObject extends THREE.Group {
         super();
 
         const loader = new THREE.FileLoader()
-        const vertexShader = loader.load('shaders/black_hole.vert')
-        const fragmentShader = loader.load('shaders/black_hole.frag')
 
         this.loadCoreMesh().then()
 
@@ -76,7 +74,10 @@ export class CoreObject extends THREE.Group {
 
     public update(dt: number) {
         this.t += dt
-        this.material!.uniforms.time.value = this.t
+        if (this.material) {
+            this.material.uniforms.time.value = this.t
+            this.material.uniformsNeedUpdate = true
+        }
     }
 
     public dispose() {

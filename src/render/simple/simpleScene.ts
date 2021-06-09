@@ -5,19 +5,26 @@ import {TxObjectManager} from "@/render/simple/txObjectManager";
 import {PoolObjectManager} from "@/render/simple/poolObjectManager";
 import {WalletObjectManager} from "@/render/simple/walletObjectManager";
 import {Config} from "@/config";
+import {CoreObject} from "@/render/simple/coreObject";
 
 
 export default class SimpleScene implements ThorEventListener {
-    private scene: Scene;
+    private readonly scene: Scene;
 
     private txObjManager = new TxObjectManager()
     private poolObjManager = new PoolObjectManager()
     private walletObjManager = new WalletObjectManager()
+    private core?: CoreObject;
 
     updateAnimations(dt: number) {
         this.poolObjManager.update(dt)
         this.txObjManager.update(dt)
         this.walletObjManager.update(dt)
+        this.core?.update(dt)
+    }
+
+    setEnvironment(tex: THREE.CubeTexture) {
+        this.core?.setEnvironment(tex)
     }
 
     // --------- init & load & service -----
@@ -25,11 +32,22 @@ export default class SimpleScene implements ThorEventListener {
     onResize(w: number, h: number) {
     }
 
+    public createCore() {
+        if (this.core) {
+            return
+        }
+
+        this.core = new CoreObject()
+        this.scene.add(this.core)
+    }
+
+
     constructor(scene: Scene) {
         this.scene = scene
 
+        this.createCore()
+
         this.poolObjManager.scene = scene
-        this.poolObjManager.createCore()
 
         this.txObjManager.scene = scene
         this.txObjManager.poolMan = this.poolObjManager
@@ -58,7 +76,7 @@ export default class SimpleScene implements ThorEventListener {
         loader.setPath(`textures/environment/${Config.SimpleScene.Cubemap.Name}/`);
 
         const textureCube = loader.load(['right.png', 'left.png', 'top.png', 'bottom.png', 'front.png', 'back.png'], (tex: THREE.CubeTexture) => {
-            this.poolObjManager.setEnvironment(tex)
+            console.log('environmental map loaded.')
         })
         // textureCube.encoding = THREE.sRGBEncoding;
 

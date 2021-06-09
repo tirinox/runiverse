@@ -47,7 +47,7 @@ export const Config = {
 
     SimpleScene: {
         Core: {
-            Radius: 340.0,
+            Radius: 280.0,
             Color: 0x202520,
         },
         PoolObject: {
@@ -84,8 +84,9 @@ export const Config = {
         },
         Cubemap: {
             Enabled: true,
-            // Name: "starry_cubemap_debug"
+            // Name: "starry_cubemap_debug",
             Name: "starry_cubemap_1",
+            RenderResolution: 1024,
         },
         Postprocessing: {
             Bloom: {

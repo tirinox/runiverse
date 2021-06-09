@@ -3,24 +3,15 @@ import {PoolObject} from "@/render/simple/poolObject";
 import {Object3D} from "three";
 import {IPoolQuery} from "@/render/simple/interface";
 import {isRuneStr} from "@/provider/midgard/coinName";
-import {CoreObject} from "@/render/simple/coreObject";
-import * as THREE from "three";
 
 export class PoolObjectManager implements IPoolQuery {
     private poolObjects: Record<string, PoolObject> = {}
-    private core?: CoreObject;
 
     // todo: track PoolObject state
 
     public scene?: Object3D
 
     constructor() {
-    }
-
-    public setEnvironment(environment: THREE.CubeTexture) {
-        if(this.core) {
-            this.core.setEnvironment(environment)
-        }
     }
 
     public removeAllPoolMeshes() {
@@ -86,16 +77,6 @@ export class PoolObjectManager implements IPoolQuery {
         return this.poolObjects[poolName]
     }
 
-    public createCore() {
-        if (this.core) {
-            return
-        }
-
-        if (this.scene) {
-            this.core = new CoreObject()
-            this.scene.add(this.core)
-        }
-    }
 
     public hearBeat(pool: PoolDetail) {
         const poolObj = this.poolObjects[pool.asset]

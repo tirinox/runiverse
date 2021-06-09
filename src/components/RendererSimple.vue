@@ -49,7 +49,7 @@ export default {
                 if (this.showFps) {
                     VisualLog.log('debug on!')
                 }
-            } else if(event.code === 'KeyH') {
+            } else if (event.code === 'KeyH') {
                 emitter.emit('ToggleHelp')
             }
         },
@@ -91,14 +91,27 @@ export default {
             }
 
             this.resizeRendererToDisplaySize(this.renderer);
+
+            // bh.visible = false;
+
+            this.myScene.core.visible = false;
+            this.cubeCamera.position.copy(this.camera.position)
+            this.cubeCamera.update(this.renderer, this.scene);
+            this.myScene.setEnvironment(this.cubeRenderTarget.texture)
+            this.myScene.core.visible = true;
+
+            // bh.visible = true;
+
             this.composer.render();
 
             requestAnimationFrame(this.render);
         },
 
         createCamera() {
+            const near = 1
+            const far = 10000
             const cfg = Config.Camera
-            this.camera = new THREE.PerspectiveCamera(cfg.FOV, window.innerWidth / window.innerHeight, 1, 10000);
+            this.camera = new THREE.PerspectiveCamera(cfg.FOV, window.innerWidth / window.innerHeight, near, far);
 
             const controls = new OrbitControls(this.camera, this.renderer.domElement);
 
@@ -112,6 +125,14 @@ export default {
             controls.dampingFactor = cfg.Damp
             controls.saveState()
             this.controls = controls
+
+            this.cubeRenderTarget = new THREE.WebGLCubeRenderTarget(Config.SimpleScene.Cubemap.RenderResolution, {
+                format: THREE.RGBFormat,
+                generateMipmaps: false,
+                minFilter: THREE.LinearMipmapLinearFilter
+            });
+            this.cubeCamera = new THREE.CubeCamera(near, far, this.cubeRenderTarget);
+            this.scene.add(this.cubeCamera);
         },
 
         makeBloom() {
@@ -143,7 +164,7 @@ export default {
         },
 
         runDataSource() {
-            if(Config.DataSource.Realtime) {
+            if (Config.DataSource.Realtime) {
                 this.createRealtimeDataSource()
             } else {
                 this.createPlaybackDataSource()

@@ -25,8 +25,17 @@ float sdTorus(vec3 p, vec2 t) {
 
 vec4 blackHole(vec3 ro, vec3 rd) {
     const vec3 blackHolePosition = vec3(0.0, 0.0, 0.0);
-    const float blackHoleRadius = 0.01;
-    const float blackHoleMass = 5.0 * 0.0001;  // premul G = 0.001
+    const float blackHoleRadius = 0.3;
+    const float blackHoleMass = 5.0 * 0.00001;  // premul G = 0.001
+    const vec3 c1 = vec3(0.4, 0.46, 0.5);
+    const vec3 c2 = vec3(0.6, 0.8, 0.8);
+    const vec3 glowC = vec3(0.85, 0.9, 1.0);
+    const float glowFac = 0.00014;
+
+    const int maxSteps = 320; // 320 default
+    const float dt = 0.03; // ray step. default: 0.02
+
+    const float animationSeed = 3.0;
 
     vec3 currentRayPos = ro; // currentPosition
     vec3 currentRayDir = rd; // currentRay direction
@@ -35,18 +44,12 @@ vec4 blackHole(vec3 ro, vec3 rd) {
 
     float nonCaptured = 1.0;
 
-    const vec3 c1 = vec3(0.5, 0.46, 0.4);
-    const vec3 c2 = vec3(1.0, 0.8, 0.6);
-    const vec3 glowC = vec3(1.0, 0.9, 0.85);
-
-    const int maxSteps = 320;
-    const float dt = 0.04; // ray step. default: 0.02
-
+    // pre-step
     float dToBlackHole = length(currentRayPos - blackHolePosition);
     currentRayPos += currentRayDir * (dToBlackHole - 5.0); // pre step to BH
 
     for (int i = 0; i < maxSteps; i++) {
-        currentRayPos += currentRayDir * dt * nonCaptured;
+        currentRayPos += currentRayDir * dt * nonCaptured; // todo: step according distance to black hole, so maxSteps may be lower!!
 
         // gravity
         vec3 bhv = blackHolePosition - currentRayPos;
@@ -58,28 +61,27 @@ vec4 blackHole(vec3 ro, vec3 rd) {
         // Texture for the accretion disc
         float dr = length(bhv.xz);
         float da = atan(bhv.x, bhv.z);
-        vec2 ra = vec2(dr, da * (0.01 + (dr - blackHoleRadius) * 0.002) + 2.0 * pi + time * 0.005);
-        ra *= vec2(10.0, 20.0);
+
+        vec2 ra = vec2(dr, da * (0.01 + (dr - blackHoleRadius) * 0.002) + 2.0 * pi + time * animationSeed);
+        ra *= vec2(5.0, 10.0);
 
         float textureRead = texture(texNoise, ra * vec2(0.1, 0.5)).r + 0.5;
-//        float textureRead = 1.0;
 
-        // max(0.0,texture(iChannel1,ra*vec2(0.1,0.5)).r+0.05
         vec3 dcol = mix(c2, c1, pow(length(bhv) - blackHoleRadius, 2.0)) * max(0.0, textureRead) * (4.0 / ((0.001 + (length(bhv) - blackHoleRadius) * 50.0)));
 
         accColor += max(vec3(0.0), dcol * smoothstep(0.0, 1.0, -sdTorus((currentRayPos * vec3(1.0, 25.0, 1.0)) - blackHolePosition, vec2(0.8, 0.99))) * nonCaptured);
-//        accColor += dcol * (1.0 / dr) * nonCaptured * 0.01; // pole streams!
+        // accColor += dcol * (1.0 / dr) * nonCaptured * 0.01; // pole streams!
 
         // Glow
-        accColor += glowC * (1.0 / vec3(dot(bhv, bhv))) * 0.0001 * nonCaptured;
+        accColor += glowC * (1.0 / vec3(dot(bhv, bhv))) * glowFac * nonCaptured;
     }
 
     // BG
-//    accColor += pow(texture(texEnvironMap, currentRayDir).rgb, vec3(3.0)) * nonCaptured;
-    vec3 envUV = vec3(-currentRayDir.x, currentRayDir.y, currentRayDir.z);
+//    vec3 envUV = vec3(-currentRayDir.x, currentRayDir.y, currentRayDir.z);
+    vec3 envUV = currentRayDir;
     accColor += texture(texEnvironMap, envUV).rgb * nonCaptured;
 
-    // FInal color
+    // Final color
     return vec4(accColor, 1.0);
 }
 
