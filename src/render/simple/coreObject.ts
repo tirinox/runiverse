@@ -4,8 +4,8 @@ import {Config} from "@/config";
 import {truncStringTail} from "@/helpers/data_utils";
 
 
-const CoreObjSize = 4.0;
-const CoreObjScale = Config.SimpleScene.Core.Radius / CoreObjSize
+const CoreObjSize = Config.Scene.Core.Scale;
+const CoreObjScale = Config.Scene.Core.Radius / CoreObjSize
 
 
 export class CoreObject extends THREE.Group {
@@ -23,13 +23,27 @@ export class CoreObject extends THREE.Group {
         }
     }
 
-    private async loadCoreMesh() {
+    private async loadCoreMeshSimple() {
+        this.core = new THREE.Mesh(
+            // new THREE.BoxGeometry(CoreObjSize, CoreObjSize, CoreObjSize),
+            new THREE.SphereGeometry(CoreObjSize, 50, 50),
+            new THREE.MeshBasicMaterial({
+                color: new THREE.Color('#555555'),
+                transparent: true,
+                opacity: 0.5
+            })
+        )
+        this.core.scale.setScalar(CoreObjScale)
+        this.add(this.core)
+    }
+
+    private async loadCoreMeshBlackHole() {
         const loader = new THREE.FileLoader()
         const vertexShader: string = <string>await loader.loadAsync('shaders/black_hole.vert')
         const fragmentShader: string = <string>await loader.loadAsync('shaders/black_hole.frag')
 
         const textureLoader = new THREE.TextureLoader()
-        const noiseTexture = await textureLoader.loadAsync("textures/grain.png")
+        const noiseTexture = await textureLoader.loadAsync("textures/noise-rgb64.png")
 
         const uniforms = {
             "time": {value: 1.0},
@@ -56,9 +70,11 @@ export class CoreObject extends THREE.Group {
     constructor() {
         super();
 
-        const loader = new THREE.FileLoader()
-
-        this.loadCoreMesh().then()
+        if(Config.Scene.Core.Simplified) {
+            this.loadCoreMeshSimple().then()
+        } else {
+            this.loadCoreMeshBlackHole().then()
+        }
 
         const label = this.createLabel("Black hole")
         label.position.y = 180
@@ -67,7 +83,7 @@ export class CoreObject extends THREE.Group {
     }
 
     createLabel(name: string) {
-        const maxLen = Config.SimpleScene.PoolObject.MaxPoolNameLength
+        const maxLen = Config.Scene.PoolObject.MaxPoolNameLength
         name = truncStringTail(name, maxLen)
         return new SpriteText(name, 24, 'white')
     }

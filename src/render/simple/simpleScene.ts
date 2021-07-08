@@ -57,7 +57,7 @@ export default class SimpleScene implements ThorEventListener {
 
         this.makeLight()
 
-        if (Config.SimpleScene.Cubemap.Enabled) {
+        if (Config.Scene.Cubemap.Enabled) {
             this.makeStarEnvironment()
         }
     }
@@ -73,7 +73,7 @@ export default class SimpleScene implements ThorEventListener {
 
     private makeStarEnvironment() {
         const loader = new THREE.CubeTextureLoader();
-        loader.setPath(`textures/environment/${Config.SimpleScene.Cubemap.Name}/`);
+        loader.setPath(`textures/environment/${Config.Scene.Cubemap.Name}/`);
 
         const textureCube = loader.load(['right.png', 'left.png', 'top.png', 'bottom.png', 'front.png', 'back.png'], (tex: THREE.CubeTexture) => {
             console.log('environmental map loaded.')

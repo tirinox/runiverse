@@ -42,7 +42,7 @@ export class TxObjectManager {
             return new Vector3()
         }
 
-        const poolMass = Config.SimpleScene.PoolObject.Mass
+        const poolMass = Config.Scene.PoolObject.Mass
 
         let force = new Vector3()
         for (const poolObj of this.poolMan?.allPools()) {
@@ -51,7 +51,7 @@ export class TxObjectManager {
             if (poolObj.pool?.asset! === poolName) {
                 forcePart = txObj.myGravityTo(poolMass, poolPos)
             } else {
-                forcePart = txObj.repelFrom(poolMass, poolPos, Config.SimpleScene.TxObject.RepelFactor)
+                forcePart = txObj.repelFrom(poolMass, poolPos, Config.Scene.TxObject.RepelFactor)
                 forcePart = ZeroVector3.clone()
             }
             force.add(forcePart)
@@ -127,7 +127,7 @@ export class TxObjectManager {
                     newTxObj.walletAddress = outTx.address
                     newTxObj.poolName = NO_POOL
                     newTxObj.dissipation = 0.00
-                    newTxObj.setVelocityToDirection(targetPosition, Config.SimpleScene.TxObject.InitialSpeed)
+                    newTxObj.setVelocityToDirection(targetPosition, Config.Scene.TxObject.InitialSpeed)
                 }
             }
         }
@@ -206,15 +206,15 @@ export class TxObjectManager {
             return
         }
 
-        const mass = Config.SimpleScene.TxObject.Mass * Math.log10(runeAmount)
+        const mass = Config.Scene.TxObject.Mass * Math.log10(runeAmount)
         let txObject = new TxObject(mass, runeAmount, isRuneStr(coin.asset))
         txObject.position.copy(sourcePosition)
-        txObject.dissipation = Config.SimpleScene.TxObject.DissipationOfSpeed
+        txObject.dissipation = Config.Scene.TxObject.DissipationOfSpeed
         txObject.state = state
         txObject.waiting = false
 
         let velocityDirection = randomPointOnSphere(1.0)
-        txObject.setVelocityToDirection(velocityDirection, Config.SimpleScene.TxObject.InitialSpeed)
+        txObject.setVelocityToDirection(velocityDirection, Config.Scene.TxObject.InitialSpeed)
 
         this.scene.add(txObject)
 

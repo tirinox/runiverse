@@ -23,7 +23,7 @@ export class TxObject extends PhysicalObject {
     private mesh?: Mesh
 
     public rotationAxis = randomPointOnSphere(1.0)
-    public rotationSpeed = randomGauss(0.0, Config.SimpleScene.TxObject.RotationSpeedGaussMagnitude)
+    public rotationSpeed = randomGauss(0.0, Config.Scene.TxObject.RotationSpeedGaussMagnitude)
 
     private static geoBox: THREE.BoxGeometry = new THREE.BoxGeometry(1, 1, 1)
 
@@ -38,7 +38,7 @@ export class TxObject extends PhysicalObject {
     });
 
     scaleFromTx(runeAmount: number): number {
-        const cfg = Config.SimpleScene.TxObject
+        const cfg = Config.Scene.TxObject
         const sc = cfg.ScaleConst * Math.pow(runeAmount, cfg.ScalePower)
         return Math.max(1.0, sc)
     }

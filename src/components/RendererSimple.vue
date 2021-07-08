@@ -16,7 +16,7 @@ import * as THREE from "three"
 import SimpleScene from "@/render/simple/simpleScene";
 import {RealtimeProvider} from "@/provider/realtime";
 import {Midgard} from "@/provider/midgard/midgard";
-import {Config} from "@/config";
+import {Config, DataSourceRealtime} from "@/config";
 import VisualLog from "@/components/elements/VisualLog";
 import {WEBGL} from "three/examples/jsm/WebGL";
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
@@ -92,16 +92,11 @@ export default {
 
             this.resizeRendererToDisplaySize(this.renderer);
 
-            // bh.visible = false;
-
             this.myScene.core.visible = false;
             this.cubeCamera.position.copy(this.camera.position)
             this.cubeCamera.update(this.renderer, this.scene);
             this.myScene.setEnvironment(this.cubeRenderTarget.texture)
             this.myScene.core.visible = true;
-
-            // bh.visible = true;
-
             this.composer.render();
 
             requestAnimationFrame(this.render);
@@ -126,7 +121,7 @@ export default {
             controls.saveState()
             this.controls = controls
 
-            this.cubeRenderTarget = new THREE.WebGLCubeRenderTarget(Config.SimpleScene.Cubemap.RenderResolution, {
+            this.cubeRenderTarget = new THREE.WebGLCubeRenderTarget(Config.Scene.Cubemap.RenderResolution, {
                 format: THREE.RGBFormat,
                 generateMipmaps: false,
                 minFilter: THREE.LinearMipmapLinearFilter
@@ -158,18 +153,20 @@ export default {
         },
 
         createPlaybackDataSource() {
-            const path = Config.DataSource.PlaybackFile
-            const timeScale = Config.DataSource.PlaybackSpeedMult
-            this.dataProvider = new PlaybackDataProvider(this.myScene, path, timeScale)
+            const path = Config.Playback.File
+            const timeScale = Config.Playback.SpeedMult
+            const waitFirst = Config.Playback.WaitFirstEvent
+            this.dataProvider = new PlaybackDataProvider(this.myScene, path, timeScale,
+            waitFirst)
         },
 
         runDataSource() {
-            if (Config.DataSource.Realtime) {
+            if (Config.DataSource === DataSourceRealtime) {
                 this.createRealtimeDataSource()
             } else {
                 this.createPlaybackDataSource()
             }
-            this.dataProvider.run()
+            this.dataProvider.play()
         }
     },
 
@@ -204,7 +201,7 @@ export default {
         composer.addPass(renderScene);
         this.composer = composer
 
-        if (Config.SimpleScene.Postprocessing.Bloom.Enabled) {
+        if (Config.Scene.Postprocessing.Bloom.Enabled) {
             this.makeBloom()
         }
 
@@ -217,7 +214,7 @@ export default {
 
     beforeUnmount() {
         if (this.dataProvider) {
-            this.dataProvider.stop()
+            this.dataProvider.pause()
         }
     }
 }

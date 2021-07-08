@@ -107,7 +107,7 @@ export class RealtimeProvider extends BaseDataProvider {
         this.timer = setTimeout(this.tick.bind(this), this.intervalSec * 1000)
     }
 
-    public async run() {
+    public async play() {
         console.info('RealtimeProvider starts...')
 
         this.sendReset()
@@ -121,7 +121,7 @@ export class RealtimeProvider extends BaseDataProvider {
         await this.tick()
     }
 
-    public stop() {
+    public pause() {
         console.warn('stop data provider!')
 
         if (this.timer) {

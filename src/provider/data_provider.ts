@@ -8,8 +8,8 @@ export abstract class BaseDataProvider {
         this.delegate = delegate
     }
 
-    public abstract async run(): Promise<void>;
-    public abstract stop(): void;
+    public abstract async play(): Promise<void>;
+    public abstract pause(): void;
 
     protected sendReset() {
         // reset scene!

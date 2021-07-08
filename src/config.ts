@@ -5,12 +5,16 @@ export enum NetworkId {
     Mainnet = ChaosnetMultiChain,
 }
 
+export const DataSourcePlayback = 'playback'
+export const DataSourceRealtime = 'realtime'
 
 export const Config = {
-    DataSource: {
-        Realtime: true,
-        PlaybackFile: './records/example1_v2.json',
-        PlaybackSpeedMult: 10.0
+    DataSource: DataSourcePlayback,
+
+    Playback: {
+        File: './records/example1_v2.json',
+        SpeedMult: 5.0,
+        WaitFirstEvent: false
     },
 
     RealtimeScanner: {
@@ -38,17 +42,19 @@ export const Config = {
     },
 
     Camera: {
-        MinDistance: 200,
-        StartDistance: 3000,
+        MinDistance: 1000,
+        StartDistance: 1500,
         MaxDistance: 7000,
         FOV: 60,
         Damp: 0.2,
     },
 
-    SimpleScene: {
+    Scene: {
         Core: {
-            Radius: 280.0,
+            Scale: 3.0,
+            Radius: 380.0,
             Color: 0x202520,
+            Simplified: true,
         },
         PoolObject: {
             MaxPoolNameLength: 14,
@@ -71,7 +77,7 @@ export const Config = {
                 }
             },
             InnerOrbitRadius: 12.0,
-            InnerOrbitSpeed: 15.0
+            InnerOrbitSpeed: 0.001
         },
         TxObject: {
             DissipationOfSpeed: 0.4, // 0.2
@@ -86,7 +92,7 @@ export const Config = {
             Enabled: true,
             // Name: "starry_cubemap_debug",
             Name: "starry_cubemap_1",
-            RenderResolution: 1024,
+            RenderResolution: 2048,
         },
         Postprocessing: {
             Bloom: {
@@ -116,4 +122,8 @@ export const Config = {
         }
         return ''
     },
+
+    GlobalMutableState: {
+        PoolLabelVisisble: false
+    }
 }

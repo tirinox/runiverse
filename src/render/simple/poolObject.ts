@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import {Vector3} from "three";
+import {Camera, Vector3} from "three";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 import SpriteText from 'three-spritetext';
@@ -21,6 +21,7 @@ export class PoolObject extends THREE.Object3D {
     private assetSideOrbit?: Orbit
 
     private static geoPool: THREE.SphereGeometry = new THREE.SphereGeometry(50, 100, 100)
+    // private label: SpriteText;
 
     scaleFromPool(pool: PoolDetail): number {
         // return Math.pow(pool.runeDepth.toNumber(), 0.11) / 20
@@ -28,7 +29,7 @@ export class PoolObject extends THREE.Object3D {
     }
 
     private makeOneMesh(isRune: boolean, scale: number, enabled: boolean): THREE.Mesh {
-        const cfg = Config.SimpleScene.PoolObject
+        const cfg = Config.Scene.PoolObject
 
         let color = new THREE.Color()
         if(enabled) {
@@ -71,7 +72,7 @@ export class PoolObject extends THREE.Object3D {
     constructor(pool: PoolDetail) {
         super();
 
-        const cfg = Config.SimpleScene.PoolObject
+        const cfg = Config.Scene.PoolObject
 
         this.pool = pool
 
@@ -102,14 +103,14 @@ export class PoolObject extends THREE.Object3D {
         // const circle = new THREE.Mesh( geometry, material );
         // this.add( circle );
 
-        const label = this.createLabel(pool.asset)
-        label.position.y = 80
-        label.position.x = -40
-        this.add(label)
+        // this.label = this.createLabel(pool.asset)
+        // label.position.y = 80
+        // label.position.x = -40
+        // this.add(label)
     }
 
     createLabel(name: string) {
-        const maxLen = Config.SimpleScene.PoolObject.MaxPoolNameLength
+        const maxLen = Config.Scene.PoolObject.MaxPoolNameLength
         name = truncStringTail(name, maxLen)
         return new SpriteText(name, 24, 'white')
     }

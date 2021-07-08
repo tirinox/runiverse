@@ -44,7 +44,7 @@ import "@/assets/css/common.css"
 import {isMobile} from "@/helpers/platform";
 import emitter from "@/helpers/emitter.ts"
 import PlaybackPanel from "@/components/elements/PlaybackPanel";
-import {Config} from "@/config";
+import {Config, DataSourcePlayback} from "@/config";
 
 export default {
     name: 'ControlPanel',
@@ -53,7 +53,7 @@ export default {
         return {
             fullScreen: false,
             isHelpOn: false,
-            isPlayback: !Config.DataSource.Realtime,
+            isPlayback: Config.DataSource === DataSourcePlayback
         }
     },
 
