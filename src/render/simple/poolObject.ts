@@ -1,11 +1,12 @@
 import * as THREE from "three";
-import {Camera, Vector3} from "three";
+import {MathUtils, Vector3} from "three";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
 import {RUNE_COLOR} from "@/helpers/colors";
 import {truncStringTail} from "@/helpers/data_utils";
+import clamp = MathUtils.clamp;
 
 
 export class PoolObject extends THREE.Object3D {
@@ -21,19 +22,24 @@ export class PoolObject extends THREE.Object3D {
     private assetSideOrbit?: Orbit
 
     private static geoPool: THREE.SphereGeometry = new THREE.SphereGeometry(50, 100, 100)
+
     // private label: SpriteText;
 
     scaleFromPool(pool: PoolDetail): number {
         // return Math.pow(pool.runeDepth.toNumber(), 0.11) / 20
-        return Math.log10(pool.runeDepth.toNumber()) * 0.1
+        const depth = Math.max(1.0, pool.runeDepth.toNumber())
+
+        const ReferenceLog = 11.0
+        const scale1 = clamp(Math.log10(depth) - ReferenceLog, 1.0, 6.0)
+        return scale1
     }
 
-    private makeOneMesh(isRune: boolean, scale: number, enabled: boolean): THREE.Mesh {
+    private makeOneMesh(isRune: boolean, enabled: boolean): THREE.Mesh {
         const cfg = Config.Scene.PoolObject
 
         let color = new THREE.Color()
-        if(enabled) {
-            if(isRune) {
+        if (enabled) {
+            if (isRune) {
                 color.set(RUNE_COLOR)
             } else {
                 color.setHSL(Math.random(), 1.0, 0.3)
@@ -52,14 +58,13 @@ export class PoolObject extends THREE.Object3D {
         });
 
         let poolMesh = new THREE.Mesh(PoolObject.geoPool, material)
-        poolMesh.scale.setScalar(scale * cfg.InitialScale)
+
         this.innerOrbitHolder.add(poolMesh)
 
-        const orbitRadius = cfg.InnerOrbitRadius * scale
-        let orbit = new Orbit(poolMesh, new Vector3(), orbitRadius)
+        let orbit = new Orbit(poolMesh, new Vector3(), cfg.InnerOrbitRadius)
         orbit.step()
 
-        if(isRune) {
+        if (isRune) {
             this.runeSideOrbit = orbit
         } else {
             orbit.t = Math.PI  // counter-phase
@@ -67,6 +72,22 @@ export class PoolObject extends THREE.Object3D {
         }
 
         return poolMesh
+    }
+
+    updateScale() {
+        const scale = this.scaleFromPool(this.pool!)
+
+        console.info(`Pool: ${this.pool!.asset} ,scale = ${scale}`)
+
+        const cfg = Config.Scene.PoolObject
+        this.runeSideMesh!.scale.setScalar(scale * cfg.InitialScale)
+        this.assetSideMesh!.scale.setScalar(scale * cfg.InitialScale)
+        this.innerSpeed = scale * cfg.InnerOrbitSpeed
+
+        this.runeSideOrbit!.radius = cfg.InnerOrbitRadius * scale
+        this.assetSideOrbit!.radius = cfg.InnerOrbitRadius * scale
+
+        this.heartBeat()  // debug!
     }
 
     constructor(pool: PoolDetail) {
@@ -77,14 +98,12 @@ export class PoolObject extends THREE.Object3D {
         this.pool = pool
 
         const enabled = pool.isEnabled
-        const scale = this.scaleFromPool(pool)
-        this.innerSpeed = scale * cfg.InnerOrbitSpeed
 
         this.add(this.innerOrbitHolder)
         this.innerOrbitHolder.rotateOnAxis(randomPointOnSphere(), Math.random() * Math.PI * 2)
 
-        this.runeSideMesh = this.makeOneMesh(true, scale, enabled)
-        this.assetSideMesh = this.makeOneMesh(false, scale, enabled)
+        this.runeSideMesh = this.makeOneMesh(true, enabled)
+        this.assetSideMesh = this.makeOneMesh(false, enabled)
 
         const radius = enabled ?
             randomGauss(cfg.Enabled.Distance.CenterGauss, cfg.Enabled.Distance.ScaleGauss) :
@@ -96,7 +115,9 @@ export class PoolObject extends THREE.Object3D {
         this.orbit.randomizePhase()
         this.orbit!.step()
 
-        this.speed = randomGauss(cfg.Speed.CenterGauss, cfg.Speed.ScaleGauss) * scale
+        this.speed = randomGauss(cfg.Speed.CenterGauss, cfg.Speed.ScaleGauss)
+
+        this.updateScale()
 
         // const geometry = new THREE.CircleGeometry( 5, 32 );
         // const material = new THREE.MeshBasicMaterial( { color: 0x666666 } );

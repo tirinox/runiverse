@@ -81,7 +81,8 @@ export class PoolObjectManager implements IPoolQuery {
     public hearBeat(pool: PoolDetail) {
         const poolObj = this.poolObjects[pool.asset]
         if (poolObj) {
-            poolObj.heartBeat()
+            poolObj.pool = pool
+            poolObj.updateScale()
         }
     }
 

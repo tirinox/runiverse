@@ -53,14 +53,14 @@ export default {
         return {
             fullScreen: false,
             isHelpOn: false,
-            isPlayback: Config.DataSource === DataSourcePlayback
+            isPlayback: Config.DataSource === DataSourcePlayback,
         }
     },
 
     computed: {
         canGoFullScreen() {
             return !isMobile()
-        }
+        },
     },
 
     methods: {

@@ -1,4 +1,4 @@
-import {Quaternion, Vector3} from "three";
+import {Quaternion, Vector3, Object3D} from "three";
 import {hexToBigInt} from "@/helpers/data_utils";
 
 export const ZeroVector3 = new Vector3()
@@ -108,7 +108,7 @@ export function polarToXYZ(p: PolarCoordinates): Vector3 {
 
 export function limitLength(v: Vector3, minLen: number = 0.0, maxLen: number = 1e10): Vector3 {
     const currentLen = v.length()
-    if(currentLen === 0.0) {
+    if (currentLen === 0.0) {
         return ZeroVector3.clone()
     }
 
@@ -118,7 +118,7 @@ export function limitLength(v: Vector3, minLen: number = 0.0, maxLen: number = 1
     if (currentLen > maxLen || currentLen < minLen) {
         let newV = v.clone()
         newV.normalize()
-        if(currentLen > maxLen) {
+        if (currentLen > maxLen) {
             newV.multiplyScalar(maxLen)
         } else {
             newV.multiplyScalar(minLen)
@@ -135,4 +135,12 @@ export function vectorFromPositionToDirection(pos: Vector3, dir: Vector3, magnit
     delta.normalize()
     delta.multiplyScalar(-magnitude)
     return delta
+}
+
+export function countObjects(parent: THREE.Object3D) {
+    var numOfMeshes = 0;
+    parent.traverse(function (child) {
+        numOfMeshes++;
+    });
+    return numOfMeshes
 }

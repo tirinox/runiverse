@@ -2,7 +2,7 @@
     <div class="canvas-holder">
         <canvas class="canvas-full" ref="canvas" tabindex="1" @keydown="onKeyDown"></canvas>
         <div class="fps-counter" v-show="showFps">
-            <span>{{ Number(fps).toFixed(2) }} FPS</span>
+            <span>{{ Number(fps).toFixed(2) }} FPS, {{ objCount }} objects</span>
             <VisualLog></VisualLog>
         </div>
 
@@ -26,6 +26,7 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import ControlPanel from "@/components/elements/ControlPanel";
 import emitter from "@/helpers/emitter.ts"
 import {PlaybackDataProvider} from "@/provider/playback";
+import {countObjects} from "@/helpers/3d";
 
 export default {
     name: 'RendererSimple',
@@ -36,6 +37,7 @@ export default {
         return {
             fps: 1.0,
             showFps: Config.Logging.FPSCounter,
+            objCount: 0,
         }
     },
 
@@ -99,6 +101,8 @@ export default {
             this.myScene.core.visible = true;
             this.composer.render();
 
+            this.objCount = countObjects(this.myScene)
+
             requestAnimationFrame(this.render);
         },
 
@@ -156,8 +160,7 @@ export default {
             const path = Config.Playback.File
             const timeScale = Config.Playback.SpeedMult
             const waitFirst = Config.Playback.WaitFirstEvent
-            this.dataProvider = new PlaybackDataProvider(this.myScene, path, timeScale,
-            waitFirst)
+            this.dataProvider = new PlaybackDataProvider(this.myScene, path, timeScale, waitFirst)
         },
 
         runDataSource() {

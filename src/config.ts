@@ -59,7 +59,7 @@ export const Config = {
         PoolObject: {
             MaxPoolNameLength: 14,
             Mass: 10000,
-            InitialScale: 0.5,
+            InitialScale: 1.2,
             Speed: {
                 CenterGauss: 0.06,
                 ScaleGauss: 0.04
@@ -76,8 +76,8 @@ export const Config = {
                     ScaleGauss: 100.0
                 }
             },
-            InnerOrbitRadius: 12.0,
-            InnerOrbitSpeed: 0.001
+            InnerOrbitRadius: 53.0,
+            InnerOrbitSpeed: 0.1
         },
         TxObject: {
             DissipationOfSpeed: 0.4, // 0.2
