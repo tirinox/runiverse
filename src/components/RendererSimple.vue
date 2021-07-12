@@ -101,7 +101,7 @@ export default {
             this.myScene.core.visible = true;
             this.composer.render();
 
-            this.objCount = countObjects(this.myScene)
+            this.objCount = countObjects(this.myScene.scene)
 
             requestAnimationFrame(this.render);
         },
