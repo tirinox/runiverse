@@ -10,7 +10,7 @@
 import * as THREE from "three"
 
 export default {
-    name: 'Renderer',
+    name: 'RendererShader',
     props: {
         msg: String
     },
@@ -52,7 +52,7 @@ export default {
                 this.fps = 1000 / delta;
             }
 
-            time *= 0.001;  // convert to seconds
+            time *= 0.005;  // convert to seconds
 
             const renderer = this.renderer
             const uniforms = this.uniforms;

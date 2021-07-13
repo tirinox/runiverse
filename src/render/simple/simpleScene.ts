@@ -71,14 +71,17 @@ export default class SimpleScene implements ThorEventListener {
         this.scene.add(ambient);
     }
 
-    private makeStarEnvironment() {
+    private makeStarEnvironment(srgb: boolean = false) {
         const loader = new THREE.CubeTextureLoader();
         loader.setPath(`textures/environment/${Config.Scene.Cubemap.Name}/`);
 
         const textureCube = loader.load(['right.png', 'left.png', 'top.png', 'bottom.png', 'front.png', 'back.png'], (tex: THREE.CubeTexture) => {
             console.log('environmental map loaded.')
         })
-        // textureCube.encoding = THREE.sRGBEncoding;
+
+        if(srgb) {
+            textureCube.encoding = THREE.sRGBEncoding;
+        }
 
         this.scene.background = textureCube;
     }

@@ -27,6 +27,11 @@ import ControlPanel from "@/components/elements/ControlPanel";
 import emitter from "@/helpers/emitter.ts"
 import {PlaybackDataProvider} from "@/provider/playback";
 import {countObjects} from "@/helpers/3d";
+import trivialVertShader from "@/render/simple/shaders/trivial.vert"
+import bloomOverlayFragShader from "@/render/simple/shaders/bloom_overlay.frag"
+import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
+import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
+
 
 export default {
     name: 'RendererSimple',
@@ -72,7 +77,10 @@ export default {
             const needResize = canvas.width !== width || canvas.height !== height;
             if (needResize) {
                 renderer.setSize(width, height, false);
-                this.composer.setSize(width, height)
+
+                this.bloomComposer.setSize(width, height);
+                this.finalComposer.setSize(width, height);
+
                 this.myScene.onResize(width, height)
             }
 
@@ -94,25 +102,36 @@ export default {
 
             this.resizeRendererToDisplaySize(this.renderer);
 
-            this.myScene.core.visible = false;
-            this.cubeCamera.position.copy(this.camera.position)
-            this.cubeCamera.update(this.renderer, this.scene);
-            this.myScene.setEnvironment(this.cubeRenderTarget.texture)
-            this.myScene.core.visible = true;
-            this.composer.render();
+            // render bloom
+            const savedBg = this.scene.background
+            this.scene.background = null
+            this.scene.traverse(this.darkenNonBloomed);
+            this.bloomComposer.render();
+            this.scene.traverse(this.restoreMaterial);
+            this.scene.background = savedBg
+
+            if (!Config.Scene.Core.Simplified) {
+                this.myScene.core.visible = false;
+                this.cubeCamera.position.copy(this.camera.position)
+                this.cubeCamera.update(this.renderer, this.scene);
+                this.myScene.setEnvironment(this.cubeRenderTarget.texture)
+                this.myScene.core.visible = true;
+            }
+
+            this.finalComposer.render();
 
             this.objCount = countObjects(this.myScene.scene)
 
             requestAnimationFrame(this.render);
         },
 
-        createCamera() {
+        createCamera(domElement) {
             const near = 1
             const far = 10000
             const cfg = Config.Camera
             this.camera = new THREE.PerspectiveCamera(cfg.FOV, window.innerWidth / window.innerHeight, near, far);
 
-            const controls = new OrbitControls(this.camera, this.renderer.domElement);
+            const controls = new OrbitControls(this.camera, domElement);
 
             // const controls = new TrackballControls(this.camera, this.renderer.domElement)
             controls.listenToKeyEvents(this.canvas);
@@ -132,18 +151,6 @@ export default {
             });
             this.cubeCamera = new THREE.CubeCamera(near, far, this.cubeRenderTarget);
             this.scene.add(this.cubeCamera);
-        },
-
-        makeBloom() {
-            if (this.bloomPass) {
-                return
-            }
-
-            this.bloomPass = new UnrealBloomPass({x: 1024, y: 1024});
-            this.bloomPass.threshold = 0.4
-            this.bloomPass.strength = 1.0
-            this.bloomPass.radius = 0
-            this.composer.addPass(this.bloomPass);
         },
 
         createRealtimeDataSource() {
@@ -170,6 +177,76 @@ export default {
                 this.createPlaybackDataSource()
             }
             this.dataProvider.play()
+        },
+
+        makeRenderer(canvas) {
+            // Make renderer
+            let renderer = this.renderer = new THREE.WebGLRenderer({
+                canvas,
+                antialias: false
+            });
+
+            if (devicePixelRatio) {
+                console.log(`Renderer: Setting devicePixelRatio = ${devicePixelRatio}.`)
+                renderer.setPixelRatio(devicePixelRatio)
+            }
+            renderer.autoClearColor = true;
+
+            // Make passes
+            const renderScene = new RenderPass(this.scene, this.camera);
+
+            // BLOOM PASS
+            const bloomPass = new UnrealBloomPass({x: 1024, y: 1024});
+            const bloomCfg = Config.Scene.Postprocessing.Bloom
+            bloomPass.threshold = bloomCfg.Threshold
+            bloomPass.strength = bloomCfg.Strength
+            bloomPass.radius = bloomCfg.Radius
+
+            const bloomComposer = new EffectComposer(renderer);
+            bloomComposer.renderToScreen = false;
+            bloomComposer.addPass(renderScene);
+            bloomComposer.addPass(bloomPass);
+            this.bloomComposer = bloomComposer
+
+            this.darkMaterial = new THREE.MeshBasicMaterial({color: "black"});
+
+            this.bloomLayer = new THREE.Layers();
+            this.bloomLayer.set(LAYER_BLOOM_SCENE);
+            this.materials = {};
+
+            // FINAL PASS
+
+            const finalPass = new ShaderPass(
+                new THREE.ShaderMaterial({
+                    uniforms: {
+                        baseTexture: {value: null},
+                        bloomTexture: {value: bloomComposer.renderTarget2.texture}
+                    },
+                    vertexShader: trivialVertShader,
+                    fragmentShader: bloomOverlayFragShader,
+                    defines: {}
+                }), "baseTexture"
+            );
+            finalPass.needsSwap = true;
+
+            const finalComposer = new EffectComposer(renderer);
+            finalComposer.addPass(renderScene);
+            finalComposer.addPass(finalPass);
+            this.finalComposer = finalComposer
+        },
+
+        darkenNonBloomed(obj) {
+            if (obj.isMesh && this.bloomLayer.test(obj.layers) === false) {
+                this.materials[obj.uuid] = obj.material;
+                obj.material = this.darkMaterial;
+            }
+        },
+
+        restoreMaterial(obj) {
+            if (this.materials[obj.uuid]) {
+                obj.material = this.materials[obj.uuid];
+                delete this.materials[obj.uuid];
+            }
         }
     },
 
@@ -181,33 +258,14 @@ export default {
             return
         }
 
-        let canvas = this.canvas = this.$refs.canvas
-
-        let renderer = this.renderer = new THREE.WebGLRenderer({
-            canvas,
-            antialias: false
-        });
-
-        if (devicePixelRatio) {
-            console.log(`Renderer: Setting devicePixelRatio = ${devicePixelRatio}.`)
-            renderer.setPixelRatio(devicePixelRatio)
-        }
-        renderer.autoClearColor = false;
+        this.canvas = this.$refs.canvas
 
         this.scene = new THREE.Scene();
         this.myScene = new SimpleScene(this.scene)
-        this.createCamera()
 
-        const renderScene = new RenderPass(this.scene, this.camera);
+        this.createCamera(this.canvas)
 
-        const composer = new EffectComposer(this.renderer);
-        composer.addPass(renderScene);
-        this.composer = composer
-
-        if (Config.Scene.Postprocessing.Bloom.Enabled) {
-            this.makeBloom()
-        }
-
+        this.makeRenderer(this.canvas)
         this.resizeRendererToDisplaySize();
 
         this.runDataSource()
@@ -218,6 +276,7 @@ export default {
     beforeUnmount() {
         if (this.dataProvider) {
             this.dataProvider.pause()
+            this.dataProvider.resetState()
         }
     }
 }

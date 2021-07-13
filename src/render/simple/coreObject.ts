@@ -2,7 +2,10 @@ import * as THREE from "three";
 import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
 import {truncStringTail} from "@/helpers/data_utils";
-
+// import blackholeVert from "@/render/simple/shaders/black_hole.vert"
+// import blackholeFrag from "@/render/simple/shaders/black_hole.frag"
+import coreGalaxyVert from "@/render/simple/shaders/core_galaxy.vert"
+import coreGalaxyFrag from "@/render/simple/shaders/core_galaxy.frag"
 
 const CoreObjSize = Config.Scene.Core.Scale;
 const CoreObjScale = Config.Scene.Core.Radius / CoreObjSize
@@ -39,8 +42,10 @@ export class CoreObject extends THREE.Group {
 
     private async loadCoreMeshBlackHole() {
         const loader = new THREE.FileLoader()
-        const vertexShader: string = <string>await loader.loadAsync('shaders/black_hole.vert')
-        const fragmentShader: string = <string>await loader.loadAsync('shaders/black_hole.frag')
+        // const vertexShader: string = <string>await loader.loadAsync('shaders/black_hole.vert')
+        // const fragmentShader: string = <string>await loader.loadAsync('shaders/black_hole.frag')
+        const vertexShader = coreGalaxyVert
+        const fragmentShader = coreGalaxyFrag
 
         const textureLoader = new THREE.TextureLoader()
         const noiseTexture = await textureLoader.loadAsync("textures/noise-rgb64.png")

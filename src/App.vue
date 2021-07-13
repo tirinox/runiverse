@@ -1,5 +1,6 @@
 <template>
     <RendererSimple/>
+<!--    <RendererShader/>-->
 </template>
 
 
@@ -7,6 +8,7 @@
 
 import {defineComponent} from 'vue';
 import RendererSimple from "@/components/RendererSimple.vue";
+// import RendererShader from "@/components/RendererShader.vue";
 
 export default defineComponent({
     name: 'App',
@@ -14,6 +16,7 @@ export default defineComponent({
     methods: {},
 
     components: {
+        // RendererShader,
         RendererSimple,
     },
 

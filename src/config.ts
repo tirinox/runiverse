@@ -54,12 +54,12 @@ export const Config = {
             Scale: 3.0,
             Radius: 380.0,
             Color: 0x202520,
-            Simplified: true,
+            Simplified: false,
         },
         PoolObject: {
             MaxPoolNameLength: 14,
             Mass: 10000,
-            InitialScale: 1.2,
+            InitialScale: 0.2,
             Speed: {
                 CenterGauss: 0.06,
                 ScaleGauss: 0.04
@@ -76,8 +76,8 @@ export const Config = {
                     ScaleGauss: 100.0
                 }
             },
-            InnerOrbitRadius: 53.0,
-            InnerOrbitSpeed: 0.1
+            InnerOrbitRadius: 40.0,
+            InnerOrbitSpeed: 3.1
         },
         TxObject: {
             DissipationOfSpeed: 0.4, // 0.2
@@ -96,7 +96,10 @@ export const Config = {
         },
         Postprocessing: {
             Bloom: {
-                Enabled: false
+                Enabled: false,
+                Threshold: 0.0,
+                Strength: 2.0,
+                Radius: 0.5,
             }
         }
     },

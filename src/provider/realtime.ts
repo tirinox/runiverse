@@ -129,4 +129,8 @@ export class RealtimeProvider extends BaseDataProvider {
             this.timer = undefined
         }
     }
+
+    public resetState() {
+        // todo
+    }
 }

@@ -7,6 +7,7 @@ import {Config} from "@/config";
 import {RUNE_COLOR} from "@/helpers/colors";
 import {truncStringTail} from "@/helpers/data_utils";
 import clamp = MathUtils.clamp;
+import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
 
 
 export class PoolObject extends THREE.Object3D {
@@ -53,8 +54,8 @@ export class PoolObject extends THREE.Object3D {
             reflectivity: 0.1,
             emissive: color,
             emissiveIntensity: 0.2,
-            opacity: 0.6,
-            transparent: true
+            // opacity: 0.6,
+            // transparent: true
         });
 
         let poolMesh = new THREE.Mesh(PoolObject.geoPool, material)
@@ -71,6 +72,10 @@ export class PoolObject extends THREE.Object3D {
             this.assetSideOrbit = orbit
         }
 
+        poolMesh.layers.enable(LAYER_BLOOM_SCENE)
+
+        // this._addGlow(poolMesh)
+
         return poolMesh
     }
 
@@ -84,8 +89,8 @@ export class PoolObject extends THREE.Object3D {
         this.assetSideMesh!.scale.setScalar(scale * cfg.InitialScale)
         this.innerSpeed = scale * cfg.InnerOrbitSpeed
 
-        this.runeSideOrbit!.radius = cfg.InnerOrbitRadius * scale
-        this.assetSideOrbit!.radius = cfg.InnerOrbitRadius * scale
+        this.runeSideOrbit!.radius = cfg.InnerOrbitRadius * scale * cfg.InitialScale
+        this.assetSideOrbit!.radius = cfg.InnerOrbitRadius * scale * cfg.InitialScale
 
         this.heartBeat()  // debug!
     }
@@ -151,5 +156,20 @@ export class PoolObject extends THREE.Object3D {
         const oldScale = this.scale.x
         this.scale.setScalar(oldScale * factor)
         setTimeout(() => this.scale.setScalar(oldScale), 500)
+    }
+
+    private _addGlow(obj: THREE.Object3D) {
+        const textureLoader = new THREE.TextureLoader()
+        const texture = textureLoader.load('textures/glow1.png')
+        const spriteMaterial = new THREE.SpriteMaterial(
+            {
+                map: texture,
+                sizeAttenuation: true,
+                color: 0xffff66, transparent: false,
+                blending: THREE.AdditiveBlending
+            });
+        var sprite = new THREE.Sprite( spriteMaterial );
+        sprite.scale.set(200, 200, 1.0);
+        obj.add(sprite); // this centers the glow at the mesh
     }
 }
