@@ -2,8 +2,6 @@ import * as THREE from "three";
 import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
 import {truncStringTail} from "@/helpers/data_utils";
-// import blackholeVert from "@/render/simple/shaders/black_hole.vert"
-// import blackholeFrag from "@/render/simple/shaders/black_hole.frag"
 import coreGalaxyVert from "@/render/simple/shaders/core_galaxy.vert"
 import coreGalaxyFrag from "@/render/simple/shaders/core_galaxy.frag"
 

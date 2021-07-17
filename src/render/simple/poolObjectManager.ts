@@ -56,7 +56,7 @@ export class PoolObjectManager implements IPoolQuery {
         }
 
         const poolObj = new PoolObject(pool)
-
+        await poolObj.prepare()
         this.poolObjects[pool.asset] = poolObj
 
         if (this.scene) {
