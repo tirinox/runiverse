@@ -17,6 +17,10 @@ export const Config = {
         WaitFirstEvent: false
     },
 
+    Debug: {
+        SceneName: 'PoolObjectSoloDebug'
+    },
+
     RealtimeScanner: {
         Network: NetworkId.Mainnet,
         MaxPagesOfActions: 2,
@@ -47,6 +51,8 @@ export const Config = {
         MaxDistance: 7000,
         FOV: 60,
         Damp: 0.2,
+        Far: 10000,
+        Near: 1,
     },
 
     Scene: {
@@ -76,7 +82,7 @@ export const Config = {
                     ScaleGauss: 100.0
                 }
             },
-            InnerOrbitRadius: 40.0,
+            InnerOrbitRadius: 65.0,
             InnerOrbitSpeed: 3.1
         },
         TxObject: {
@@ -98,7 +104,7 @@ export const Config = {
             Bloom: {
                 Enabled: false,
                 Threshold: 0.0,
-                Strength: 2.0,
+                Strength: 0.5,
                 Radius: 0.5,
             }
         }

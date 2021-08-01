@@ -31,7 +31,15 @@ import trivialVertShader from "@/render/simple/shaders/trivial.vert"
 import bloomOverlayFragShader from "@/render/simple/shaders/bloom_overlay.frag"
 import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
 import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
+import PoolObjectSoloDebug from "@/render/simple/pool/poolObjectSoloDebugScene";
 
+function getScene(scene, name) {
+    if(name === 'PoolObjectSoloDebug') {
+        return new PoolObjectSoloDebug(scene)
+    } else {
+        return new SimpleScene(scene)
+    }
+}
 
 export default {
     name: 'RendererSimple',
@@ -111,11 +119,15 @@ export default {
             this.scene.background = savedBg
 
             if (!Config.Scene.Core.Simplified) {
-                this.myScene.core.visible = false;
+                if(this.myScene.core) {
+                    this.myScene.core.visible = false;
+                }
                 this.cubeCamera.position.copy(this.camera.position)
                 this.cubeCamera.update(this.renderer, this.scene);
                 this.myScene.setEnvironment(this.cubeRenderTarget.texture)
-                this.myScene.core.visible = true;
+                if(this.myScene.core) {
+                    this.myScene.core.visible = true;
+                }
             }
 
             this.finalComposer.render();
@@ -126,10 +138,9 @@ export default {
         },
 
         createCamera(domElement) {
-            const near = 1
-            const far = 10000
             const cfg = Config.Camera
-            this.camera = new THREE.PerspectiveCamera(cfg.FOV, window.innerWidth / window.innerHeight, near, far);
+            this.camera = new THREE.PerspectiveCamera(cfg.FOV, window.innerWidth / window.innerHeight,
+                cfg.Near, cfg.Far);
 
             const controls = new OrbitControls(this.camera, domElement);
 
@@ -143,13 +154,17 @@ export default {
             controls.dampingFactor = cfg.Damp
             controls.saveState()
             this.controls = controls
+        },
+
+        createEnvironmentCamera() {
+            const cfg = Config.Camera
 
             this.cubeRenderTarget = new THREE.WebGLCubeRenderTarget(Config.Scene.Cubemap.RenderResolution, {
                 format: THREE.RGBFormat,
                 generateMipmaps: false,
                 minFilter: THREE.LinearMipmapLinearFilter
             });
-            this.cubeCamera = new THREE.CubeCamera(near, far, this.cubeRenderTarget);
+            this.cubeCamera = new THREE.CubeCamera(cfg.Near, cfg.Far, this.cubeRenderTarget);
             this.scene.add(this.cubeCamera);
         },
 
@@ -196,7 +211,7 @@ export default {
             const renderScene = new RenderPass(this.scene, this.camera);
 
             // BLOOM PASS
-            const bloomPass = new UnrealBloomPass({x: 1024, y: 1024});
+            const bloomPass = new UnrealBloomPass({x: 32, y: 32});
             const bloomCfg = Config.Scene.Postprocessing.Bloom
             bloomPass.threshold = bloomCfg.Threshold
             bloomPass.strength = bloomCfg.Strength
@@ -261,9 +276,10 @@ export default {
         this.canvas = this.$refs.canvas
 
         this.scene = new THREE.Scene();
-        this.myScene = new SimpleScene(this.scene)
+        this.myScene = getScene(this.scene, Config.Debug.SceneName)
 
         this.createCamera(this.canvas)
+        this.createEnvironmentCamera()
 
         this.makeRenderer(this.canvas)
         this.resizeRendererToDisplaySize();

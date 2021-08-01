@@ -2,10 +2,11 @@ import * as THREE from "three";
 import {PointLight, Scene} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
 import {TxObjectManager} from "@/render/simple/txObjectManager";
-import {PoolObjectManager} from "@/render/simple/poolObjectManager";
+import {PoolObjectManager} from "@/render/simple/pool/poolObjectManager";
 import {WalletObjectManager} from "@/render/simple/walletObjectManager";
 import {Config} from "@/config";
 import {CoreObject} from "@/render/simple/coreObject";
+import StarBackground from "@/render/simple/background";
 
 
 export default class SimpleScene implements ThorEventListener {
@@ -58,7 +59,7 @@ export default class SimpleScene implements ThorEventListener {
         this.makeLight()
 
         if (Config.Scene.Cubemap.Enabled) {
-            this.makeStarEnvironment()
+            StarBackground.makeStarEnvironment(this.scene)
         }
     }
 
@@ -69,21 +70,6 @@ export default class SimpleScene implements ThorEventListener {
 
         const ambient = new THREE.AmbientLight(0xffffff);
         this.scene.add(ambient);
-    }
-
-    private makeStarEnvironment(srgb: boolean = false) {
-        const loader = new THREE.CubeTextureLoader();
-        loader.setPath(`textures/environment/${Config.Scene.Cubemap.Name}/`);
-
-        const textureCube = loader.load(['right.png', 'left.png', 'top.png', 'bottom.png', 'front.png', 'back.png'], (tex: THREE.CubeTexture) => {
-            console.log('environmental map loaded.')
-        })
-
-        if(srgb) {
-            textureCube.encoding = THREE.sRGBEncoding;
-        }
-
-        this.scene.background = textureCube;
     }
 
     private resetAll() {

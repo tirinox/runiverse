@@ -1,5 +1,5 @@
 import {PoolDetail} from "@/provider/midgard/poolDetail";
-import {PoolObject} from "@/render/simple/poolObject";
+import {PoolObject} from "@/render/simple/pool/poolObject";
 import {Object3D} from "three";
 import {IPoolQuery} from "@/render/simple/interface";
 import {isRuneStr} from "@/provider/midgard/coinName";
@@ -56,7 +56,6 @@ export class PoolObjectManager implements IPoolQuery {
         }
 
         const poolObj = new PoolObject(pool)
-        await poolObj.prepare()
         this.poolObjects[pool.asset] = poolObj
 
         if (this.scene) {
@@ -64,6 +63,18 @@ export class PoolObjectManager implements IPoolQuery {
         }
 
         console.debug(`add new mesh for ${pool.asset}`)
+
+        /*
+        todo:
+                this.speed = randomGauss(cfg.Speed.CenterGauss, cfg.Speed.ScaleGauss)
+        const radius = this.pool!.isEnabled ?
+            randomGauss(cfg.Enabled.Distance.CenterGauss, cfg.Enabled.Distance.ScaleGauss) :
+            randomGauss(cfg.Staged.Distance.CenterGauss, cfg.Staged.Distance.ScaleGauss);
+        const n = randomPointOnSphere(1.0)
+        this.orbit = new Orbit(this, ZeroVector3.clone(), radius, n)
+        this.orbit.randomizePhase()
+        this.orbit.step()
+         */
     }
 
     public update(dt: number) {
