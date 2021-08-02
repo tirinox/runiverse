@@ -83,7 +83,23 @@ export const Config = {
                 }
             },
             InnerOrbitRadius: 65.0,
-            InnerOrbitSpeed: 3.1
+            InnerOrbitSpeed: 1.1,
+            Glow: {
+                Radius: 300.0,
+                RadiusVar: 20.0,
+                PosVar: 0.0,
+            },
+            SphereResolution: 50,
+            BallShader: {
+                BaseSpeed: 1.5 * 0.01,
+                RepeatS: 4.0,
+                RepeatT: 4.0,
+                NoiseScale: 0.5, // magnitude of noise effect
+                BlendOffset: 0.1, // adjust lightness/darkness of blended texture
+                BlendSpeed: 0.4, // multiplier for distortion speed
+                BumpSpeed: 0.00015, // multiplier for distortion speed
+                BumpScale: 40.0, // magnitude of normal displacement
+            }
         },
         TxObject: {
             DissipationOfSpeed: 0.4, // 0.2

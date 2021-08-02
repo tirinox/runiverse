@@ -246,7 +246,9 @@ export default {
 
             const finalComposer = new EffectComposer(renderer);
             finalComposer.addPass(renderScene);
-            finalComposer.addPass(finalPass);
+            if(bloomCfg.Enabled) {
+                finalComposer.addPass(finalPass);
+            }
             this.finalComposer = finalComposer
         },
 

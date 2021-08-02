@@ -41,7 +41,7 @@ export class PoolObject extends THREE.Object3D {
             if (isRune) {
                 color.set(RUNE_COLOR)
             } else {
-                color.setHSL(Math.random(), 1.0, 0.3)
+                color.setHSL(Math.random(), 1.0, 0.8)
             }
         } else {
             color.setHSL(0.0, 0.0, 0.5)
@@ -95,8 +95,6 @@ export class PoolObject extends THREE.Object3D {
 
     constructor(pool: PoolDetail) {
         super();
-
-        const cfg = Config.Scene.PoolObject
 
         this.pool = pool
 

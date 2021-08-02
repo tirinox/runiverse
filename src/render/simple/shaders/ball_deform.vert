@@ -7,9 +7,13 @@ uniform float bumpScale;
 uniform float time;
 
 varying vec2 vUv;
+varying vec3 vNormal;
 
 void main()
 {
+    vec4 norm4 = vec4(normal.x, normal.y, normal.z, 1.0);
+    vNormal = normalize((modelViewMatrix * norm4).xyz);
+//    vNormal = normal;
     vUv = uv;
 
     vec2 uvTimeShift = vUv + vec2(1.1, 1.9) * time * bumpSpeed;
