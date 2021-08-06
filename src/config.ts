@@ -83,11 +83,11 @@ export const Config = {
                     ScaleGauss: 100.0
                 }
             },
-            InnerOrbitRadius: 65.0,
+            InnerOrbitRadius: 85.0,
             InnerOrbitSpeed: 1.1,
             Glow: {
                 Enabled: true,
-                Radius: 300.0,
+                Radius: 220.0,
                 RadiusVar: 20.0,
                 PosVar: 0.0,
             },
@@ -97,7 +97,7 @@ export const Config = {
                 RepeatS: 4.0,
                 RepeatT: 4.0,
                 NoiseScale: 0.5, // magnitude of noise effect
-                BlendOffset: 0.1, // adjust lightness/darkness of blended texture
+                BlendOffset: 0.0, // adjust lightness/darkness of blended texture
                 BlendSpeed: 0.2, // multiplier for distortion speed
                 BumpSpeed: 0.1, // multiplier for distortion speed
                 BumpScale: 30.0, // magnitude of normal displacement

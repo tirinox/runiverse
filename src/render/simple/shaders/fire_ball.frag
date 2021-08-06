@@ -19,7 +19,7 @@ uniform vec3 sisterColor;
 uniform float sistersDistance;
 
 varying vec2 vUv;
-varying float v_distanceToSister;
+
 varying vec3 vNormal;
 varying float sisterProximity;
 
@@ -37,17 +37,17 @@ void main()
 
     vec4 theColor = baseColor + blendColor;
     vec3 colorizer = mix(assetColor, assetColor2, vUv.y);
-    colorizer = vNormal.y > 0.0 ? mix(sisterColor, colorizer, 0.5 + v_distanceToSister) : vec3(0.0);
+//    colorizer = vNormal.y > 0.0 ? mix(sisterColor, colorizer, sisterProximity * 0.1) : colorizer;
+    colorizer = mix(colorizer, sisterColor, pow(sisterProximity, 3.0) * 0.5);
 
-    theColor *= vec4(colorizer, 0.0);
+    theColor *= vec4(colorizer, 1.0);
+//    theColor = vec4(sisterProximity, sisterProximity, 0.0, 1.0);
 
     // edge lighting
-//    float f = log(v_distanceToSister) * 0.3;
-//    float f = pow(1.0 - abs(vNormal.z), 1.0);
-    // float sisterBrightness = vNormal.x > 0.0 ? 1.0 : mix(0.8, 2.5, f);
-//    float sisterBrightness = mix(0.8, 2.5, f);
+    float f = pow(1.0 - abs(vNormal.z), 2.0);
+    float sisterBrightness = mix(0.8, 2.5, f);
 
-//    theColor *= sisterBrightness;
+    theColor *= sisterBrightness;
 
     theColor.a = alpha;
     gl_FragColor = theColor;
