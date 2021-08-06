@@ -6,6 +6,7 @@ import {PoolObject} from "@/render/simple/pool/poolObject";
 import StarBackground from "@/render/simple/background";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import BigNumber from "bignumber.js";
+import {ZeroVector3} from "@/helpers/3d";
 
 
 export default class PoolObjectSoloDebug implements ThorEventListener {
@@ -25,6 +26,15 @@ export default class PoolObjectSoloDebug implements ThorEventListener {
     constructor(scene: Scene) {
         this.scene = scene
 
+        let poConfig = Config.Scene.PoolObject
+        poConfig.InnerOrbitSpeed *= 0.1;
+        // poConfig.BallShader.BaseSpeed *= 0.1;
+        // poConfig.BallShader.BlendSpeed *= 0.1;
+        // poConfig.BallShader.BumpSpeed *= 0.1;
+        poConfig.Mesh.RotationVar = 0.1;
+        // poConfig.BallShader.BumpScale = 50;
+        // poConfig.Glow.Enabled = false;
+
         const pool = new PoolDetail(
             'BTC.BTC',
             new BigNumber(1000000000),
@@ -32,10 +42,15 @@ export default class PoolObjectSoloDebug implements ThorEventListener {
             true,
             new BigNumber(123456700)
         )
-        this.poolObj = new PoolObject(pool)
+
+        this.poolObj = new PoolObject(pool, false)
         this.poolObj.scale.setScalar(10.0)
-        // this.poolObj.prepare().then(() => {})
+        // this.poolObj.runeSideMesh!.rotationSpeed = ZeroVector3.clone()
+        // this.poolObj.assetSideMesh!.rotationSpeed = ZeroVector3.clone()
+
         this.poolObj.updateScale()
+        this.poolObj.position.set(100, 200, 300)
+        this.poolObj.rotation.set(5, 3, 2)
         this.scene.add(this.poolObj)
 
         if (Config.Scene.Cubemap.Enabled) {

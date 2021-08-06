@@ -16,7 +16,7 @@ import * as THREE from "three"
 import SimpleScene from "@/render/simple/simpleScene";
 import {RealtimeProvider} from "@/provider/realtime";
 import {Midgard} from "@/provider/midgard/midgard";
-import {Config, DataSourceRealtime} from "@/config";
+import {Config, DataSourcePlayback, DataSourceRealtime} from "@/config";
 import VisualLog from "@/components/elements/VisualLog";
 import {WEBGL} from "three/examples/jsm/WebGL";
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
@@ -188,8 +188,11 @@ export default {
         runDataSource() {
             if (Config.DataSource === DataSourceRealtime) {
                 this.createRealtimeDataSource()
-            } else {
+            } else if(Config.DataSource === DataSourcePlayback) {
                 this.createPlaybackDataSource()
+            } else {
+                console.warn('No data source set up.')
+                return
             }
             this.dataProvider.play()
         },

@@ -4,13 +4,11 @@ import {PoolDetail} from "@/provider/midgard/poolDetail";
 import {Orbit, randomPointOnSphere} from "@/helpers/3d";
 import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
-import {RUNE_COLOR} from "@/helpers/colors";
+import {RUNE_COLOR_GRAD_1, RUNE_COLOR_GRAD_2} from "@/helpers/colors";
 import {truncStringTail} from "@/helpers/data_utils";
 import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
-import ballDeformVert from "@/render/simple/shaders/ball_deform.vert"
-import lavaFrag from "@/render/simple/shaders/fire_ball.frag"
-import clamp = MathUtils.clamp;
 import {PoolObjectMesh} from "@/render/simple/pool/poolObjectMesh";
+import clamp = MathUtils.clamp;
 
 
 export class PoolObject extends THREE.Object3D {
@@ -19,10 +17,10 @@ export class PoolObject extends THREE.Object3D {
     public innerSpeed: number = 1.0
 
     private innerOrbitHolder = new THREE.Object3D()
-    private runeSideMesh?: PoolObjectMesh
-    private runeSideOrbit?: Orbit
-    private assetSideMesh?: PoolObjectMesh
-    private assetSideOrbit?: Orbit
+    public runeSideMesh?: PoolObjectMesh
+    public runeSideOrbit?: Orbit
+    public assetSideMesh?: PoolObjectMesh
+    public assetSideOrbit?: Orbit
 
     scaleFromPool(pool: PoolDetail): number {
         // return Math.pow(pool.runeDepth.toNumber(), 0.11) / 20
@@ -36,15 +34,20 @@ export class PoolObject extends THREE.Object3D {
     private makeOneMesh(isRune: boolean, enabled: boolean): PoolObjectMesh {
         const cfg = Config.Scene.PoolObject
 
-        let color = new THREE.Color()
+        let color1 = new THREE.Color()
+        let color2 = new THREE.Color()
         if (enabled) {
             if (isRune) {
-                color.set(RUNE_COLOR)
+                color1.set(RUNE_COLOR_GRAD_1)
+                color2.set(RUNE_COLOR_GRAD_2)
             } else {
-                color.setHSL(Math.random(), 1.0, 0.8)
+                // todo! get real asset color
+                color1.setHSL(Math.random(), 1.0, 0.8)
+                color2 = color1
             }
         } else {
-            color.setHSL(0.0, 0.0, 0.5)
+            color1.setHSL(0.0, 0.0, 0.5)
+            color2 = color1
         }
 
         // const material = new THREE.MeshPhongMaterial({
@@ -57,7 +60,7 @@ export class PoolObject extends THREE.Object3D {
         // });
 
         // let poolMesh = new THREE.Mesh(PoolObject.geoPool, this.ballMaterial)
-        let poolMesh = new PoolObjectMesh(color)
+        let poolMesh = new PoolObjectMesh(color1, color2)
 
         this.innerOrbitHolder.add(poolMesh)
 
@@ -93,7 +96,7 @@ export class PoolObject extends THREE.Object3D {
         }
     }
 
-    constructor(pool: PoolDetail) {
+    constructor(pool: PoolDetail, withLabel = true) {
         super();
 
         this.pool = pool
@@ -101,7 +104,9 @@ export class PoolObject extends THREE.Object3D {
         this.add(this.innerOrbitHolder)
         this.innerOrbitHolder.rotateOnAxis(randomPointOnSphere(), Math.random() * Math.PI * 2)
 
-        this.createLabel(pool.asset)
+        if(withLabel) {
+            this.createLabel(pool.asset)
+        }
 
         const enabled = this.pool!.isEnabled
 
@@ -125,6 +130,14 @@ export class PoolObject extends THREE.Object3D {
         if(this.runeSideMesh && this.assetSideMesh) {
             this.runeSideMesh.update(dt)
             this.assetSideMesh.update(dt)
+
+            const runeWorld = this.runeSideMesh.getWorldPosition(new Vector3())
+            const assetWorld = this.assetSideMesh.getWorldPosition(new Vector3())
+
+            const fullDistance = runeWorld.clone().sub(assetWorld).length();
+
+            this.runeSideMesh.setSisterParams(fullDistance, assetWorld, this.runeSideMesh.assetColor)
+            this.assetSideMesh.setSisterParams(fullDistance, runeWorld, this.assetSideMesh.assetColor)
         }
     }
 

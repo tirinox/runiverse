@@ -7,9 +7,10 @@ export enum NetworkId {
 
 export const DataSourcePlayback = 'playback'
 export const DataSourceRealtime = 'realtime'
+export const DataSourceNone = 'none'
 
 export const Config = {
-    DataSource: DataSourcePlayback,
+    DataSource: DataSourceNone,
 
     Playback: {
         File: './records/example1_v2.json',
@@ -85,20 +86,24 @@ export const Config = {
             InnerOrbitRadius: 65.0,
             InnerOrbitSpeed: 1.1,
             Glow: {
+                Enabled: true,
                 Radius: 300.0,
                 RadiusVar: 20.0,
                 PosVar: 0.0,
             },
-            SphereResolution: 50,
+            SphereResolution: 150,
             BallShader: {
-                BaseSpeed: 1.5 * 0.01,
+                BaseSpeed: 0.1,
                 RepeatS: 4.0,
                 RepeatT: 4.0,
                 NoiseScale: 0.5, // magnitude of noise effect
                 BlendOffset: 0.1, // adjust lightness/darkness of blended texture
-                BlendSpeed: 0.4, // multiplier for distortion speed
-                BumpSpeed: 0.00015, // multiplier for distortion speed
-                BumpScale: 40.0, // magnitude of normal displacement
+                BlendSpeed: 0.2, // multiplier for distortion speed
+                BumpSpeed: 0.1, // multiplier for distortion speed
+                BumpScale: 30.0, // magnitude of normal displacement
+            },
+            Mesh: {
+                RotationVar: 2.0,
             }
         },
         TxObject: {

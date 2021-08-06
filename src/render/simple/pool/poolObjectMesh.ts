@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import ballDeformVert from "@/render/simple/shaders/ball_deform.vert"
 import lavaFrag from "@/render/simple/shaders/fire_ball.frag"
-import {randomGauss} from "@/helpers/3d";
+import {randomGauss, ZeroVector3} from "@/helpers/3d";
 import {Vector3} from "three";
 import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
 import {Config} from "@/config";
@@ -19,19 +19,36 @@ export class PoolObjectMesh extends THREE.Object3D {
     public static textureLoader = new THREE.TextureLoader()
     private ballMaterial?: THREE.ShaderMaterial;
     private customUniforms: any;
-    private rotationSpeed: Vector3;
-    private assetColor: THREE.Color;
+    private _rotationSpeed: Vector3;
+    public readonly assetColor: THREE.Color;
+    public readonly assetColor2: THREE.Color;
 
-    constructor(assetColor: THREE.Color) {
+    set rotationSpeed(value: Vector3) {
+        this._rotationSpeed = value;
+    }
+
+
+    constructor(assetColor: THREE.Color, assetColor2: THREE.Color) {
         super();
         this.assetColor = assetColor
-        this.rotationSpeed = new Vector3(
-            randomGauss(2.0, 1.0),
-            randomGauss(2.0, 1.0),
-            randomGauss(2.0, 1.0),
+        this.assetColor2 = assetColor2
+        const rSpeedVar = Config.Scene.PoolObject.Mesh.RotationVar
+        this._rotationSpeed = new Vector3(
+            randomGauss(0, rSpeedVar),
+            randomGauss(0, rSpeedVar),
+            randomGauss(0, rSpeedVar),
         )
         this.prepare().then(() => {
         })
+    }
+
+    public setSisterParams(sistersDistance: number, sisterWorldPos: THREE.Vector3, sisterColor: THREE.Color) {
+        if(this.customUniforms) {
+            this.customUniforms.sisterWorldPos.value = sisterWorldPos.clone()
+            this.customUniforms.sisterColor.value = sisterColor.clone()
+            this.customUniforms.sistersDistance.value = sistersDistance
+            this.customUniforms.thisWorldPos.value = this.getWorldPosition(new Vector3())
+        }
     }
 
     public update(dt: number) {
@@ -56,9 +73,9 @@ export class PoolObjectMesh extends THREE.Object3D {
     }
 
     private _rotateMesh(dt: number) {
-        this.rotateX(dt * this.rotationSpeed.x)
-        this.rotateY(dt * this.rotationSpeed.y)
-        this.rotateZ(dt * this.rotationSpeed.z)
+        this.rotateX(dt * this._rotationSpeed.x)
+        this.rotateY(dt * this._rotationSpeed.y)
+        this.rotateZ(dt * this._rotationSpeed.z)
     }
 
     private _addPlainGlow(glowColor: THREE.Color) {
@@ -101,7 +118,9 @@ export class PoolObjectMesh extends THREE.Object3D {
         this.mesh.layers.enable(LAYER_BLOOM_SCENE)
         this.add(this.mesh)
 
-        this._addPlainGlow(this.getGlowColor())
+        if(Config.Scene.PoolObject.Glow.Enabled) {
+            this._addPlainGlow(this.getGlowColor())
+        }
     }
 
     private async createBallMaterial() {
@@ -112,13 +131,14 @@ export class PoolObjectMesh extends THREE.Object3D {
         const cfg = Config.Scene.PoolObject.BallShader
 
         // base image texture for mesh
-        const lavaTexture = await PoolObjectMesh.textureLoader.loadAsync('textures/lava-bw.png')
+        const lavaTexture = await PoolObjectMesh.textureLoader.loadAsync('textures/noise-perlin1.png')
         lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
         // multiplier for distortion speed
         const baseSpeed = cfg.BaseSpeed;
         // number of times to repeat texture in each direction
 
         // texture used to generate "randomness", distort all other textures
+        // noise-perlin1
         const noiseTexture = await PoolObjectMesh.textureLoader.loadAsync('textures/noise-cloud.png');
         noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping;
 
@@ -147,6 +167,11 @@ export class PoolObjectMesh extends THREE.Object3D {
             alpha: {type: "f", value: 1.0},
             time: {type: "f", value: 1.0},
             assetColor: {type: "c", value: this.assetColor},
+            assetColor2: {type: "c", value: this.assetColor2},
+            sisterColor: {type: "c", value: new THREE.Color(0)},
+            sisterWorldPos: {type: "v3", value: new Vector3(0, 0, 1)},
+            thisWorldPos: {type: "v3", value: new Vector3(0, 0, 1)},
+            sistersDistance: {type: "f", value: 100.0},
         };
 
         this.ballMaterial = new THREE.ShaderMaterial({
