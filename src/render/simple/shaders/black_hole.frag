@@ -29,7 +29,7 @@ vec4 blackHole(vec3 ro, vec3 rd) {
     const float glowFac = 0.0015; // orig: 0.0033
 
     const int maxSteps = 350; // 320 default
-    const float dt = 0.05; // ray step. default: 0.02
+    const float dt = 0.08; // ray step. default: 0.02
 
     const float animationSeed = 1.0;
 

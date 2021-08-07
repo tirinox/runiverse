@@ -3,9 +3,17 @@ import {PoolObject} from "@/render/simple/pool/poolObject";
 import {Object3D} from "three";
 import {IPoolQuery} from "@/render/simple/interface";
 import {isRuneStr} from "@/provider/midgard/coinName";
+import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
+import {Config} from "@/config";
+
+interface PoolStruct {
+    obj: PoolObject;
+    orbit: Orbit;
+    orbitSpeed: number;
+}
 
 export class PoolObjectManager implements IPoolQuery {
-    private poolObjects: Record<string, PoolObject> = {}
+    private poolObjects: Record<string, PoolStruct> = {}
 
     // todo: track PoolObject state
 
@@ -17,7 +25,7 @@ export class PoolObjectManager implements IPoolQuery {
     public removeAllPoolMeshes() {
         for (const key of Object.keys(this.poolObjects)) {
             const pm = this.poolObjects[key]
-            pm.dispose()
+            pm.obj.dispose()
         }
         this.poolObjects = {}
     }
@@ -25,7 +33,7 @@ export class PoolObjectManager implements IPoolQuery {
     public removePoolMesh(pool: PoolDetail) {
         const pm = this.poolObjects[pool.asset]
         if (pm) {
-            pm.dispose()
+            pm.obj.dispose()
             delete this.poolObjects[pool.asset]
             console.debug(`delete pool mesh ${pool.asset}`)
         }
@@ -40,9 +48,9 @@ export class PoolObjectManager implements IPoolQuery {
             return 1.0
         }
 
-        const poolMesh = this.poolObjects[poolName]
-        if (poolMesh) {
-            const pool = poolMesh.pool
+        const poolStruct = this.poolObjects[poolName]
+        if (poolStruct) {
+            const pool = poolStruct.obj.pool
             if (pool) {
                 return pool.runesPerAsset.toNumber()
             }
@@ -56,31 +64,35 @@ export class PoolObjectManager implements IPoolQuery {
         }
 
         const poolObj = new PoolObject(pool)
-        this.poolObjects[pool.asset] = poolObj
+        const cfg = Config.Scene.PoolObject
+        const radius = pool.isEnabled ?
+            randomGauss(cfg.Enabled.Distance.CenterGauss, cfg.Enabled.Distance.ScaleGauss) :
+            randomGauss(cfg.Staged.Distance.CenterGauss, cfg.Staged.Distance.ScaleGauss);
+        const n = randomPointOnSphere(1.0)
+        const orbit = new Orbit(poolObj, ZeroVector3.clone(), radius, n)
+        orbit.randomizePhase()
+        orbit.step()
+
+        const orbitSpeed = randomGauss(cfg.SpeedAvg, cfg.SpeedVar)
+
+        this.poolObjects[pool.asset] = {
+            obj: poolObj,
+            orbit,
+            orbitSpeed,
+        }
 
         if (this.scene) {
             this.scene.add(poolObj);
         }
 
         console.debug(`add new mesh for ${pool.asset}`)
-
-        /*
-        todo:
-                this.speed = randomGauss(cfg.Speed.CenterGauss, cfg.Speed.ScaleGauss)
-        const radius = this.pool!.isEnabled ?
-            randomGauss(cfg.Enabled.Distance.CenterGauss, cfg.Enabled.Distance.ScaleGauss) :
-            randomGauss(cfg.Staged.Distance.CenterGauss, cfg.Staged.Distance.ScaleGauss);
-        const n = randomPointOnSphere(1.0)
-        this.orbit = new Orbit(this, ZeroVector3.clone(), radius, n)
-        this.orbit.randomizePhase()
-        this.orbit.step()
-         */
     }
 
     public update(dt: number) {
         for (const key of Object.keys(this.poolObjects)) {
             const pm = this.poolObjects[key]
-            pm.update(dt)
+            pm.obj.update(dt)
+            pm.orbit.step(dt, pm.orbitSpeed)
         }
     }
 
@@ -92,12 +104,13 @@ export class PoolObjectManager implements IPoolQuery {
     public hearBeat(pool: PoolDetail) {
         const poolObj = this.poolObjects[pool.asset]
         if (poolObj) {
-            poolObj.pool = pool
-            poolObj.updateScale()
+            poolObj.obj.pool = pool
+            poolObj.obj.updateScale()
         }
     }
 
     public allPools(): Array<PoolObject> {
-        return Object.values(this.poolObjects)
+        const poolStructs = Object.values(this.poolObjects)
+        return poolStructs.map((s) => s.obj)
     }
 }

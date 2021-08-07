@@ -76,6 +76,14 @@ export function randomGauss(center: number, scale: number) {
     return (r / v - 0.5) * scale + center
 }
 
+export function randomGaussV3(center: number, scale: number) {
+    return new Vector3(
+        randomGauss(center, scale),
+        randomGauss(center, scale),
+        randomGauss(center, scale),
+    )
+}
+
 export interface PolarCoordinates {
     r: number
     phi: number

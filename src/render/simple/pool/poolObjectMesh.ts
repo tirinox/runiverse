@@ -5,8 +5,7 @@ import lavaFrag from "@/render/simple/shaders/fire_ball.frag"
 import {randomGauss, ZeroVector3} from "@/helpers/3d";
 import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
 import {Config} from "@/config";
-import {Geometry} from "three/examples/jsm/deprecated/Geometry";
-
+import {PoolParticles} from "@/render/simple/pool/poolParticles"
 
 export class PoolObjectMesh extends THREE.Object3D {
     private glowMaterial?: THREE.SpriteMaterial
@@ -17,15 +16,15 @@ export class PoolObjectMesh extends THREE.Object3D {
         50,
         Config.Scene.PoolObject.SphereResolution,
         Config.Scene.PoolObject.SphereResolution)
+
     public static textureLoader = new THREE.TextureLoader()
     private ballMaterial?: THREE.ShaderMaterial;
     private customUniforms: any;
     private _rotationSpeed: Vector3;
     public readonly assetColor: THREE.Color;
     public readonly assetColor2: THREE.Color;
-    private flowVert: any[] = [];
-    private geometry?: THREE.BufferGeometry;
     private sisterDirection: Vector3 = ZeroVector3.clone();
+    private flowParticles?: PoolParticles
 
     set rotationSpeed(value: Vector3) {
         this._rotationSpeed = value;
@@ -78,7 +77,10 @@ export class PoolObjectMesh extends THREE.Object3D {
             )
         }
 
-        this.updateParticles()
+        if(this.flowParticles) {
+            // @ts-ignore
+            this.flowParticles!.updateParticles(dt, this.sisterDirection)
+        }
     }
 
     private _rotateMesh(dt: number) {
@@ -196,82 +198,8 @@ export class PoolObjectMesh extends THREE.Object3D {
         });
     }
 
-    private updateParticles() {
-        const time = Date.now() * 0.00005;
-
-        // for (let i = 0; i < this.children.length; i++) {
-        //     const object = this.children[i];
-        //     if (object instanceof THREE.Points) {
-        //         // object.rotation.y = time * (i < 4 ? i + 1 : -(i + 1));
-        //     }
-        // }
-
-        if (this.geometry) {
-            const verts = this.geometry.attributes.position.array
-            // const fullDist = this.sisterDirection.length()
-            // const normDir = this.sisterDirection.clone().normalize()
-
-            //
-            for (let i = 0; i < verts.length / 3; ++i) {
-                const d = THREE.MathUtils.randFloat(1.0, 5.5)
-                this.setParticlePosition(verts, i, this.sisterDirection.clone().multiplyScalar(d).add(
-                    new Vector3(
-                        randomGauss(0, 50),
-                        randomGauss(0, 50),
-                        randomGauss(0, 50),
-                    )
-                ))
-            }
-
-            this.geometry.attributes.position.needsUpdate = true;
-        }
-    }
-
-    private setParticlePosition(buff: any, i: number, pos: Vector3) {
-        buff[i * 3] = pos.x
-        buff[i * 3 + 1] = pos.y
-        buff[i * 3 + 2] = pos.z
-    }
-
     private async createParticles() {
-        const n = 300;
-        const geometry = this.geometry = new THREE.BufferGeometry();
-        this.flowVert = [];
-
-        const textureLoader = new THREE.TextureLoader();
-
-        const sprite1 = textureLoader.load('textures/particles/trail.png');
-        const sprite2 = textureLoader.load('textures/particles/trail2.png');
-        const sprite3 = textureLoader.load('textures/particles/trail3.png');
-
-        const rVar = 30
-        for (let i = 0; i < n; i++) {
-            const x = randomGauss(0, rVar)
-            const y = randomGauss(0, rVar)
-            const z = randomGauss(0, rVar)
-
-            // const y = Math.random() * 2000 - 1000;
-
-            this.flowVert.push(x, y, z);
-        }
-
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(this.flowVert, 3));
-
-        const materials = [];
-        for (let texture of [sprite1, sprite2, sprite3]) {
-            const mat = new THREE.PointsMaterial({
-                size: randomGauss(20, 10),
-                map: texture,
-                blending: THREE.AdditiveBlending,
-                depthTest: true,
-                transparent: true
-            })
-
-            mat.color.copy(this.assetColor)
-
-            materials.push(mat)
-            const particles = new THREE.Points(geometry, mat);
-            this.add(particles)
-        }
+        // @ts-ignore
+        this.flowParticles = new PoolParticles(this, 'textures/particles/star_05.png', this.assetColor)
     }
 }

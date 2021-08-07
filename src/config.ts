@@ -10,7 +10,7 @@ export const DataSourceRealtime = 'realtime'
 export const DataSourceNone = 'none'
 
 export const Config = {
-    DataSource: DataSourceNone,
+    DataSource: DataSourcePlayback,
 
     Playback: {
         File: './records/example1_v2.json',
@@ -19,7 +19,8 @@ export const Config = {
     },
 
     Debug: {
-        SceneName: 'PoolObjectSoloDebug'
+        // SceneName: 'PoolObjectSoloDebug'
+        SceneName: ''
     },
 
     RealtimeScanner: {
@@ -67,10 +68,8 @@ export const Config = {
             MaxPoolNameLength: 14,
             Mass: 10000,
             InitialScale: 0.2,
-            Speed: {
-                CenterGauss: 0.06,
-                ScaleGauss: 0.04
-            },
+            SpeedAvg: 0.06,
+            SpeedVar: 0.04,
             Staged: {
                 Distance: {
                     CenterGauss: 2500.0,
@@ -104,6 +103,14 @@ export const Config = {
             },
             Mesh: {
                 RotationVar: 2.0,
+            },
+            Particles: {
+                N: 330,
+                Life: 1.5,
+                MoveSpeedAvg: 100.2,
+                MoveSpeedVar: 80.1,
+                ShiftVar: 80,
+                Size: 20,
             }
         },
         TxObject: {

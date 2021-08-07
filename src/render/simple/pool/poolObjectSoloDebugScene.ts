@@ -27,13 +27,13 @@ export default class PoolObjectSoloDebug implements ThorEventListener, IScene {
         this.scene = scene
 
         let poConfig = Config.Scene.PoolObject
-        poConfig.InnerOrbitSpeed *= 1.1;
+        poConfig.InnerOrbitSpeed *= 0.0001;
         // poConfig.BallShader.BaseSpeed *= 0.1;
         // poConfig.BallShader.BlendSpeed *= 0.1;
         // poConfig.BallShader.BumpSpeed *= 0.1;
         poConfig.Mesh.RotationVar = 0.0;
         // poConfig.BallShader.BumpScale = 50;
-        // poConfig.Glow.Enabled = false;
+        poConfig.Glow.Enabled = false;
 
         const pool = new PoolDetail(
             'BTC.BTC',
