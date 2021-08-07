@@ -43,8 +43,8 @@ export class PoolObject extends THREE.Object3D {
             } else {
                 // todo! get real asset color
                 // color1.setHSL(Math.random(), 1.0, 0.8)
-                color1.setHSL(0.0, 1.0, 0.5)
-                color2 = color1
+                color1 = new THREE.Color(0xff9900);
+                color2 = new THREE.Color(0xffffff);
             }
         } else {
             color1.setHSL(0.0, 0.0, 0.5)
@@ -150,5 +150,19 @@ export class PoolObject extends THREE.Object3D {
         const oldScale = this.scale.x
         this.scale.setScalar(oldScale * factor)
         setTimeout(() => this.scale.setScalar(oldScale), 500)
+    }
+
+    public playSwapAnimation(runeAmt: number) {
+        // todo
+        console.warn('playSwapAnimation not implemented yet')
+    }
+
+    public playAddWithdrawAnimation(runeAmt: number, assetAmt: number, isAdd: boolean) {
+        // todo
+        console.warn('playAddWithdrawAnimation not implemented yet')
+    }
+
+    public playBornAnimation() {
+        // todo
     }
 }

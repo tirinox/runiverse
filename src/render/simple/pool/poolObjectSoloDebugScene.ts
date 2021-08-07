@@ -31,7 +31,7 @@ export default class PoolObjectSoloDebug implements ThorEventListener {
         // poConfig.BallShader.BaseSpeed *= 0.1;
         // poConfig.BallShader.BlendSpeed *= 0.1;
         // poConfig.BallShader.BumpSpeed *= 0.1;
-        poConfig.Mesh.RotationVar = 0.1;
+        poConfig.Mesh.RotationVar = 0.0;
         // poConfig.BallShader.BumpScale = 50;
         // poConfig.Glow.Enabled = false;
 
@@ -49,8 +49,8 @@ export default class PoolObjectSoloDebug implements ThorEventListener {
         // this.poolObj.assetSideMesh!.rotationSpeed = ZeroVector3.clone()
 
         this.poolObj.updateScale()
-        this.poolObj.position.set(100, 200, 300)
-        this.poolObj.rotation.set(5, 3, 2)
+        // this.poolObj.position.set(100, 200, 300)
+        // this.poolObj.rotation.set(5, 3, 2)
         this.scene.add(this.poolObj)
 
         if (Config.Scene.Cubemap.Enabled) {

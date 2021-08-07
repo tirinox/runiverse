@@ -93,9 +93,9 @@ export const Config = {
             },
             SphereResolution: 150,
             BallShader: {
-                BaseSpeed: 0.1,
-                RepeatS: 4.0,
-                RepeatT: 4.0,
+                BaseSpeed: 0.3,
+                RepeatS: 1.0,
+                RepeatT: 1.0,
                 NoiseScale: 0.5, // magnitude of noise effect
                 BlendOffset: 0.0, // adjust lightness/darkness of blended texture
                 BlendSpeed: 0.2, // multiplier for distortion speed

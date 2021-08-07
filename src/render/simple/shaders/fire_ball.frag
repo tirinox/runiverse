@@ -28,19 +28,19 @@ void main()
     vec2 uvTimeShift = vUv + vec2(-0.7, 1.5) * time * baseSpeed;
     vec4 noiseGeneratorTimeShift = texture2D(noiseTexture, uvTimeShift);
     vec2 uvNoiseTimeShift = vUv + noiseScale * vec2(noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.b);
-    vec4 baseColor = texture2D(baseTexture, uvNoiseTimeShift * vec2(repeatS, repeatT));
+    vec4 baseColor = texture2D(baseTexture, uvNoiseTimeShift * vec2(repeatS, repeatT)) * vec4(assetColor, 1.0);
 
     vec2 uvTimeShift2 = vUv + vec2(1.3, -1.7) * time * blendSpeed;
     vec4 noiseGeneratorTimeShift2 = texture2D(noiseTexture, uvTimeShift2);
     vec2 uvNoiseTimeShift2 = vUv + noiseScale * vec2(noiseGeneratorTimeShift2.g, noiseGeneratorTimeShift2.b);
     vec4 blendColor = texture2D(blendTexture, uvNoiseTimeShift2 * vec2(repeatS, repeatT)) - blendOffset * vec4(1.0, 1.0, 1.0, 1.0);
 
-    vec4 theColor = baseColor + blendColor;
-    vec3 colorizer = mix(assetColor, assetColor2, vUv.y);
+    vec4 theColor = baseColor + blendColor * vec4(assetColor2, 1.0);
+//    vec3 colorizer = mix(assetColor, assetColor2, vUv.y);
 //    colorizer = vNormal.y > 0.0 ? mix(sisterColor, colorizer, sisterProximity * 0.1) : colorizer;
-    colorizer = mix(colorizer, sisterColor, pow(sisterProximity, 3.0) * 0.5);
+//    colorizer = mix(colorizer, sisterColor, pow(sisterProximity, 3.0) * 0.5);
 
-    theColor *= vec4(colorizer, 1.0);
+//    theColor *= vec4(colorizer, 1.0);
 //    theColor = vec4(sisterProximity, sisterProximity, 0.0, 1.0);
 
     // edge lighting

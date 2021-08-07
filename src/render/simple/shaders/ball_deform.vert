@@ -38,7 +38,7 @@ void main()
     //  but displace the vertices at the poles by the same amount
     float displacement = (vUv.y > 0.999 || vUv.y < 0.001) ? (0.3 + 0.05 * sin(time)) : bumpData.r;
 //    vec3 newPosition = position + normal * displacement * bumpScale / v_distanceToSister;
-    vec3 newPosition = position + normal * displacement * bumpScale * (1.0 + sisterProximity * 3.0);
+    vec3 newPosition = position + normal * displacement * bumpScale * (0.4 + sisterProximity * 3.0);
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
 

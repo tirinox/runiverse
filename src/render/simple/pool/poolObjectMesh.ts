@@ -128,11 +128,15 @@ export class PoolObjectMesh extends THREE.Object3D {
             return
         }
 
+        const baseTexName = 'textures/lava-bw.png'
+        const blendTexName = 'textures/noise-perlin1.png'
+        // const blendTexName = 'textures/lava-bw.png'
+
         const cfg = Config.Scene.PoolObject.BallShader
 
         // base image texture for mesh
-        const lavaTexture = await PoolObjectMesh.textureLoader.loadAsync('textures/noise-perlin1.png')
-        lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping;
+        const baseTexture = await PoolObjectMesh.textureLoader.loadAsync(baseTexName)
+        baseTexture.wrapS = baseTexture.wrapT = THREE.RepeatWrapping;
         // multiplier for distortion speed
         const baseSpeed = cfg.BaseSpeed;
         // number of times to repeat texture in each direction
@@ -143,7 +147,7 @@ export class PoolObjectMesh extends THREE.Object3D {
         noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping;
 
         // texture to additively blend with base image texture
-        const blendTexture = await PoolObjectMesh.textureLoader.loadAsync('textures/lava-bw.png');
+        const blendTexture = await PoolObjectMesh.textureLoader.loadAsync(blendTexName);
         blendTexture.wrapS = blendTexture.wrapT = THREE.RepeatWrapping;
 
         // texture to determine normal displacement
@@ -152,7 +156,7 @@ export class PoolObjectMesh extends THREE.Object3D {
 
         // use "this." to create global object
         this.customUniforms = {
-            baseTexture: {type: "t", value: lavaTexture},
+            baseTexture: {type: "t", value: baseTexture},
             baseSpeed: {type: "f", value: baseSpeed},
             repeatS: {type: "f", value: cfg.RepeatS},
             repeatT: {type: "f", value: cfg.RepeatT},
