@@ -84,7 +84,7 @@ export const Config = {
                 }
             },
             InnerOrbitRadius: 85.0,
-            InnerOrbitSpeed: 1.1,
+            InnerOrbitSpeed: 2.1,
             Glow: {
                 Enabled: true,
                 Radius: 220.0,

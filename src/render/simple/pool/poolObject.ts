@@ -43,7 +43,7 @@ export class PoolObject extends THREE.Object3D {
             } else {
                 // todo! get real asset color
                 // color1.setHSL(Math.random(), 1.0, 0.8)
-                color1 = new THREE.Color(0xff9900);
+                color1 = new THREE.Color(0xff9900);  // main color!
                 color2 = new THREE.Color(0xffffff);
             }
         } else {
@@ -137,8 +137,11 @@ export class PoolObject extends THREE.Object3D {
 
             const fullDistance = runeWorld.clone().sub(assetWorld).length();
 
-            this.runeSideMesh.setSisterParams(fullDistance, assetWorld, this.assetSideMesh.assetColor)
-            this.assetSideMesh.setSisterParams(fullDistance, runeWorld, this.runeSideMesh.assetColor)
+            const r2a = this.runeSideMesh.position.clone().sub(this.assetSideMesh.position)
+            const a2r = r2a.clone().negate()
+
+            this.runeSideMesh.setSisterParams(r2a, fullDistance, assetWorld, this.assetSideMesh.assetColor)
+            this.assetSideMesh.setSisterParams(a2r, fullDistance, runeWorld, this.runeSideMesh.assetColor)
         }
     }
 

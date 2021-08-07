@@ -32,6 +32,8 @@ import bloomOverlayFragShader from "@/render/simple/shaders/bloom_overlay.frag"
 import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
 import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
 import PoolObjectSoloDebug from "@/render/simple/pool/poolObjectSoloDebugScene";
+import TWEEN from "tween";
+
 
 function getScene(scene, name) {
     if(name === 'PoolObjectSoloDebug') {
@@ -96,6 +98,8 @@ export default {
         },
 
         render(time) {
+            TWEEN.update()
+
             if (!this.lastCalledTime) {
                 this.lastCalledTime = time;
                 this.fps = 0;
@@ -287,6 +291,7 @@ export default {
         this.createEnvironmentCamera()
 
         this.makeRenderer(this.canvas)
+
         this.resizeRendererToDisplaySize();
 
         this.runDataSource()
@@ -329,6 +334,5 @@ export default {
     width: 100%;
     height: 100%;
 }
-
 
 </style>

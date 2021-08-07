@@ -7,9 +7,9 @@ import {WalletObjectManager} from "@/render/simple/walletObjectManager";
 import {Config} from "@/config";
 import {CoreObject} from "@/render/simple/coreObject";
 import StarBackground from "@/render/simple/background";
+import {IScene} from "@/render/sceneInterface";
 
-
-export default class SimpleScene implements ThorEventListener {
+export default class SimpleScene implements ThorEventListener, IScene {
     private readonly scene: Scene;
 
     private txObjManager = new TxObjectManager()
@@ -41,7 +41,6 @@ export default class SimpleScene implements ThorEventListener {
         this.core = new CoreObject()
         this.scene.add(this.core)
     }
-
 
     constructor(scene: Scene) {
         this.scene = scene

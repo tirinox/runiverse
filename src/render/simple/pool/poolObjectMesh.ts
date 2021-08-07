@@ -1,10 +1,11 @@
 import * as THREE from "three";
+import {Vector3} from "three";
 import ballDeformVert from "@/render/simple/shaders/ball_deform.vert"
 import lavaFrag from "@/render/simple/shaders/fire_ball.frag"
 import {randomGauss, ZeroVector3} from "@/helpers/3d";
-import {Vector3} from "three";
 import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
 import {Config} from "@/config";
+import {Geometry} from "three/examples/jsm/deprecated/Geometry";
 
 
 export class PoolObjectMesh extends THREE.Object3D {
@@ -22,11 +23,13 @@ export class PoolObjectMesh extends THREE.Object3D {
     private _rotationSpeed: Vector3;
     public readonly assetColor: THREE.Color;
     public readonly assetColor2: THREE.Color;
+    private flowVert: any[] = [];
+    private geometry?: THREE.BufferGeometry;
+    private sisterDirection: Vector3 = ZeroVector3.clone();
 
     set rotationSpeed(value: Vector3) {
         this._rotationSpeed = value;
     }
-
 
     constructor(assetColor: THREE.Color, assetColor2: THREE.Color) {
         super();
@@ -42,12 +45,16 @@ export class PoolObjectMesh extends THREE.Object3D {
         })
     }
 
-    public setSisterParams(sistersDistance: number, sisterWorldPos: THREE.Vector3, sisterColor: THREE.Color) {
-        if(this.customUniforms) {
+    public setSisterParams(localDir: THREE.Vector3,
+                           sistersDistance: number,
+                           sisterWorldPos: THREE.Vector3,
+                           sisterColor: THREE.Color) {
+        if (this.customUniforms) {
             this.customUniforms.sisterWorldPos.value = sisterWorldPos.clone()
-            this.customUniforms.sisterColor.value = sisterColor.clone()
+            this.customUniforms.sisterColor.value = sisterColor.clone().lerp(this.assetColor, 0.5);
             this.customUniforms.sistersDistance.value = sistersDistance
             this.customUniforms.thisWorldPos.value = this.getWorldPosition(new Vector3())
+            this.sisterDirection = localDir.clone().negate()
         }
     }
 
@@ -70,6 +77,8 @@ export class PoolObjectMesh extends THREE.Object3D {
                 randomGauss(0.0, cfg.PosVar),
             )
         }
+
+        this.updateParticles()
     }
 
     private _rotateMesh(dt: number) {
@@ -118,9 +127,11 @@ export class PoolObjectMesh extends THREE.Object3D {
         this.mesh.layers.enable(LAYER_BLOOM_SCENE)
         this.add(this.mesh)
 
-        if(Config.Scene.PoolObject.Glow.Enabled) {
+        if (Config.Scene.PoolObject.Glow.Enabled) {
             this._addPlainGlow(this.getGlowColor())
         }
+
+        await this.createParticles()
     }
 
     private async createBallMaterial() {
@@ -183,5 +194,84 @@ export class PoolObjectMesh extends THREE.Object3D {
             vertexShader: ballDeformVert,
             fragmentShader: lavaFrag,
         });
+    }
+
+    private updateParticles() {
+        const time = Date.now() * 0.00005;
+
+        // for (let i = 0; i < this.children.length; i++) {
+        //     const object = this.children[i];
+        //     if (object instanceof THREE.Points) {
+        //         // object.rotation.y = time * (i < 4 ? i + 1 : -(i + 1));
+        //     }
+        // }
+
+        if (this.geometry) {
+            const verts = this.geometry.attributes.position.array
+            // const fullDist = this.sisterDirection.length()
+            // const normDir = this.sisterDirection.clone().normalize()
+
+            //
+            for (let i = 0; i < verts.length / 3; ++i) {
+                const d = THREE.MathUtils.randFloat(1.0, 5.5)
+                this.setParticlePosition(verts, i, this.sisterDirection.clone().multiplyScalar(d).add(
+                    new Vector3(
+                        randomGauss(0, 50),
+                        randomGauss(0, 50),
+                        randomGauss(0, 50),
+                    )
+                ))
+            }
+
+            this.geometry.attributes.position.needsUpdate = true;
+        }
+    }
+
+    private setParticlePosition(buff: any, i: number, pos: Vector3) {
+        buff[i * 3] = pos.x
+        buff[i * 3 + 1] = pos.y
+        buff[i * 3 + 2] = pos.z
+    }
+
+    private async createParticles() {
+        const n = 300;
+        const geometry = this.geometry = new THREE.BufferGeometry();
+        this.flowVert = [];
+
+        const textureLoader = new THREE.TextureLoader();
+
+        const sprite1 = textureLoader.load('textures/particles/trail.png');
+        const sprite2 = textureLoader.load('textures/particles/trail2.png');
+        const sprite3 = textureLoader.load('textures/particles/trail3.png');
+
+        const rVar = 30
+        for (let i = 0; i < n; i++) {
+            const x = randomGauss(0, rVar)
+            const y = randomGauss(0, rVar)
+            const z = randomGauss(0, rVar)
+
+            // const y = Math.random() * 2000 - 1000;
+
+            this.flowVert.push(x, y, z);
+        }
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(this.flowVert, 3));
+
+        const materials = [];
+        for (let texture of [sprite1, sprite2, sprite3]) {
+            const mat = new THREE.PointsMaterial({
+                size: randomGauss(20, 10),
+                map: texture,
+                blending: THREE.AdditiveBlending,
+                depthTest: true,
+                transparent: true
+            })
+
+            mat.color.copy(this.assetColor)
+
+            materials.push(mat)
+            const particles = new THREE.Points(geometry, mat);
+            this.add(particles)
+        }
     }
 }

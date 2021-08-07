@@ -6,11 +6,11 @@ import {PoolObject} from "@/render/simple/pool/poolObject";
 import StarBackground from "@/render/simple/background";
 import {PoolDetail} from "@/provider/midgard/poolDetail";
 import BigNumber from "bignumber.js";
-import {ZeroVector3} from "@/helpers/3d";
+import {IScene} from "@/render/sceneInterface";
 
 
-export default class PoolObjectSoloDebug implements ThorEventListener {
-    private readonly scene: Scene;
+export default class PoolObjectSoloDebug implements ThorEventListener, IScene {
+    public scene: Scene;
 
     private poolObj?: PoolObject;
 
@@ -27,7 +27,7 @@ export default class PoolObjectSoloDebug implements ThorEventListener {
         this.scene = scene
 
         let poConfig = Config.Scene.PoolObject
-        poConfig.InnerOrbitSpeed *= 0.1;
+        poConfig.InnerOrbitSpeed *= 1.1;
         // poConfig.BallShader.BaseSpeed *= 0.1;
         // poConfig.BallShader.BlendSpeed *= 0.1;
         // poConfig.BallShader.BumpSpeed *= 0.1;

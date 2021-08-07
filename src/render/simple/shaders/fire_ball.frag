@@ -39,6 +39,7 @@ void main()
 //    vec3 colorizer = mix(assetColor, assetColor2, vUv.y);
 //    colorizer = vNormal.y > 0.0 ? mix(sisterColor, colorizer, sisterProximity * 0.1) : colorizer;
 //    colorizer = mix(colorizer, sisterColor, pow(sisterProximity, 3.0) * 0.5);
+    theColor = mix(theColor, vec4(sisterColor, 1.0), pow(sisterProximity, 1.0) * 0.5);
 
 //    theColor *= vec4(colorizer, 1.0);
 //    theColor = vec4(sisterProximity, sisterProximity, 0.0, 1.0);
