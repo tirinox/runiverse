@@ -5,6 +5,7 @@ import {Object3D} from "three";
 import {hashToPolarCoordinates, polarToXYZ} from "@/helpers/3d";
 import VisualLog from "@/components/elements/VisualLog.vue";
 import * as crypto from "crypto-js";
+import {easyHash} from "@/helpers/data_utils";
 
 
 export class WalletObjectManager {
@@ -50,7 +51,7 @@ export class WalletObjectManager {
 
         this.scene?.add(newWalletObj)
 
-        const addressHash = crypto.SHA256(address).toString(crypto.enc.Hex)
+        const addressHash = easyHash(address)
         const pos = polarToXYZ(hashToPolarCoordinates(addressHash, this.AddressRadius))
         newWalletObj.positionate(pos)
 

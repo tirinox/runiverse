@@ -1,3 +1,5 @@
+import * as crypto from "crypto-js";
+
 const byteToHex: Array<string> = [];
 
 for (let n = 0; n <= 0xff; ++n) {
@@ -41,4 +43,24 @@ export function truncStringTail(text: string, maxLength: number = 10): string {
 
 export function lastElement<Type>(arg: Array<Type>): Type {
     return arg[arg.length - 1]
+}
+
+export function easyHash(input: string): string {
+    return crypto.SHA256(input).toString(crypto.enc.Hex)
+}
+
+const HASH_PAR_BITS = 32
+const HASH_PAR_HEX_DIGITS = HASH_PAR_BITS / 4
+const HASH_PAR_DENOM = 2 ** HASH_PAR_BITS
+const HASH_PAR_SALT = 'HashedSaltBro1242'
+
+export function hashedParameterFloat01(input: string, path: string) {
+    const rehashed = easyHash(HASH_PAR_SALT + input + path)
+    const part = parseInt(rehashed.substring(0, HASH_PAR_HEX_DIGITS), 16)
+    return part / HASH_PAR_DENOM
+}
+
+export function hashedParameterFloat(input: string, path: string, min: number = 0.0, max: number = 0.0) {
+    const f01 = hashedParameterFloat01(input, path)
+    return min + f01 * (max - min)
 }

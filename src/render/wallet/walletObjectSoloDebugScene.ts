@@ -5,7 +5,7 @@ import {Config} from "@/config";
 import StarBackground from "@/render/background";
 import {IScene} from "@/render/sceneInterface";
 import {WalletObject} from "@/render/wallet/walletObject";
-import {hashToPolarCoordinates} from "@/helpers/3d";
+import {hashedParameterFloat01} from "@/helpers/data_utils";
 
 
 export default class WalletObjectSoloDebugScene implements ThorEventListener, IScene {
@@ -16,7 +16,7 @@ export default class WalletObjectSoloDebugScene implements ThorEventListener, IS
     private columns: number;
 
     updateAnimations(dt: number) {
-        for(let wo of this.walletObjects) {
+        for (let wo of this.walletObjects) {
             wo.update(dt)
         }
     }
@@ -35,9 +35,9 @@ export default class WalletObjectSoloDebugScene implements ThorEventListener, IS
         const yStep = 280
 
         let counter = 0
-        for(let row = 0; row < this.rows; ++row) {
-            for(let col = 0; col < this.columns; ++col) {
-                const name = counter.toString()
+        for (let row = 0; row < this.rows; ++row) {
+            for (let col = 0; col < this.columns; ++col) {
+                const name = `wlt_${counter}`
 
                 const wo = new WalletObject(name)
                 wo.scale.setScalar(3.0)

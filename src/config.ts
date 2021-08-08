@@ -20,9 +20,9 @@ export const Config = {
     },
 
     Debug: {
-        // SceneName: 'WalletObjectSoloDebugScene'
+        SceneName: 'WalletObjectSoloDebugScene'
         // SceneName: 'PoolObjectSoloDebug'
-        SceneName: 'default'
+        // SceneName: 'default'
     },
 
     RealtimeScanner: {
@@ -64,8 +64,8 @@ export const Config = {
             Scale: 3.0,
             Radius: 380.0,
             Color: 0x202520,
-            // Simplified: true,
-            Simplified: false,
+            Simplified: true,
+            // Simplified: false,
         },
         PoolObject: {
             Label: {
@@ -131,6 +131,11 @@ export const Config = {
             ScaleConst: 5.5,
             ScalePower: 0.25,
             RotationSpeedGaussMagnitude: 42.0
+        },
+        WalletObject: {
+            Label: {
+                Enabled: true
+            }
         },
         Cubemap: {
             Enabled: true,
