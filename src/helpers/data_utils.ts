@@ -64,3 +64,13 @@ export function hashedParameterFloat(input: string, path: string, min: number = 
     const f01 = hashedParameterFloat01(input, path)
     return min + f01 * (max - min)
 }
+
+export function hashedParameterInt(input: string, path: string, min: number = 0, max: number = 0) {
+    const n = hashedParameterFloat(input, path, min, max)
+    return Math.round(n)
+}
+
+export function hashedParameterChoice(input: string, path: string, collection: Array<any>) {
+    const n = hashedParameterInt(input, path, 0, collection.length - 1)
+    return collection[n]
+}
