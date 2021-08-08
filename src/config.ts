@@ -10,8 +10,8 @@ export const DataSourceRealtime = 'realtime'
 export const DataSourceNone = 'none'
 
 export const Config = {
-    // DataSource: DataSourcePlayback,
-    DataSource: DataSourceNone,
+    DataSource: DataSourcePlayback,
+    // DataSource: DataSourceNone,
 
     Playback: {
         File: './records/example1_v2.json',
@@ -20,9 +20,9 @@ export const Config = {
     },
 
     Debug: {
-        SceneName: 'WalletObjectSoloDebugScene'
+        // SceneName: 'WalletObjectSoloDebugScene'
         // SceneName: 'PoolObjectSoloDebug'
-        // SceneName: ''
+        SceneName: 'default'
     },
 
     RealtimeScanner: {
@@ -64,7 +64,8 @@ export const Config = {
             Scale: 3.0,
             Radius: 380.0,
             Color: 0x202520,
-            Simplified: true,
+            // Simplified: true,
+            Simplified: false,
         },
         PoolObject: {
             Label: {

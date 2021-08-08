@@ -4,6 +4,8 @@ import coreGalaxyVert from "@/render/core/core_galaxy.vert"
 import coreGalaxyFrag from "@/render/core/core_galaxy.frag"
 import coreBlackholeVert from "@/render/core/black_hole.vert"
 import coreBlackholeFrag from "@/render/core/black_hole.frag"
+import coreBlackholeLabVert from "@/render/core/black_hole_lab.vert"
+import coreBlackholeLabFrag from "@/render/core/black_hole_lab.frag"
 import simpleGlowVert from "@/render/shaders/simple_glow.vert"
 import simpleGlowFrag from "@/render/shaders/simple_glow.frag"
 
@@ -11,6 +13,11 @@ import simpleGlowFrag from "@/render/shaders/simple_glow.frag"
 const CoreObjSize = Config.Scene.Core.Scale;
 const CoreObjScale = Config.Scene.Core.Radius / CoreObjSize
 
+enum BlackHoleType {
+    Lab, Galaxy, Standart
+}
+
+const BH_Type = BlackHoleType.Lab
 
 export class CoreObject extends THREE.Group {
     private core?: THREE.Mesh;
@@ -55,13 +62,22 @@ export class CoreObject extends THREE.Group {
         this.core.add(coreGlow)
     }
 
+    private bhVertAndFragShaders(t: BlackHoleType): [string, string] {
+        if(t == BlackHoleType.Lab) {
+            return [coreBlackholeLabVert, coreBlackholeLabFrag]
+        } else if(t == BlackHoleType.Galaxy) {
+            return [coreGalaxyVert, coreGalaxyFrag]
+        } else {
+            return [coreBlackholeVert, coreBlackholeFrag]
+        }
+    }
+
     private async loadCoreMeshBlackHole() {
-        const loader = new THREE.FileLoader()
+        // const loader = new THREE.FileLoader()
         // const vertexShader: string = <string>await loader.loadAsync('shaders/black_hole.vert')
         // const fragmentShader: string = <string>await loader.loadAsync('shaders/black_hole.frag')
-        const isBH = true
-        const vertexShader = isBH ? coreBlackholeVert : coreGalaxyVert
-        const fragmentShader = isBH ? coreBlackholeFrag : coreGalaxyFrag
+
+        let [vertexShader, fragmentShader] = this.bhVertAndFragShaders(BH_Type)
 
         const textureLoader = new THREE.TextureLoader()
         const noiseTexture = await textureLoader.loadAsync("textures/noise-rgb64.png")
@@ -80,8 +96,8 @@ export class CoreObject extends THREE.Group {
         })
 
         this.core = new THREE.Mesh(
-            // new THREE.BoxGeometry(CoreObjSize, CoreObjSize, CoreObjSize),
-            new THREE.SphereGeometry(CoreObjSize, 8, 8),
+            new THREE.BoxGeometry(CoreObjSize, CoreObjSize, CoreObjSize),
+            // new THREE.SphereGeometry(CoreObjSize, 8, 8),
             this.material
         )
         this.core.scale.setScalar(CoreObjScale)
