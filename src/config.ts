@@ -10,7 +10,8 @@ export const DataSourceRealtime = 'realtime'
 export const DataSourceNone = 'none'
 
 export const Config = {
-    DataSource: DataSourcePlayback,
+    // DataSource: DataSourcePlayback,
+    DataSource: DataSourceNone,
 
     Playback: {
         File: './records/example1_v2.json',
@@ -19,8 +20,9 @@ export const Config = {
     },
 
     Debug: {
+        SceneName: 'WalletObjectSoloDebugScene'
         // SceneName: 'PoolObjectSoloDebug'
-        SceneName: ''
+        // SceneName: ''
     },
 
     RealtimeScanner: {

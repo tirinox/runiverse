@@ -38,8 +38,8 @@ export class WalletObject extends THREE.Object3D {
         // poolMesh.scale.setScalar(this.scaleFromPool(pool))
 
         this.label = this.createLabel(address)
-        this.label.position.y = 80
-        this.label.position.x = -40
+        this.label.position.y = 42
+        this.label.position.x = 0
         this.add(this.label)
 
         this.updateDate()

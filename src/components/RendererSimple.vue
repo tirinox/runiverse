@@ -31,13 +31,19 @@ import trivialVertShader from "@/render/shaders/trivial.vert"
 import bloomOverlayFragShader from "@/render/shaders/bloom_overlay.frag"
 import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
 import {LAYER_BLOOM_SCENE} from "@/render/layers";
-import PoolObjectSoloDebug from "@/render/pool/poolObjectSoloDebugScene";
+import PoolObjectSoloDebugScene from "@/render/pool/poolObjectSoloDebugScene";
 import TWEEN from "tween";
+import TxObjectSoloDebugScene from "@/render/tx/txObjectSoloDebugScene";
+import WalletObjectSoloDebugScene from "@/render/wallet/walletObjectSoloDebugScene";
 
 
 function getScene(scene, name) {
-    if(name === 'PoolObjectSoloDebug') {
-        return new PoolObjectSoloDebug(scene)
+    if (name === 'PoolObjectSoloDebugScene') {
+        return new PoolObjectSoloDebugScene(scene)
+    } else if (name === 'TxObjectSoloDebugScene') {
+        return new TxObjectSoloDebugScene(scene)
+    } else if (name === 'WalletObjectSoloDebugScene') {
+        return new WalletObjectSoloDebugScene(scene)
     } else {
         return new SimpleScene(scene)
     }
@@ -123,13 +129,13 @@ export default {
             this.scene.background = savedBg
 
             if (!Config.Scene.Core.Simplified) {
-                if(this.myScene.core) {
+                if (this.myScene.core) {
                     this.myScene.core.visible = false;
                 }
                 this.cubeCamera.position.copy(this.camera.position)
                 this.cubeCamera.update(this.renderer, this.scene);
                 this.myScene.setEnvironment(this.cubeRenderTarget.texture)
-                if(this.myScene.core) {
+                if (this.myScene.core) {
                     this.myScene.core.visible = true;
                 }
             }
@@ -192,7 +198,7 @@ export default {
         runDataSource() {
             if (Config.DataSource === DataSourceRealtime) {
                 this.createRealtimeDataSource()
-            } else if(Config.DataSource === DataSourcePlayback) {
+            } else if (Config.DataSource === DataSourcePlayback) {
                 this.createPlaybackDataSource()
             } else {
                 console.warn('No data source set up.')
@@ -253,7 +259,7 @@ export default {
 
             const finalComposer = new EffectComposer(renderer);
             finalComposer.addPass(renderScene);
-            if(bloomCfg.Enabled) {
+            if (bloomCfg.Enabled) {
                 finalComposer.addPass(finalPass);
             }
             this.finalComposer = finalComposer

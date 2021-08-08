@@ -9,7 +9,7 @@ import BigNumber from "bignumber.js";
 import {IScene} from "@/render/sceneInterface";
 
 
-export default class PoolObjectSoloDebug implements ThorEventListener, IScene {
+export default class PoolObjectSoloDebugScene implements ThorEventListener, IScene {
     public scene: Scene;
 
     private poolObj?: PoolObject;
@@ -27,13 +27,13 @@ export default class PoolObjectSoloDebug implements ThorEventListener, IScene {
         this.scene = scene
 
         let poConfig = Config.Scene.PoolObject
-        poConfig.InnerOrbitSpeed *= 0.0001;
+        // poConfig.InnerOrbitSpeed *= 0.0001;
         // poConfig.BallShader.BaseSpeed *= 0.1;
         // poConfig.BallShader.BlendSpeed *= 0.1;
         // poConfig.BallShader.BumpSpeed *= 0.1;
-        poConfig.Mesh.RotationVar = 0.0;
+        // poConfig.Mesh.RotationVar = 0.0;
         // poConfig.BallShader.BumpScale = 50;
-        poConfig.Glow.Enabled = false;
+        poConfig.Glow.Enabled = true;
 
         const pool = new PoolDetail(
             'BTC.BTC',
@@ -49,8 +49,8 @@ export default class PoolObjectSoloDebug implements ThorEventListener, IScene {
         // this.poolObj.assetSideMesh!.rotationSpeed = ZeroVector3.clone()
 
         this.poolObj.updateScale()
-        // this.poolObj.position.set(100, 200, 300)
-        // this.poolObj.rotation.set(5, 3, 2)
+        this.poolObj.position.set(100, 200, 300)
+        this.poolObj.rotation.set(5, 3, 2)
         this.scene.add(this.poolObj)
 
         if (Config.Scene.Cubemap.Enabled) {
