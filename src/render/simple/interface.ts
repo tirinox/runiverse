@@ -1,6 +1,5 @@
-import * as THREE from "three";
 import {WalletObject} from "@/render/simple/walletObject";
-import {PoolObject} from "@/render/simple/poolObject";
+import {PoolObject} from "@/render/simple/pool/poolObject";
 
 export const CORE_NAME = 'core!'
 export const WALLET_PREFIX = 'wallet:'

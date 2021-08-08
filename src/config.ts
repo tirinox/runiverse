@@ -62,14 +62,21 @@ export const Config = {
             Scale: 3.0,
             Radius: 380.0,
             Color: 0x202520,
-            Simplified: false,
+            Simplified: true,
         },
         PoolObject: {
-            MaxPoolNameLength: 14,
+            Label: {
+                Enabled: true,
+                MaxPoolNameLength: 14,
+                Size: 24,
+                Y: 80,
+            },
+
             Mass: 10000,
             InitialScale: 0.2,
             SpeedAvg: 0.06,
             SpeedVar: 0.04,
+
             Staged: {
                 Distance: {
                     CenterGauss: 2500.0,
@@ -102,7 +109,7 @@ export const Config = {
                 BumpScale: 30.0, // magnitude of normal displacement
             },
             Mesh: {
-                RotationVar: 2.0,
+                RotationVar: 0.0,
             },
             Particles: {
                 N: 330,

@@ -36,7 +36,8 @@ export class PoolParticles {
             size: cfg.Size,
             map: texture,
             blending: THREE.AdditiveBlending,
-            depthTest: false,
+            depthTest: true,
+            depthWrite: false,
             transparent: true
         })
 

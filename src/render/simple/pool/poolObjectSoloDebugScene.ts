@@ -43,7 +43,7 @@ export default class PoolObjectSoloDebug implements ThorEventListener, IScene {
             new BigNumber(123456700)
         )
 
-        this.poolObj = new PoolObject(pool, false)
+        this.poolObj = new PoolObject(pool)
         this.poolObj.scale.setScalar(10.0)
         // this.poolObj.runeSideMesh!.rotationSpeed = ZeroVector3.clone()
         // this.poolObj.assetSideMesh!.rotationSpeed = ZeroVector3.clone()

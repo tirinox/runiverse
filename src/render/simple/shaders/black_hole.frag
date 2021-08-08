@@ -26,7 +26,8 @@ vec4 blackHole(vec3 ro, vec3 rd) {
     const vec3 c1 = vec3(0.5, 0.46, 0.4);
     const vec3 c2 = vec3(1.0, 0.8, 0.6);
     const vec3 glowC = vec3(1.0, 0.9, 0.85);
-    const float glowFac = 0.0015; // orig: 0.0033
+//    const float glowFac = 0.0015; // orig: 0.0033
+    const float glowFac = 0.00001; // orig: 0.0033
 
     const int maxSteps = 350; // 320 default
     const float dt = 0.08; // ray step. default: 0.02
@@ -41,8 +42,8 @@ vec4 blackHole(vec3 ro, vec3 rd) {
     float nonCaptured = 1.0;
 
     // pre-step
-//    float dToBlackHole = length(currentRayPos - blackHolePosition);
-//    currentRayPos += currentRayDir * (dToBlackHole - 5.0);// pre step to BH
+    float dToBlackHole = length(currentRayPos - blackHolePosition);
+    currentRayPos += currentRayDir * (dToBlackHole - 5.0);// pre step to BH
 
     for (int i = 0; i < maxSteps; i++) {
         // gravity
@@ -88,11 +89,6 @@ vec4 blackHole(vec3 ro, vec3 rd) {
 
 void main() {
     vec3 rayDirection = normalize(hitPosition - rayOrigin);
-
     vec4 bhColor = blackHole(rayOrigin, rayDirection);
-
-//    float distanceToCenter = length(hitPosition);
-//    bhColor.a = distanceToCenter > 3.0 ? 0.5 : 1.0;
-
     gl_FragColor = bhColor;
 }

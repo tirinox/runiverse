@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
-import {truncStringTail} from "@/helpers/data_utils";
 import coreGalaxyVert from "@/render/simple/shaders/core_galaxy.vert"
 import coreGalaxyFrag from "@/render/simple/shaders/core_galaxy.frag"
 import coreBlackholeVert from "@/render/simple/shaders/black_hole.vert"
 import coreBlackholeFrag from "@/render/simple/shaders/black_hole.frag"
+import simpleGlowVert from "@/render/simple/shaders/simple_glow.vert"
+import simpleGlowFrag from "@/render/simple/shaders/simple_glow.frag"
 
 
 const CoreObjSize = Config.Scene.Core.Scale;
@@ -32,13 +32,27 @@ export class CoreObject extends THREE.Group {
             // new THREE.BoxGeometry(CoreObjSize, CoreObjSize, CoreObjSize),
             new THREE.SphereGeometry(CoreObjSize, 50, 50),
             new THREE.MeshBasicMaterial({
-                color: new THREE.Color('#555555'),
-                transparent: true,
-                opacity: 0.5
+                color: new THREE.Color('#000000'),
             })
         )
         this.core.scale.setScalar(CoreObjScale)
         this.add(this.core)
+
+        const glowMat = new THREE.ShaderMaterial(
+            {
+                uniforms: {},
+                vertexShader: simpleGlowVert,
+                fragmentShader: simpleGlowFrag,
+                side: THREE.BackSide,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            });
+
+        const coreGlow = new THREE.Mesh(
+            new THREE.SphereGeometry(CoreObjSize * 1.1, 50, 50),
+            glowMat
+        )
+        this.core.add(coreGlow)
     }
 
     private async loadCoreMeshBlackHole() {
@@ -77,22 +91,11 @@ export class CoreObject extends THREE.Group {
     constructor() {
         super();
 
-        if(Config.Scene.Core.Simplified) {
+        if (Config.Scene.Core.Simplified) {
             this.loadCoreMeshSimple().then()
         } else {
             this.loadCoreMeshBlackHole().then()
         }
-
-        const label = this.createLabel("Black hole")
-        label.position.y = 180
-        label.position.x = -140
-        this.add(label)
-    }
-
-    createLabel(name: string) {
-        const maxLen = Config.Scene.PoolObject.MaxPoolNameLength
-        name = truncStringTail(name, maxLen)
-        return new SpriteText(name, 24, 'white')
     }
 
     public update(dt: number) {

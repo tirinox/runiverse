@@ -97,7 +97,7 @@ export class PoolObject extends THREE.Object3D {
         }
     }
 
-    constructor(pool: PoolDetail, withLabel = true) {
+    constructor(pool: PoolDetail) {
         super();
 
         this.pool = pool
@@ -105,9 +105,7 @@ export class PoolObject extends THREE.Object3D {
         this.add(this.innerOrbitHolder)
         this.innerOrbitHolder.rotateOnAxis(randomPointOnSphere(), Math.random() * Math.PI * 2)
 
-        if(withLabel) {
-            this.createLabel(pool.asset)
-        }
+        this.createLabel(pool.asset)
 
         const enabled = this.pool!.isEnabled
 
@@ -118,10 +116,13 @@ export class PoolObject extends THREE.Object3D {
     }
 
     createLabel(name: string) {
-        const maxLen = Config.Scene.PoolObject.MaxPoolNameLength
-        name = truncStringTail(name, maxLen)
-        const label = new SpriteText(name, 24, 'white')
-        this.add(label)
+        const cfg = Config.Scene.PoolObject.Label
+        if(cfg.Enabled) {
+            name = truncStringTail(name, cfg.MaxPoolNameLength)
+            const label = new SpriteText(name, cfg.Size, 'white')
+            label.position.y += cfg.Y
+            this.add(label)
+        }
     }
 
     public update(dt: number) {

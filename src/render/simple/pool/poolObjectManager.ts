@@ -97,9 +97,8 @@ export class PoolObjectManager implements IPoolQuery {
     }
 
     public getPoolByName(poolName: string) {
-        return this.poolObjects[poolName]
+        return this.poolObjects[poolName].obj
     }
-
 
     public hearBeat(pool: PoolDetail) {
         const poolObj = this.poolObjects[pool.asset]
