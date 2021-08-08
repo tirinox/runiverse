@@ -13,7 +13,7 @@
 <script>
 
 import * as THREE from "three"
-import SimpleScene from "@/render/simple/simpleScene";
+import SimpleScene from "@/render/simpleScene";
 import {RealtimeProvider} from "@/provider/realtime";
 import {Midgard} from "@/provider/midgard/midgard";
 import {Config, DataSourcePlayback, DataSourceRealtime} from "@/config";
@@ -27,11 +27,11 @@ import ControlPanel from "@/components/elements/ControlPanel";
 import emitter from "@/helpers/emitter.ts"
 import {PlaybackDataProvider} from "@/provider/playback";
 import {countObjects} from "@/helpers/3d";
-import trivialVertShader from "@/render/simple/shaders/trivial.vert"
-import bloomOverlayFragShader from "@/render/simple/shaders/bloom_overlay.frag"
+import trivialVertShader from "@/render/shaders/trivial.vert"
+import bloomOverlayFragShader from "@/render/shaders/bloom_overlay.frag"
 import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
-import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
-import PoolObjectSoloDebug from "@/render/simple/pool/poolObjectSoloDebugScene";
+import {LAYER_BLOOM_SCENE} from "@/render/layers";
+import PoolObjectSoloDebug from "@/render/pool/poolObjectSoloDebugScene";
 import TWEEN from "tween";
 
 

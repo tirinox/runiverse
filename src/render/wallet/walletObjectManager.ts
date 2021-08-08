@@ -1,4 +1,4 @@
-import {WalletObject} from "@/render/simple/walletObject";
+import {WalletObject} from "@/render/wallet/walletObject";
 import {ThorTransaction} from "@/provider/midgard/tx";
 import {Transaction} from "@/provider/midgard/v2";
 import {Object3D} from "three";

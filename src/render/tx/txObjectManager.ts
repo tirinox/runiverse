@@ -1,8 +1,8 @@
 import VisualLog from "@/components/elements/VisualLog.vue";
 import {Object3D, Vector3} from "three";
 import {ThorTransaction} from "@/provider/midgard/tx";
-import {TxObject, TxState} from "@/render/simple/txObject";
-import {IPoolQuery, IWalletQuery} from "@/render/simple/interface";
+import {TxObject, TxState} from "@/render/tx/txObject";
+import {IPoolQuery, IWalletQuery} from "@/render/interface";
 import {randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 import {ActionStatusEnum, ActionTypeEnum, Coin} from "@/provider/midgard/v2";
 import {Config} from "@/config";

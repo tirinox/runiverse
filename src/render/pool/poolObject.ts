@@ -6,8 +6,8 @@ import SpriteText from 'three-spritetext';
 import {Config} from "@/config";
 import {RUNE_COLOR_GRAD_1, RUNE_COLOR_GRAD_2} from "@/helpers/colors";
 import {truncStringTail} from "@/helpers/data_utils";
-import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
-import {PoolObjectMesh} from "@/render/simple/pool/poolObjectMesh";
+import {LAYER_BLOOM_SCENE} from "@/render/layers";
+import {PoolObjectMesh} from "@/render/pool/poolObjectMesh";
 import clamp = MathUtils.clamp;
 
 

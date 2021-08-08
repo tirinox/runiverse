@@ -1,12 +1,12 @@
 import * as THREE from "three";
 import {PointLight, Scene} from "three";
 import {EventType, PoolChangeType, ThorEvent, ThorEventListener, TxEventType} from "@/provider/types";
-import {TxObjectManager} from "@/render/simple/txObjectManager";
-import {PoolObjectManager} from "@/render/simple/pool/poolObjectManager";
-import {WalletObjectManager} from "@/render/simple/walletObjectManager";
+import {TxObjectManager} from "@/render/tx/txObjectManager";
+import {PoolObjectManager} from "@/render/pool/poolObjectManager";
+import {WalletObjectManager} from "@/render/wallet/walletObjectManager";
 import {Config} from "@/config";
-import {CoreObject} from "@/render/simple/coreObject";
-import StarBackground from "@/render/simple/background";
+import {CoreObject} from "@/render/core/coreObject";
+import StarBackground from "@/render/background";
 import {IScene} from "@/render/sceneInterface";
 
 export default class SimpleScene implements ThorEventListener, IScene {

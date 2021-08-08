@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import {Config} from "@/config";
-import coreGalaxyVert from "@/render/simple/shaders/core_galaxy.vert"
-import coreGalaxyFrag from "@/render/simple/shaders/core_galaxy.frag"
-import coreBlackholeVert from "@/render/simple/shaders/black_hole.vert"
-import coreBlackholeFrag from "@/render/simple/shaders/black_hole.frag"
-import simpleGlowVert from "@/render/simple/shaders/simple_glow.vert"
-import simpleGlowFrag from "@/render/simple/shaders/simple_glow.frag"
+import coreGalaxyVert from "@/render/core/core_galaxy.vert"
+import coreGalaxyFrag from "@/render/core/core_galaxy.frag"
+import coreBlackholeVert from "@/render/core/black_hole.vert"
+import coreBlackholeFrag from "@/render/core/black_hole.frag"
+import simpleGlowVert from "@/render/shaders/simple_glow.vert"
+import simpleGlowFrag from "@/render/shaders/simple_glow.frag"
 
 
 const CoreObjSize = Config.Scene.Core.Scale;

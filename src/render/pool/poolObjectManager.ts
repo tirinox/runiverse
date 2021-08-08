@@ -1,7 +1,7 @@
 import {PoolDetail} from "@/provider/midgard/poolDetail";
-import {PoolObject} from "@/render/simple/pool/poolObject";
+import {PoolObject} from "@/render/pool/poolObject";
 import {Object3D} from "three";
-import {IPoolQuery} from "@/render/simple/interface";
+import {IPoolQuery} from "@/render/interface";
 import {isRuneStr} from "@/provider/midgard/coinName";
 import {Orbit, randomGauss, randomPointOnSphere, ZeroVector3} from "@/helpers/3d";
 import {Config} from "@/config";

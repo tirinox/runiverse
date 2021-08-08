@@ -1,5 +1,5 @@
-import {WalletObject} from "@/render/simple/walletObject";
-import {PoolObject} from "@/render/simple/pool/poolObject";
+import {WalletObject} from "@/render/wallet/walletObject";
+import {PoolObject} from "@/render/pool/poolObject";
 
 export const CORE_NAME = 'core!'
 export const WALLET_PREFIX = 'wallet:'

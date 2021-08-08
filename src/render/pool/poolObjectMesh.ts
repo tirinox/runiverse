@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import {Vector3} from "three";
-import ballDeformVert from "@/render/simple/shaders/ball_deform.vert"
-import lavaFrag from "@/render/simple/shaders/fire_ball.frag"
+import ballDeformVert from "@/render/pool/ball_deform.vert"
+import lavaFrag from "@/render/pool/fire_ball.frag"
 import {randomGauss, ZeroVector3} from "@/helpers/3d";
-import {LAYER_BLOOM_SCENE} from "@/render/simple/layers";
+import {LAYER_BLOOM_SCENE} from "@/render/layers";
 import {Config} from "@/config";
-import {PoolParticles} from "@/render/simple/pool/poolParticles"
+import {PoolParticles} from "@/render/pool/poolParticles"
 
 export class PoolObjectMesh extends THREE.Object3D {
     private glowMaterial?: THREE.SpriteMaterial
