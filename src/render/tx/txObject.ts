@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import {Mesh, Vector3} from "three";
 import {PhysicalObject} from "@/helpers/physics";
-import {randomGauss, randomPointOnSphere} from "@/helpers/3d";
+import {randomGauss, randomPointOnSphere, textureLoader} from "@/helpers/3d";
 import {Config} from "@/config";
 import {RUNE_COLOR} from "@/helpers/colors";
 
@@ -46,10 +46,28 @@ export class TxObject extends PhysicalObject {
     constructor(mass: number, runeAmount: number, isRune: boolean) {
         super(mass);
 
-        const mat = isRune ? TxObject.runeMaterial : TxObject.whiteMaterial
-        this.mesh = new THREE.Mesh(TxObject.geoBox, mat)
-        this.mesh.scale.setScalar(this.scaleFromTx(runeAmount))
-        this.add(this.mesh)
+        const scale = this.scaleFromTx(runeAmount)
+
+        // const mat = isRune ? TxObject.runeMaterial : TxObject.whiteMaterial
+        // this.mesh = new THREE.Mesh(TxObject.geoBox, mat)
+        // this.mesh.scale.setScalar(scale)
+        // this.add(this.mesh)
+
+        const texture = textureLoader.load('textures/glow1.png')
+        const glowMaterial = new THREE.SpriteMaterial(
+            {
+                map: texture,
+                sizeAttenuation: true,
+                color: (isRune ? 0xaaaaaa : RUNE_COLOR),
+                transparent: false,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+            });
+
+        const radius = scale;
+        const obj = new THREE.Sprite(glowMaterial);
+        obj.scale.set(radius, radius, 1.0);
+        this.add(obj); // this centers the glow at the mesh
     }
 
     update(dt: number) {
