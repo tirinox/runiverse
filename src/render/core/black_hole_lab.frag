@@ -46,7 +46,7 @@ vec4 rayMarching(vec3 ro, vec3 rd) {
         // Didn't hit anything
         return texture(texEnvironMap, rd);
     }
-    return vec4(1.0, 0.0, 0.0, 1.0);
+    return vec4(0.0, 0.0, 0.0, 1.0);
 }
 
 void main() {

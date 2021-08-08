@@ -1,5 +1,6 @@
 import {Quaternion, Vector3, Object3D} from "three";
 import {hexToBigInt} from "@/helpers/data_utils";
+import * as THREE from "three";
 
 export const ZeroVector3 = new Vector3()
 
@@ -152,3 +153,5 @@ export function countObjects(parent: THREE.Object3D) {
     });
     return numOfMeshes
 }
+
+export const textureLoader = new THREE.TextureLoader()

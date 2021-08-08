@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import {randomGauss, randomGaussV3} from "@/helpers/3d";
+import {randomGauss, randomGaussV3, textureLoader} from "@/helpers/3d";
 import {Config} from "@/config";
 
 
@@ -16,7 +16,6 @@ export class PoolParticles {
 
         this.geometry = new THREE.BufferGeometry();
 
-        const textureLoader = new THREE.TextureLoader();
         const texture = textureLoader.load(this.texName);
 
         this.params = []

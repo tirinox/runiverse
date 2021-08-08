@@ -2,7 +2,7 @@ import * as THREE from "three";
 import {Vector3} from "three";
 import ballDeformVert from "@/render/pool/ball_deform.vert"
 import lavaFrag from "@/render/pool/fire_ball.frag"
-import {randomGauss, ZeroVector3} from "@/helpers/3d";
+import {randomGauss, textureLoader, ZeroVector3} from "@/helpers/3d";
 import {LAYER_BLOOM_SCENE} from "@/render/layers";
 import {Config} from "@/config";
 import {PoolParticles} from "@/render/pool/poolParticles"
@@ -17,7 +17,6 @@ export class PoolObjectMesh extends THREE.Object3D {
         Config.Scene.PoolObject.SphereResolution,
         Config.Scene.PoolObject.SphereResolution)
 
-    public static textureLoader = new THREE.TextureLoader()
     private ballMaterial?: THREE.ShaderMaterial;
     private customUniforms: any;
     private _rotationSpeed: Vector3;
@@ -94,7 +93,7 @@ export class PoolObjectMesh extends THREE.Object3D {
             return
         }
 
-        const texture = PoolObjectMesh.textureLoader.load('textures/glow1.png')
+        const texture = textureLoader.load('textures/glow1.png')
         this.glowMaterial = new THREE.SpriteMaterial(
             {
                 map: texture,
@@ -148,7 +147,7 @@ export class PoolObjectMesh extends THREE.Object3D {
         const cfg = Config.Scene.PoolObject.BallShader
 
         // base image texture for mesh
-        const baseTexture = await PoolObjectMesh.textureLoader.loadAsync(baseTexName)
+        const baseTexture = await textureLoader.loadAsync(baseTexName)
         baseTexture.wrapS = baseTexture.wrapT = THREE.RepeatWrapping;
         // multiplier for distortion speed
         const baseSpeed = cfg.BaseSpeed;
@@ -156,11 +155,11 @@ export class PoolObjectMesh extends THREE.Object3D {
 
         // texture used to generate "randomness", distort all other textures
         // noise-perlin1
-        const noiseTexture = await PoolObjectMesh.textureLoader.loadAsync('textures/noise-cloud.png');
+        const noiseTexture = await textureLoader.loadAsync('textures/noise-cloud.png');
         noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping;
 
         // texture to additively blend with base image texture
-        const blendTexture = await PoolObjectMesh.textureLoader.loadAsync(blendTexName);
+        const blendTexture = await textureLoader.loadAsync(blendTexName);
         blendTexture.wrapS = blendTexture.wrapT = THREE.RepeatWrapping;
 
         // texture to determine normal displacement

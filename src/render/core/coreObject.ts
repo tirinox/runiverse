@@ -8,6 +8,7 @@ import coreBlackholeLabVert from "@/render/core/black_hole_lab.vert"
 import coreBlackholeLabFrag from "@/render/core/black_hole_lab.frag"
 import simpleGlowVert from "@/render/shaders/simple_glow.vert"
 import simpleGlowFrag from "@/render/shaders/simple_glow.frag"
+import {textureLoader} from "@/helpers/3d";
 
 
 const CoreObjSize = Config.Scene.Core.Scale;
@@ -79,7 +80,6 @@ export class CoreObject extends THREE.Group {
 
         let [vertexShader, fragmentShader] = this.bhVertAndFragShaders(BH_Type)
 
-        const textureLoader = new THREE.TextureLoader()
         const noiseTexture = await textureLoader.loadAsync("textures/noise-rgb64.png")
 
         const uniforms = {
