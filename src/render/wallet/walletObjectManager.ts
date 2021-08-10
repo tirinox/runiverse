@@ -81,5 +81,8 @@ export class WalletObjectManager {
     }
 
     public update(dt: number) {
+        for(let wo of Object.values(this.walletObjects)) {
+            wo.update(dt)
+        }
     }
 }

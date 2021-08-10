@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import {Sprite, Vector3} from "three";
+import {Color, Sprite, Vector3} from "three";
 import {textureLoader, ZeroVector3} from "@/helpers/3d";
 import {
     hashedParameterChoice,
     hashedParameterFloat, hashedParameterFloat01,
-    hashedParameterInt,
+    hashedParameterInt, range,
     truncateStringAtMiddle
 } from "@/helpers/data_utils";
 import SpriteText from "three-spritetext";
@@ -52,6 +52,12 @@ enum FlareAnimType {
     Blink,
 }
 
+enum FlareOpacityAnimType {
+    Pulse,
+    Twinkle,
+    Sine
+}
+
 const AllFlareAnimType = Object.keys(FlareAnimType)
 
 interface FlareInformation {
@@ -62,6 +68,7 @@ interface FlareInformation {
     direction: number;
     phase: number;
     initialRadius: number;
+    colors: Array <THREE.Color>
 }
 
 export class WalletObject extends THREE.Object3D {
@@ -113,25 +120,25 @@ export class WalletObject extends THREE.Object3D {
     }
 
     private makeFlares() {
+        const colors = range(3).map(i => hashedColorBright(this.address,  'color_' + i))
         const nFlares = hashedParameterInt(this.address, 'nFlares', 4, 12)
         for(let i = 0; i < nFlares; ++i) {
-            this.makeFlare(i)
+            this.makeFlare(i, colors)
         }
     }
 
-    private makeFlare(i: number) {
+    private makeFlare(i: number, colors: Color[]) {
         const prefix = `flare/${i}/`
         const textureName = hashedParameterChoice(this.address, prefix + 'texture', flareTextures)
         const texture = textureLoader.load('textures/particles/wallet/' + textureName)
-
-        const color = hashedColorBright(this.address, prefix + 'main_color')
         const opacity = hashedParameterFloat(this.address, prefix + 'opacity', 0.5, 0.9)
+        const colorIndex = hashedParameterInt(this.address, prefix + 'color_index', 0, colors.length - 1)
 
         const spriteMaterial = new THREE.SpriteMaterial(
             {
                 map: texture,
                 sizeAttenuation: true,
-                color,
+                color: colors[colorIndex],
                 transparent: true,
                 blending: THREE.AdditiveBlending,
                 depthWrite: false,
@@ -152,7 +159,8 @@ export class WalletObject extends THREE.Object3D {
             speed: hashedParameterFloat(this.address, prefix + 'anim/speed', 0.1, 0.8),
             direction: hashedParameterFloat01(this.address, prefix + 'anim/dir') > 0.5 ? 1.0 : -1.0,
             phase: hashedParameterFloat(this.address, prefix + 'anim/phase', 0.0, Math.PI * 2.0),
-            initialRadius: radius
+            initialRadius: radius,
+            colors
         })
     }
 

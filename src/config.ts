@@ -60,6 +60,11 @@ export const Config = {
     },
 
     Scene: {
+        Fog: {
+            Enabled: false,
+            Near: 100,
+            Far: 300
+        },
         Core: {
             Scale: 3.0,
             Radius: 380.0,

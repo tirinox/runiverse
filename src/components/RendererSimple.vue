@@ -291,6 +291,12 @@ export default {
         this.canvas = this.$refs.canvas
 
         this.scene = new THREE.Scene();
+
+        if(Config.Scene.Fog.Enabled) {
+            const fogCfg = Config.Scene.Fog
+            this.scene.fog = new THREE.Fog(0x0, fogCfg.Near, fogCfg.Far)
+        }
+
         this.myScene = getScene(this.scene, Config.Debug.SceneName)
 
         this.createCamera(this.canvas)

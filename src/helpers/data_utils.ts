@@ -74,3 +74,7 @@ export function hashedParameterChoice(input: string, path: string, collection: A
     const n = hashedParameterInt(input, path, 0, collection.length - 1)
     return collection[n]
 }
+
+export function range(size: number, startAt = 0): Array<number> {
+    return [...Array(size).keys()].map(i => i + startAt);
+}
