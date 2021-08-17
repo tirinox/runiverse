@@ -21,7 +21,7 @@ export const Config = {
 
     Debug: {
         SceneName: 'WalletObjectSoloDebugScene'
-        // SceneName: 'PoolObjectSoloDebug'
+        // SceneName: 'PoolObjectSoloDebugScene'
         // SceneName: 'default'
     },
 
