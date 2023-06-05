@@ -44,7 +44,7 @@ function getScene(scene, name) {
         return new TxObjectSoloDebugScene(scene)
     } else if (name === 'WalletObjectSoloDebugScene') {
         return new WalletObjectSoloDebugScene(scene)
-    } else if (name === 'defualt' || name === 'DefaultScene') {
+    } else if (name === 'default' || name === 'DefaultScene') {
         return new SimpleScene(scene)
     } else {
         alert('Unknown scene!')

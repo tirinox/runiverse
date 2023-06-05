@@ -83,7 +83,7 @@ export class PoolObject extends THREE.Object3D {
     updateScale() {
         const scale = this.scaleFromPool(this.pool!)
 
-        console.info(`Pool: ${this.pool!.asset} ,scale = ${scale}`)
+        // console.info(`Pool: ${this.pool!.asset} ,scale = ${scale}`)
 
         const cfg = Config.Scene.PoolObject
         if (this.runeSideMesh && this.assetSideMesh) {
